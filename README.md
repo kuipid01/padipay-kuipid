@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PadiLoan 🚀
+**Your Peer-to-Peer Loan Infrastructure, Simplified.**
 
-## Getting Started
+PadiLoan is a professional lending infrastructure platform built for modern lenders. Whether you are a micro-finance institution or an informal lender, PadiLoan provides the tools to manage applications, automate collections, and track repayments with zero operational headaches.
 
-First, run the development server:
+---
 
+## ✨ Key Features
+
+### 🏦 For Lenders
+- **Custom Loan Landing Pages**: Create your own public loan application links (e.g., `padiloan.com/your-slug`) in seconds.
+- **Automated Collections**: Integration with **Paystack** for secure, automated recurring charges.
+- **Verification Engine**: Built-in verification steps to ensure borrower credibility.
+- **Rich Dashboard**: Track every app, individual application, and repayment schedule with real-time analytics.
+- **Internal Notifications**: Automated email/SMS reminders for upcoming due dates.
+- **Secure Auth**: Role-based access (Lender), password recovery, and profile management.
+
+### 👤 For Borrowers
+- **Seamless Application**: Interactive loan calculator and easy-to-fill forms.
+- **Card Vaulting**: Securely authorize cards for automated, stress-free repayments.
+- **Transparency**: Clear visibility into repayment schedules and loan terms.
+
+---
+
+## 🛠 Tech Stack
+
+- **Framework**: [Next.js 16 (App Router)](https://nextjs.org/)
+- **ORM**: [Drizzle ORM](https://orm.drizzle.team/)
+- **Database**: [Neon Postgres](https://neon.tech/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [Shadcn UI](https://ui.shadcn.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Payments**: [Paystack API](https://paystack.com/)
+- **Validation**: [Zod](https://zod.dev/)
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/kuipid01/padipay-kuipid.git
+cd padi-loan
 ```
 
+### 2. Install dependencies
+```bash
+bun install
+# or
+npm install
+```
+
+### 3. Setup Environment Variables
+Create a `.env` file in the root directory and add the following:
+
+```env
+# Database
+DATABASE_URL=your_postgres_url
+
+# Auth
+SESSION_SECRET=your_32_char_secret
+
+# Paystack
+PAYSTACK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_...
+
+# App URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+### 4. Run the development server
+```bash
+bun dev
+```
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📂 Project Structure
 
-## Learn More
+- `app/`: Next.js App Router pages and API routes.
+- `components/`: Reusable UI components (Shadcn UI + Custom).
+- `db/`: Database schema definitions and Drizzle configuration.
+- `lib/`: Utility functions, authentication, and service clients (Paystack, Notifications).
+- `public/`: Static assets.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📄 License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This project is licensed under the MIT License.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built with ❤️ for the modern lender.
