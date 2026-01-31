@@ -20,8 +20,8 @@ export function Overview() {
                             We provide the infrastructure. You provide the capital. Together, we make lending seamless and secure for everyone involved.
                         </p>
                         <div className="space-y-4 pt-4">
-                            {steps.map((step, i) => (
-                                <div key={i} className="flex items-center gap-3">
+                            {steps.map((step) => (
+                                <div key={step} className="flex items-center gap-3">
                                     <CheckCircle2 className="text-primary w-6 h-6 shrink-0" />
                                     <span className="text-lg font-medium">{step}</span>
                                 </div>

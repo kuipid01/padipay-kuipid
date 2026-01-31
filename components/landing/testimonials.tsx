@@ -1,7 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/card"; // Wait, avatar is in its own component usually
-
-// Actually, shadcn avatar is usually in components/ui/avatar.tsx
-// Let's check if I have it. I added 'avatar' in the init/add steps.
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Testimonials() {

@@ -27,8 +27,8 @@ export function OurValue() {
                     <p className="text-muted-foreground text-lg">The principles that drive every feature we build.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    {values.map((v, i) => (
-                        <div key={i} className="flex flex-col items-center text-center space-y-4">
+                    {values.map((v) => (
+                        <div key={v.title} className="flex flex-col items-center text-center space-y-4">
                             <div className="p-4 bg-primary/5 rounded-full">{v.icon}</div>
                             <h3 className="text-xl font-bold">{v.title}</h3>
                             <p className="text-muted-foreground">{v.description}</p>
