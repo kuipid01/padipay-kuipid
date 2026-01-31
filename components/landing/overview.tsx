@@ -11,7 +11,7 @@ export function Overview() {
     ];
 
     return (
-        <section className="py-24 bg-primary/5">
+        <section className="py-24 bg-lemon-primary/5">
             <div className="container mx-auto px-4">
                 <div className="flex flex-col md:flex-row items-center gap-16">
                     <div className="flex-1 space-y-6">
@@ -36,7 +36,7 @@ export function Overview() {
                             <CardContent className="p-8 space-y-4">
                                 <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
                                 <div className="h-4 w-1/2 bg-muted rounded animate-pulse" />
-                                <div className="h-10 w-full bg-primary/10 rounded animate-pulse mt-4" />
+                                <div className="h-10 w-full bg-lemon-primary/10 rounded animate-pulse mt-4" />
                             </CardContent>
                         </Card>
                     </div>

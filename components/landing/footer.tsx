@@ -67,7 +67,7 @@ export function LandingFooter() {
 
 function SocialIcon({ icon }: { icon: React.ReactNode }) {
     return (
-        <Link href="/" className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-all duration-300">
+        <Link href="/" className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-lemon-primary/10 hover:text-primary transition-all duration-300">
             {icon}
         </Link>
     );

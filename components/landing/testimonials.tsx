@@ -32,7 +32,7 @@ export function Testimonials() {
                             <p className="italic text-muted-foreground leading-relaxed">&quot;{r.text}&quot;</p>
                             <div className="flex items-center gap-3 pt-4">
                                 <Avatar>
-                                    <AvatarFallback className="bg-primary/10 text-primary font-bold">{r.avatar}</AvatarFallback>
+                                    <AvatarFallback className="bg-lemon-primary/10 text-primary font-bold">{r.avatar}</AvatarFallback>
                                 </Avatar>
                                 <div>
                                     <div className="font-bold">{r.name}</div>

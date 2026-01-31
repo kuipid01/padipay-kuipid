@@ -30,7 +30,7 @@ export function Plans() {
                     {plans.map((p) => (
                         <div
                             key={p.name}
-                            className={`p-10 rounded-3xl border flex flex-col items-start text-left transition-all duration-300 ${p.featured ? "ring-2 ring-primary bg-primary/5 shadow-xl scale-105" : "bg-card hover:border-primary/50"}`}
+                            className={`p-10 rounded-3xl border flex flex-col items-start text-left transition-all duration-300 ${p.featured ? "ring-2 ring-primary bg-lemon-primary/5 shadow-xl scale-105" : "bg-card hover:border-primary/50"}`}
                         >
                             <div className="mb-8">
                                 <h3 className="text-xl font-bold mb-2">{p.name}</h3>
@@ -43,7 +43,7 @@ export function Plans() {
                             <div className="space-y-4 mb-10 w-full">
                                 {p.features.map((f) => (
                                     <div key={f} className="flex items-center gap-3">
-                                        <div className="bg-primary/10 p-1 rounded-full"><Check className="w-4 h-4 text-primary" /></div>
+                                        <div className="bg-lemon-primary/10 p-1 rounded-full"><Check className="w-4 h-4 text-primary" /></div>
                                         <span className="text-sm font-medium">{f}</span>
                                     </div>
                                 ))}

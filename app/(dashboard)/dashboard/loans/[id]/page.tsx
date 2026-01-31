@@ -78,7 +78,7 @@ export default async function LoanDetailPage({ params }: { params: Promise<{ id:
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-primary/5 border-primary/20">
+                    <Card className="bg-lemon-primary/5 border-primary/20">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">Repayment Progress</CardTitle>
                         </CardHeader>

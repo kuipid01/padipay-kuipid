@@ -33,7 +33,7 @@ export function Features() {
 function FeatureCard({ icon, title, description }: Readonly<{ icon: React.ReactNode, title: string, description: string }>) {
     return (
         <div className="p-8 rounded-2xl bg-card border hover:shadow-lg transition-all duration-300 group">
-            <div className="mb-6 p-3 rounded-xl bg-primary/5 w-fit group-hover:bg-primary/10 transition-colors">
+            <div className="mb-6 p-3 rounded-xl bg-lemon-primary/5 w-fit group-hover:bg-lemon-primary/10 transition-colors">
                 {icon}
             </div>
             <h3 className="text-xl font-bold mb-3">{title}</h3>

@@ -61,7 +61,7 @@ export default async function DashboardPage() {
                         <Card key={app.id} className="hover:shadow-md transition-shadow overflow-hidden group">
                             <CardHeader className="pb-4">
                                 <div className="flex justify-between items-start">
-                                    <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
+                                    <div className="p-2 rounded-lg bg-lemon-primary/5 group-hover:bg-lemon-primary/10 transition-colors">
                                         <CreditCard className="text-primary" size={24} />
                                     </div>
                                     <div className={`px-2 py-1 rounded text-[10px] uppercase font-bold ${app.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>

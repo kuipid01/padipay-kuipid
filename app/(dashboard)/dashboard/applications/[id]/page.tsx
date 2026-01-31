@@ -100,7 +100,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                 </div>
 
                 <div className="space-y-6">
-                    <Card className="border-primary/20 bg-primary/5">
+                    <Card className="border-primary/20 bg-lemon-primary/5">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm flex items-center gap-2">
                                 <CreditCard size={14} /> Verification Status

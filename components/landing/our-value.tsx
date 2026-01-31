@@ -29,7 +29,7 @@ export function OurValue() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                     {values.map((v) => (
                         <div key={v.title} className="flex flex-col items-center text-center space-y-4">
-                            <div className="p-4 bg-primary/5 rounded-full">{v.icon}</div>
+                            <div className="p-4 bg-lemon-primary/5 rounded-full">{v.icon}</div>
                             <h3 className="text-xl font-bold">{v.title}</h3>
                             <p className="text-muted-foreground">{v.description}</p>
                         </div>

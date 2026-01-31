@@ -192,7 +192,7 @@ export default function PublicLoanPage() {
 
                 {/* Loan Summary / Preview */}
                 <div className="lg:sticky lg:top-12 h-fit">
-                    <Card className="bg-primary text-primary-foreground border-none overflow-hidden">
+                    <Card className="bg-lemon-primary text-primary-foreground border-none overflow-hidden">
                         <CardHeader>
                             <CardTitle className="text-xl">Repayment Summary</CardTitle>
                             <CardDescription className="text-primary-foreground/70">
