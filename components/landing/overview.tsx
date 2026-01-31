@@ -126,7 +126,7 @@ export function Overview() {
                             Smarter Infrastructure
                         </div>
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-black text-main-green font-robotoSlab max-w-3xl mx-auto leading-tight italic">
+                    <h2 className="text-4xl md:text-5xl font-black text-main-green font-robotoSlab max-w-3xl mx-auto leading-tight">
                         The Operating System for <br /> Your Lending Business
                     </h2>
                     <p className="text-gray-500 max-w-2xl mx-auto font-medium text-lg leading-relaxed">
