@@ -1,63 +1,91 @@
 import Link from "next/link";
-import { Twitter, Instagram, Linkedin, Github } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Youtube, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function LandingFooter() {
     return (
-        <footer className="py-20 border-t bg-card">
+        <footer className="py-24 bg-white">
             <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-                    <div className="space-y-6 flex flex-col items-start">
-                        <Link href="/" className="text-2xl font-bold bg-linear-to-r from-primary to-violet-600 bg-clip-text text-transparent">
-                            PadiLoan
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-20">
+                    {/* Left Brand Column */}
+                    <div className="lg:col-span-5 space-y-8">
+                        <Link href="/" className="flex items-center gap-2">
+                            <div className="size-8 bg-main-green rounded-lg flex items-center justify-center">
+                                <span className="text-lemon-primary font-black text-xl">P</span>
+                            </div>
+                            <span className="text-2xl font-black text-main-green tracking-tight">Padi-Loan</span>
                         </Link>
-                        <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
-                            The ultimate infrastructure for peer-to-peer and micro-finance lenders. Automated, secure, and transparent.
+
+                        <p className="text-gray-500 text-md font-medium leading-relaxed max-w-md">
+                            We are passionate about helping businesses leverage the power of technology to achieve their goals.
                         </p>
-                        <div className="flex gap-4">
-                            <SocialIcon icon={<Twitter size={18} />} />
-                            <SocialIcon icon={<Instagram size={18} />} />
-                            <SocialIcon icon={<Linkedin size={18} />} />
-                            <SocialIcon icon={<Github size={18} />} />
+
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-black text-main-green uppercase tracking-wider">Join our newsletter</h4>
+                            <div className="flex gap-2 max-w-md">
+                                <Input
+                                    placeholder="Enter your email"
+                                    className="h-12 bg-gray-50 border-gray-100 rounded-xl focus-visible:ring-main-green font-medium"
+                                />
+                                <Button size="icon" className="h-12 w-12 bg-lemon-primary text-main-green hover:bg-lemon-primary/90 rounded-xl shadow-lg shadow-lemon-primary/20 shrink-0">
+                                    <Send size={18} />
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="space-y-6">
-                        <h4 className="font-bold uppercase tracking-widest text-xs text-muted-foreground">Product</h4>
-                        <ul className="space-y-3 text-sm font-medium">
-                            <li><Link href="/" className="hover:text-primary transition-colors">Features</Link></li>
-                            <li><Link href="/" className="hover:text-primary transition-colors">Integrations</Link></li>
-                            <li><Link href="/" className="hover:text-primary transition-colors">Repayment Auto-pilot</Link></li>
-                            <li><Link href="/" className="hover:text-primary transition-colors">Verification APIs</Link></li>
-                        </ul>
-                    </div>
-
-                    <div className="space-y-6">
-                        <h4 className="font-bold uppercase tracking-widest text-xs text-muted-foreground">Company</h4>
-                        <ul className="space-y-3 text-sm font-medium">
-                            <li><Link href="/" className="hover:text-primary transition-colors">About Us</Link></li>
-                            <li><Link href="/" className="hover:text-primary transition-colors">Case Studies</Link></li>
-                            <li><Link href="/" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-                            <li><Link href="/" className="hover:text-primary transition-colors">Terms of Service</Link></li>
-                        </ul>
-                    </div>
-
-                    <div className="space-y-6">
-                        <h4 className="font-bold uppercase tracking-widest text-xs text-muted-foreground">Resources</h4>
-                        <ul className="space-y-3 text-sm font-medium">
-                            <li><Link href="/" className="hover:text-primary transition-colors">Documentation</Link></li>
-                            <li><Link href="/" className="hover:text-primary transition-colors">Lending Best Practices</Link></li>
-                            <li><Link href="/" className="hover:text-primary transition-colors">Developer Portal</Link></li>
-                            <li><Link href="/" className="hover:text-primary transition-colors">Support Center</Link></li>
-                        </ul>
+                    {/* Right Links Grid */}
+                    <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-8">
+                        <FooterColumn
+                            title="Company"
+                            links={[
+                                { label: "About us", href: "/" },
+                                { label: "Careers", href: "/" },
+                                { label: "Blog", href: "/" },
+                                { label: "Press", href: "/" }
+                            ]}
+                        />
+                        <FooterColumn
+                            title="Product"
+                            links={[
+                                { label: "Dashboard", href: "/" },
+                                { label: "Integrations", href: "/" },
+                                { label: "Pricing", href: "/" },
+                                { label: "Security", href: "/" }
+                            ]}
+                        />
+                        <FooterColumn
+                            title="Support"
+                            links={[
+                                { label: "Help Center", href: "/" },
+                                { label: "FAQ", href: "/" },
+                                { label: "Contact", href: "/" }
+                            ]}
+                        />
+                        <FooterColumn
+                            title="Legal"
+                            links={[
+                                { label: "Privacy Policy", href: "/" },
+                                { label: "Terms of Service", href: "/" },
+                                { label: "Term & Conditions", href: "/" },
+                                { label: "License", href: "/" }
+                            ]}
+                        />
                     </div>
                 </div>
 
-                <div className="pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground font-medium">
-                    <p>© {new Date().getFullYear()} PadiLoan Labs. All rights reserved.</p>
-                    <div className="flex gap-6">
-                        <Link href="/" className="hover:text-foreground">Cookies</Link>
-                        <Link href="/" className="hover:text-foreground">Security</Link>
-                        <Link href="/" className="hover:text-foreground">Status</Link>
+                {/* Bottom Bar */}
+                <div className="pt-10 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <p className="text-gray-400 text-sm font-bold">
+                        2026 Padi-Loan. All rights reserved.
+                    </p>
+
+                    <div className="flex gap-4">
+                        <SocialIcon icon={<Facebook size={18} />} />
+                        <SocialIcon icon={<Instagram size={18} />} />
+                        <SocialIcon icon={<Linkedin size={18} />} />
+                        <SocialIcon icon={<Youtube size={18} />} />
                     </div>
                 </div>
             </div>
@@ -65,9 +93,26 @@ export function LandingFooter() {
     );
 }
 
+function FooterColumn({ title, links }: { title: string; links: { label: string; href: string }[] }) {
+    return (
+        <div className="space-y-6">
+            <h4 className="text-sm font-black text-main-green uppercase tracking-wider">{title}</h4>
+            <ul className="space-y-4">
+                {links.map((link) => (
+                    <li key={link.label}>
+                        <Link href={link.href} className="text-gray-500 hover:text-main-green text-sm font-bold transition-colors">
+                            {link.label}
+                        </Link>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
 function SocialIcon({ icon }: { icon: React.ReactNode }) {
     return (
-        <Link href="/" className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-lemon-primary/10 hover:text-primary transition-all duration-300">
+        <Link href="/" className="w-10 h-10 rounded-full bg-lemon-primary/40 text-main-green flex items-center justify-center hover:bg-lemon-primary transition-all duration-300">
             {icon}
         </Link>
     );
