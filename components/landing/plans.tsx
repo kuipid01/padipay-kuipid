@@ -27,9 +27,9 @@ export function Plans() {
                 <h2 className="text-4xl font-bold mb-4">Simple Pricing</h2>
                 <p className="text-muted-foreground mb-16 text-lg">Scale your lending business without operational headaches.</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    {plans.map((p, i) => (
+                    {plans.map((p) => (
                         <div
-                            key={i}
+                            key={p.name}
                             className={`p-10 rounded-3xl border flex flex-col items-start text-left transition-all duration-300 ${p.featured ? "ring-2 ring-primary bg-primary/5 shadow-xl scale-105" : "bg-card hover:border-primary/50"}`}
                         >
                             <div className="mb-8">
@@ -41,8 +41,8 @@ export function Plans() {
                                 </div>
                             </div>
                             <div className="space-y-4 mb-10 w-full">
-                                {p.features.map((f, j) => (
-                                    <div key={j} className="flex items-center gap-3">
+                                {p.features.map((f) => (
+                                    <div key={f} className="flex items-center gap-3">
                                         <div className="bg-primary/10 p-1 rounded-full"><Check className="w-4 h-4 text-primary" /></div>
                                         <span className="text-sm font-medium">{f}</span>
                                     </div>

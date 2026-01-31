@@ -27,8 +27,8 @@ export function Testimonials() {
             <div className="container mx-auto px-4">
                 <h2 className="text-4xl font-bold text-center mb-16 tracking-tight">What Lenders Say</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {reviews.map((r, i) => (
-                        <div key={i} className="p-8 rounded-2xl bg-card border shadow-sm space-y-4">
+                    {reviews.map((r) => (
+                        <div key={r.name} className="p-8 rounded-2xl bg-card border shadow-sm space-y-4">
                             <p className="italic text-muted-foreground leading-relaxed">&quot;{r.text}&quot;</p>
                             <div className="flex items-center gap-3 pt-4">
                                 <Avatar>

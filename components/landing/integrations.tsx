@@ -9,8 +9,8 @@ export function Integrations() {
                     <p className="text-2xl font-bold">Trusted by the best financial infrastructures</p>
                 </div>
                 <div className="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                    {partners.map((p, i) => (
-                        <div key={i} className="text-2xl font-black tracking-tighter hover:text-primary transition-colors cursor-default">
+                    {partners.map((p) => (
+                        <div key={p} className="text-2xl font-black tracking-tighter hover:text-primary transition-colors cursor-default">
                             {p}
                         </div>
                     ))}
