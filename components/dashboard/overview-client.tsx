@@ -83,14 +83,13 @@ export function OverviewClient() {
                         </motion.div>
                     ))}
                 </div>
-                <div className="flex w-full  justify-between gap-10">
-
+                <div className="flex flex-col lg:flex-row w-full justify-between gap-6 lg:gap-10">
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="flex-1"
+                        className="flex-1 w-full"
                     >
-                        <Card className="bg-main-green  text-white border-none h-full shadow-xl relative overflow-hidden group">
+                        <Card className="bg-main-green text-white border-none h-full shadow-xl relative overflow-hidden group min-h-[240px]">
                             <div className="absolute top-0 right-0 size-40 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-white/10 transition-colors" />
                             <CardContent className="p-6 flex flex-col justify-between h-full relative z-10">
                                 <div>
@@ -99,9 +98,9 @@ export function OverviewClient() {
                                         <Badge className="bg-white/10 text-white font-bold border-none backdrop-blur-md">Payout Ready</Badge>
                                     </div>
                                     <p className="text-xs font-bold text-white/60 mb-1">Total Balance</p>
-                                    <h2 className="text-3xl font-black mb-2">₦420,500.00</h2>
+                                    <h2 className="text-2xl md:text-3xl font-black mb-2">₦420,500.00</h2>
                                 </div>
-                                <div className="mt-8 pt-6 border-t border-white/10">
+                                <div className="mt-4 lg:mt-8 pt-6 border-t border-white/10">
                                     <p className="text-[10px] font-black text-white/40 uppercase mb-4 tracking-wider">Linked Account</p>
                                     <div className="flex items-center gap-3">
                                         <div className="size-8 rounded bg-white/10 flex items-center justify-center">
@@ -114,13 +113,13 @@ export function OverviewClient() {
                                     </div>
                                 </div>
                             </CardContent>
-                            <Image src="/cc.png" width={400} height={300} className="object-cover absolute -right-[50px] -bottom-[100px]" alt="CREDIT CARD" />
+                            <Image src="/cc.png" width={400} height={300} className="object-cover absolute -right-[50px] -bottom-[100px] w-[300px] md:w-[400px]" alt="CREDIT CARD" />
                         </Card>
                     </motion.div>
                     {/* 3. Upcoming Payments */}
-                    <div>
+                    <div className="w-full lg:w-[400px]">
                         <h2 className="text-xl font-black text-main-green tracking-tight mb-6">Upcoming Payments</h2>
-                        <div className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                             {upcomingPayments.map((payment, i) => (
                                 <motion.div
                                     key={payment.borrower}
@@ -130,16 +129,16 @@ export function OverviewClient() {
                                     className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex gap-4 relative overflow-hidden group"
                                 >
                                     <div className="absolute top-0 right-0 h-full w-1.5 bg-lemon-primary" />
-                                    <div className="size-12 rounded-2xl bg-gray-50 flex flex-col items-center justify-center border border-gray-100 text-main-green">
+                                    <div className="size-12 rounded-2xl bg-gray-50 flex flex-col items-center justify-center border border-gray-100 text-main-green shrink-0">
                                         <span className="text-[10px] font-black uppercase text-gray-400 leading-none mb-1">{payment.day.includes("In") ? payment.day.split(" ")[1] : "T"}</span>
                                         <span className="text-lg font-black leading-none">{payment.day.includes("In") ? payment.day.split(" ")[2] : "01"}</span>
                                     </div>
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <h4 className="font-bold text-main-green">{payment.amount}</h4>
+                                    <div className="min-w-0">
+                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                            <h4 className="font-bold text-main-green truncate">{payment.amount}</h4>
                                             <Badge variant="outline" className="text-[9px] font-black uppercase border-gray-100">{payment.method}</Badge>
                                         </div>
-                                        <p className="text-sm text-gray-500 font-medium">{payment.borrower}</p>
+                                        <p className="text-sm text-gray-500 font-medium truncate">{payment.borrower}</p>
                                         <p className="text-[10px] text-gray-400 font-bold mt-2 flex items-center gap-1">
                                             <Clock size={10} /> {payment.day === "Today" ? "Expected today at " : "Due "} {payment.time}
                                         </p>
@@ -148,7 +147,6 @@ export function OverviewClient() {
                             ))}
                         </div>
                     </div>
-
                 </div>
 
             </div>
@@ -167,50 +165,52 @@ export function OverviewClient() {
                     </div>
 
                     <Card className="border-none shadow-sm overflow-hidden">
-                        <Table>
-                            <TableHeader className="bg-gray-50/50">
-                                <TableRow className="hover:bg-transparent border-none">
-                                    <TableHead className="font-black text-main-green uppercase text-[10px] tracking-widest px-6 h-12">Borrower</TableHead>
-                                    <TableHead className="font-black text-main-green uppercase text-[10px] tracking-widest h-12">Amount</TableHead>
-                                    <TableHead className="font-black text-main-green uppercase text-[10px] tracking-widest h-12">Status</TableHead>
-                                    <TableHead className="font-black text-main-green uppercase text-[10px] tracking-widest h-12">Due Date</TableHead>
-                                    <TableHead className="font-black text-main-green uppercase text-[10px] tracking-widest text-right px-6 h-12">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {activeLoans.map((loan) => (
-                                    <TableRow key={loan.id} className="hover:bg-gray-50/50 transition-colors border-gray-100 group">
-                                        <TableCell className="px-6 py-4">
-                                            <p className="font-bold text-main-green group-hover:text-primary transition-colors">{loan.borrower}</p>
-                                        </TableCell>
-                                        <TableCell className="py-4">
-                                            <p className="font-bold">{loan.amount}</p>
-                                            <p className="text-[10px] text-gray-400 font-medium">at {loan.interest} interest</p>
-                                        </TableCell>
-                                        <TableCell className="py-4">
-                                            <Badge
-                                                className={cn(
-                                                    "font-bold text-[10px] border-none",
-                                                    loan.status === "On Track" && "bg-green-50 text-green-600",
-                                                    loan.status === "Due Soon" && "bg-orange-50 text-orange-600",
-                                                    loan.status === "Overdue" && "bg-red-50 text-red-600"
-                                                )}
-                                            >
-                                                {loan.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="py-4 text-gray-500 font-medium text-sm">
-                                            {loan.dueDate}
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4 text-right">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400">
-                                                <MoreHorizontal size={18} />
-                                            </Button>
-                                        </TableCell>
+                        <div className="overflow-x-auto">
+                            <Table className="min-w-[800px] xl:min-w-full">
+                                <TableHeader className="bg-gray-50/50">
+                                    <TableRow className="hover:bg-transparent border-none">
+                                        <TableHead className="font-black text-main-green uppercase text-[10px] tracking-widest px-6 h-12">Borrower</TableHead>
+                                        <TableHead className="font-black text-main-green uppercase text-[10px] tracking-widest h-12">Amount</TableHead>
+                                        <TableHead className="font-black text-main-green uppercase text-[10px] tracking-widest h-12">Status</TableHead>
+                                        <TableHead className="font-black text-main-green uppercase text-[10px] tracking-widest h-12">Due Date</TableHead>
+                                        <TableHead className="font-black text-main-green uppercase text-[10px] tracking-widest text-right px-6 h-12">Actions</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {activeLoans.map((loan) => (
+                                        <TableRow key={loan.id} className="hover:bg-gray-50/50 transition-colors border-gray-100 group">
+                                            <TableCell className="px-6 py-4">
+                                                <p className="font-bold text-main-green group-hover:text-primary transition-colors whitespace-nowrap">{loan.borrower}</p>
+                                            </TableCell>
+                                            <TableCell className="py-4">
+                                                <p className="font-bold whitespace-nowrap">{loan.amount}</p>
+                                                <p className="text-[10px] text-gray-400 font-medium">at {loan.interest} interest</p>
+                                            </TableCell>
+                                            <TableCell className="py-4">
+                                                <Badge
+                                                    className={cn(
+                                                        "font-bold text-[10px] border-none whitespace-nowrap",
+                                                        loan.status === "On Track" && "bg-green-50 text-green-600",
+                                                        loan.status === "Due Soon" && "bg-orange-50 text-orange-600",
+                                                        loan.status === "Overdue" && "bg-red-50 text-red-600"
+                                                    )}
+                                                >
+                                                    {loan.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="py-4 text-gray-500 font-medium text-sm whitespace-nowrap">
+                                                {loan.dueDate}
+                                            </TableCell>
+                                            <TableCell className="px-6 py-4 text-right">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400">
+                                                    <MoreHorizontal size={18} />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </Card>
                 </div>
 
@@ -255,44 +255,46 @@ export function OverviewClient() {
                 />
             </div>
 
-            <div className="xl:col-span-4 space-y-8">
-
-
-                {/* 4. Loan Performance Breakdown */}
-                <Card className="border-none shadow-sm bg-[#FAFAFA] rounded-[32px] overflow-hidden">
-                    <CardHeader className="p-6 pb-2">
-                        <CardTitle className="text-lg font-black text-main-green">Performance Breakdown</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-6 pt-0">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="space-y-4">
-                                <PerformanceIndicator label="On-time" color="bg-green-500" value="85%" />
-                                <PerformanceIndicator label="Late" color="bg-orange-500" value="12%" />
-                                <PerformanceIndicator label="Defaulted" color="bg-red-500" value="3%" />
-                            </div>
-                            <div className="size-24 rounded-full border-10 border-green-500 border-t-orange-500 border-l-red-500/20 relative flex items-center justify-center">
-                                <span className="text-xl font-black text-main-green">97%</span>
-                            </div>
-                        </div>
-                        <Button className="w-full bg-white text-main-green border border-gray-100 rounded-2xl font-black h-12 shadow-sm hover:bg-gray-50">
-                            Detailed Report
-                        </Button>
-                    </CardContent>
-                </Card>
-
-                {/* 6. Recent Activity Feed */}
-                <div>
-                    <h2 className="text-xl font-black text-main-green tracking-tight mb-6">Recent Activity</h2>
-                    <div className="relative pl-6 space-y-6 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
-                        {recentActivity.map((activity, i) => (
-                            <div key={i} className="relative group">
-                                <div className="absolute -left-6 top-1.5 size-3 rounded-full border-2 border-white bg-lemon-primary ring-4 ring-lemon-primary/20 z-10" />
-                                <div>
-                                    <p className="text-sm font-bold text-gray-700 leading-snug group-hover:text-main-green transition-colors">{activity.text}</p>
-                                    <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">{activity.time}</p>
+            <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
+                <div className="lg:col-span-6 space-y-8">
+                    {/* 4. Loan Performance Breakdown */}
+                    <Card className="border-none shadow-sm bg-[#FAFAFA] rounded-[32px] overflow-hidden">
+                        <CardHeader className="p-6 pb-2">
+                            <CardTitle className="text-lg font-black text-main-green">Performance Breakdown</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-6 pt-0">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-8 mb-8">
+                                <div className="space-y-4 w-full sm:w-auto">
+                                    <PerformanceIndicator label="On-time" color="bg-green-500" value="85%" />
+                                    <PerformanceIndicator label="Late" color="bg-orange-500" value="12%" />
+                                    <PerformanceIndicator label="Defaulted" color="bg-red-500" value="3%" />
+                                </div>
+                                <div className="size-32 rounded-full border-[12px] border-green-500 border-t-orange-500 border-l-red-500/20 relative flex items-center justify-center shrink-0">
+                                    <span className="text-2xl font-black text-main-green">97%</span>
                                 </div>
                             </div>
-                        ))}
+                            <Button className="w-full bg-white text-main-green border border-gray-100 rounded-2xl font-black h-12 shadow-sm hover:bg-gray-50">
+                                Detailed Report
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="lg:col-span-4 space-y-8">
+                    {/* 6. Recent Activity Feed */}
+                    <div>
+                        <h2 className="text-xl font-black text-main-green tracking-tight mb-6">Recent Activity</h2>
+                        <div className="relative pl-6 space-y-6 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
+                            {recentActivity.map((activity, i) => (
+                                <div key={i} className="relative group">
+                                    <div className="absolute -left-6 top-1.5 size-3 rounded-full border-2 border-white bg-lemon-primary ring-4 ring-lemon-primary/20 z-10" />
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-700 leading-snug group-hover:text-main-green transition-colors">{activity.text}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">{activity.time}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
