@@ -156,7 +156,7 @@ export function DashboardHeader() {
                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                            className="absolute top-full left-0 right-0 mt-3 bg-white rounded-3xl border border-gray-100 shadow-2xl p-2 z-50 overflow-hidden"
+                            className="md:absolute fixed  w-[95%] mx-auto top-[10vh]  md:top-full left-0 right-0 mt-3 bg-white rounded-3xl border border-gray-100 shadow-2xl p-2 z-50 overflow-hidden"
                         >
                             <div className="p-3">
                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 mb-2">Quick Links</p>
@@ -187,17 +187,17 @@ export function DashboardHeader() {
                 </AnimatePresence>
             </div>
 
-            <div className="flex items-center  gap-4">
+            <div className="flex items-center gap-1  md:gap-4">
                 <div className="flex items-center bg-white rounded-2xl p-1 shadow-sm ">
                     <Button size="icon" variant="ghost" className="rounded-xl text-gray-400"><Bell size={20} /></Button>
                 </div>
 
-                <div className="flex items-center gap-1    bg-white rounded-2xl p-1 px-2 shadow-md">
+                <div className="flex items-center gap-1    bg-white rounded-2xl md:p-1 md:px-2 shadow-md">
                     <Avatar className="size-12 rounded-full border-2 border-primary/10">
                         <AvatarImage src={`/register-illustration.png`} />
                         <AvatarFallback><User2 /></AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col gap-1">
+                    <div className="md:flex flex-col hidden  gap-1">
                         <p className="font-bold">Aderie John</p>
                         <p className="text-xs text-gray-400">aderiejohn@gmail.com</p>
                     </div>
