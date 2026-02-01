@@ -28,32 +28,12 @@ export function DashboardSidebar({ session }: Readonly<DashboardSidebarProps>) {
     const pathname = usePathname();
 
     return (
-        <aside className="w-[280px] hidden md:flex flex-col sticky top-0 h-screen p-4 gap-4">
+        <aside className="w-[280px] hidden md:flex flex-col justify-between sticky top-0 h-screen p-4 gap-4">
             {/* User Profile Card */}
-            <div className="bg-[#FAFAFA] rounded-[32px] p-6 shadow-sm  flex flex-col gap-4 relative overflow-hidden">
-                <div className="flex items-start justify-between">
-                    <Avatar className="size-12 rounded-full border-2 border-primary/10">
-                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${session?.fullName || 'User'}`} />
-                        <AvatarFallback><User2 /></AvatarFallback>
-                    </Avatar>
-                    <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                        <MoreHorizontal size={20} />
-                    </button>
-                </div>
 
-                <div className="space-y-1">
-                    <p className="text-xs font-bold text-black/80">
-                        {format(new Date(), "EEEE, MMMM d")}
-                    </p>
-                    <h2 className="text-lg font-black text-black leading-tight">
-                        Welcome back, <br />
-                        <span className="text-black">{session?.fullName?.split(' ')[0] || 'User'}!</span>
-                    </h2>
-                </div>
-            </div>
 
             {/* Navigation Menu */}
-            <div className="flex-1 bg-[#FAFAFA] rounded-[32px] p-4 shadow-sm  flex flex-col gap-1 overflow-y-auto scrollbar-hide">
+            <div className="_flex-1 bg-[#FAFAFA] rounded-[32px] p-4 shadow-sm h-fit  flex flex-col gap-1 overflow-y-auto scrollbar-hide">
                 {navLinks.map((link) => {
                     const isActive = pathname === link.href;
                     return (
@@ -85,7 +65,7 @@ export function DashboardSidebar({ session }: Readonly<DashboardSidebarProps>) {
             </div>
 
             {/* Upgrade CTA Card */}
-            <div className="relative bg-lemon-primary rounded-[32px] p-6 shadow-xl shadow-blue-500/20 overflow-hidden group">
+            <div className="relative  my-3 bg-lemon-primary rounded-[32px] p-6 shadow-xl shadow-blue-500/20 overflow-hidden group">
                 <div className="absolute -right-4 -bottom-4 size-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors" />
 
                 <div className="relative z-10 space-y-4">
@@ -105,6 +85,11 @@ export function DashboardSidebar({ session }: Readonly<DashboardSidebarProps>) {
                     </Button>
                 </div>
             </div>
+            <div className="h-fit  bg-[#FAFAFA] rounded-[32px] p-4 shadow-sm">
+
+                <button className=" flex gap-1"> <LogOut color="red" /> Logout</button>
+            </div>
+
         </aside>
     );
 }
@@ -202,21 +187,24 @@ export function DashboardHeader() {
                 </AnimatePresence>
             </div>
 
-            <div className="flex items-center bg-white shadow shadow-gray-400 rounded-2xl px-5 py-2 gap-4">
+            <div className="flex items-center  gap-4">
                 <div className="flex items-center bg-white rounded-2xl p-1 shadow-sm ">
                     <Button size="icon" variant="ghost" className="rounded-xl text-gray-400"><Bell size={20} /></Button>
                 </div>
-                <Button className="rounded-2xl h-11 bg-lemon-primary text-main-green font-black hover:bg-lemon-primary/90 shadow-lg shadow-lemon-primary/10 transition-transform active:scale-95" asChild>
-                    <Link href="/dashboard/apps/new">
-                        <Plus size={18} className="mr-1 stroke-3" /> New Application
-                    </Link>
-                </Button>
 
-                <Button variant="ghost" className="size-11 rounded-2xl text-gray-400 hover:text-destructive p-0" asChild>
-                    <Link href="/api/auth/logout">
-                        <LogOut size={20} />
-                    </Link>
-                </Button>
+                <div className="flex items-center gap-1    bg-white rounded-2xl p-1 px-2 shadow-md">
+                    <Avatar className="size-12 rounded-full border-2 border-primary/10">
+                        <AvatarImage src={`/register-illustration.png`} />
+                        <AvatarFallback><User2 /></AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col gap-1">
+                        <p className="font-bold">Aderie John</p>
+                        <p className="text-xs text-gray-400">aderiejohn@gmail.com</p>
+                    </div>
+                </div>
+
+
+
             </div>
         </header>
     );
