@@ -133,3 +133,9 @@ export const borrowersRelations = relations(borrowers, ({ many }) => ({
   applications: many(loanApplications),
   loans: many(loans),
 }));
+
+export const newsletters = pgTable("newsletters", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow(),
+});

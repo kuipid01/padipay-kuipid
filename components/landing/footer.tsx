@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Facebook, Instagram, Linkedin, Youtube, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,15 +25,39 @@ export function LandingFooter() {
 
                         <div className="space-y-4">
                             <h4 className="text-sm font-black text-main-green uppercase tracking-wider">Join our newsletter</h4>
-                            <div className="flex gap-2 max-w-md">
+                            <form
+                                onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    const form = e.currentTarget;
+                                    const email = new FormData(form).get("email");
+                                    try {
+                                        const res = await fetch("/api/newsletter", {
+                                            method: "POST",
+                                            body: JSON.stringify({ email }),
+                                        });
+                                        if (res.ok) {
+                                            alert("Subscribed successfully!");
+                                            form.reset();
+                                        } else {
+                                            alert("Failed to subscribe.");
+                                        }
+                                    } catch (err) {
+                                        alert("An error occurred.");
+                                    }
+                                }}
+                                className="flex gap-2 max-w-md"
+                            >
                                 <Input
+                                    name="email"
+                                    type="email"
+                                    required
                                     placeholder="Enter your email"
                                     className="h-12 bg-gray-50 border-gray-100 rounded-xl focus-visible:ring-main-green font-medium"
                                 />
-                                <Button size="icon" className="h-12 w-12 bg-lemon-primary text-main-green hover:bg-lemon-primary/90 rounded-xl shadow-lg shadow-lemon-primary/20 shrink-0">
+                                <Button type="submit" size="icon" className="h-12 w-12 bg-lemon-primary text-main-green hover:bg-lemon-primary/90 rounded-xl shadow-lg shadow-lemon-primary/20 shrink-0">
                                     <Send size={18} />
                                 </Button>
-                            </div>
+                            </form>
                         </div>
                     </div>
 
@@ -40,36 +66,29 @@ export function LandingFooter() {
                         <FooterColumn
                             title="Company"
                             links={[
-                                { label: "About us", href: "/" },
-                                { label: "Careers", href: "/" },
-                                { label: "Blog", href: "/" },
-                                { label: "Press", href: "/" }
+                                { label: "About us", href: "/about" },
+                                { label: "Blog", href: "/blog" },
                             ]}
                         />
                         <FooterColumn
                             title="Product"
                             links={[
-                                { label: "Dashboard", href: "/" },
-                                { label: "Integrations", href: "/" },
-                                { label: "Pricing", href: "/" },
-                                { label: "Security", href: "/" }
+                                { label: "Pricing", href: "/pricing" },
+                                { label: "Security", href: "/security" }
                             ]}
                         />
                         <FooterColumn
                             title="Support"
                             links={[
-                                { label: "Help Center", href: "/" },
-                                { label: "FAQ", href: "/" },
-                                { label: "Contact", href: "/" }
+                                { label: "FAQ", href: "/faq" },
+                                { label: "Contact", href: "/contact" }
                             ]}
                         />
                         <FooterColumn
                             title="Legal"
                             links={[
-                                { label: "Privacy Policy", href: "/" },
-                                { label: "Terms of Service", href: "/" },
-                                { label: "Term & Conditions", href: "/" },
-                                { label: "License", href: "/" }
+                                { label: "Privacy Policy", href: "/privacy" },
+                                { label: "Terms of Service", href: "/terms" },
                             ]}
                         />
                     </div>

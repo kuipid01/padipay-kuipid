@@ -5,8 +5,11 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import ButtonPrimary from "./general/button";
 import { Menu, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function NavBar() {
+    const router = useRouter()
+
     const [scrolled, setScrolled] = useState(false);
     const [hash, setHash] = useState("");
     const [isOpen, setIsOpen] = useState(false);
@@ -32,7 +35,7 @@ export function NavBar() {
     }, []);
 
     const LinksCN = {
-        active: "bg-lemon-primary/20 font-medium text-black px-4 py-3 rounded md:px-3 md:py-2",
+        active: "bg-lemon-primary/50 font-medium text-black px-4 py-3 rounded md:px-3 md:py-2",
         default: "text-gray-700 px-4 py-3 rounded md:px-3 md:py-2 hover:text-primary transition-colors",
     };
 
@@ -79,7 +82,7 @@ export function NavBar() {
 
                 <div className="flex items-center gap-2">
                     <div className="hidden sm:block">
-                        <ButtonPrimary text="Get Started" href="/register" />
+                        <ButtonPrimary onClick={() => router.push("/register")} text="Get Started" href="/register" />
                     </div>
 
                     {/* Mobile Menu Button */}

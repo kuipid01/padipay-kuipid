@@ -26,7 +26,7 @@ const ButtonPrimary = ({
     return (
         <button
             onClick={onClick}
-            className={cn("bg-lemon-primary text-black font-medium text-[15px] px-6 py-3 rounded-[10px]", className)}
+            className={cn("bg-lemon-primary cursor-pointer text-black font-medium text-[15px] px-6 py-3 rounded-[10px]", className)}
             disabled={disabled}
             type={type}
             {...props}

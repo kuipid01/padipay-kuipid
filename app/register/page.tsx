@@ -78,7 +78,7 @@ export default function RegisterPage() {
 
             {/* Right Side: Form */}
             <div className="flex items-center justify-center">
-                <div className="w-full max-w-[550px] h-[90vh] overflow-y-auto bg-white rounded-[40px] p-8 lg:p-16 shadow-xl flex flex-col items-center">
+                <div className="w-full max-w-[550px] h-[90vh] overflow-y-auto scrollbar-hide bg-white rounded-[40px] p-8 lg:p-16 shadow-xl flex flex-col items-center">
                     {/* Logo */}
                     <Link href="/" className="mb-10 flex items-center gap-2">
                         <div className="size-8 bg-main-green rounded-lg flex items-center justify-center">

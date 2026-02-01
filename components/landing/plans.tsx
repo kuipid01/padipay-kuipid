@@ -56,7 +56,7 @@ export function Plans() {
     ];
 
     return (
-        <section className="py-24 bg-white">
+        <section id="pricing" className="py-24 bg-white">
             <div className="container mx-auto px-4 text-center">
                 <div className="flex flex-col items-center mb-12">
                     <div className="px-4 py-1.5 rounded-full border border-gray-100 bg-white shadow-sm text-xs font-medium text-gray-500 mb-6">

@@ -33,6 +33,7 @@ export default function LoginPage() {
     });
 
     async function onSubmit(values: z.infer<typeof loginSchema>) {
+        console.log("values", values)
         setIsLoading(true);
         try {
             const res = await fetch("/api/auth/login", {
@@ -95,21 +96,21 @@ export default function LoginPage() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="w-full max-w-[500px] h-[90vh] overflow-y-auto bg-white rounded-[40px] p-8 lg:p-16 shadow-2xl flex flex-col items-center border border-white/50 backdrop-blur-sm"
+                    className="w-full max-w-[500px] h-[90vh] overflow-y-auto scrollbar-hide bg-white rounded-[40px] p-8 lg:p-16 shadow-2xl flex flex-col items-center border border-white/50 backdrop-blur-sm"
                 >
                     {/* Logo */}
-                    <Link href="/" className="mb-12 flex items-center gap-2 group transition-transform hover:scale-105">
+                    <Link href="/" className="mb-10 flex items-center gap-2 group transition-transform hover:scale-105">
                         <div className="size-8 bg-main-green rounded-lg flex items-center justify-center shadow-lg shadow-main-green/20">
                             <span className="text-lemon-primary font-black text-xl">P</span>
                         </div>
                         <span className="text-2xl font-black text-main-green tracking-tight">PadiLoan</span>
                     </Link>
 
-                    <h1 className="text-4xl font-black text-[#1F4941] mb-10 text-center leading-tight">
+                    <h1 className="text-4xl font-black text-[#1F4941] mb-8 text-center leading-tight">
                         Welcome Back
                     </h1>
 
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
                         <Controller
                             name="email"
                             control={form.control}
@@ -170,7 +171,7 @@ export default function LoginPage() {
                         </Button>
                     </form>
 
-                    <div className="mt-8 mb-8 flex flex-col items-center w-full">
+                    <div className="mt-4 mb-4 flex flex-col items-center w-full">
                         <div className="flex items-center gap-4 w-full mb-6">
                             <div className="h-px bg-gray-100 flex-1"></div>
                             <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">or sign in with</span>
