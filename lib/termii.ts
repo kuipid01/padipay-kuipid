@@ -4,7 +4,7 @@
  * Documentation: https://developers.termii.com/
  */
 
-const TERMII_BASE_URL = "https://api.ng.termii.com/api";
+const TERMII_BASE_URL = "https://v3.api.termii.com/api";
 const TERMII_API_KEY = process.env.TERMII_API_KEY || "";
 const TERMII_SENDER_ID = process.env.TERMII_SENDER_ID || "PadiLoan";
 
@@ -127,7 +127,7 @@ class TermiiService {
                     message_text: `Your PadiLoan verification code is < 1234 >. Valid for ${options.pinTimeToLive || 10} minutes. Do not share this code with anyone.`,
                 }),
             });
-
+console.log(response,"RESPONSE ROM CALLING TERMII")
             const result: TermiiResponse = await response.json();
 
             if (!response.ok || !result.pinId) {
