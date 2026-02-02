@@ -1,41 +1,46 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { users } from "@/db/schema";
-import { getSession } from "@/lib/session";
-import { eq } from "drizzle-orm";
-import { comparePassword, hashPassword } from "@/lib/auth";
+import { cookies } from "next/headers";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 export async function POST(req: Request) {
   try {
-    const session = await getSession();
-    if (!session || !session.id) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { currentPassword, newPassword } = await req.json();
+    const body = await req.json();
 
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, session.id as string),
+    // Map frontend 'currentPassword' to backend 'oldPassword'
+    const backendBody = {
+      oldPassword: body.currentPassword,
+      newPassword: body.newPassword,
+    };
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/change-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(backendBody),
     });
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const data = await response.json();
+
+    if (!response.ok) {
+        return NextResponse.json(
+            { error: data.error || "Failed to change password" }, 
+            { status: response.status }
+        );
     }
 
-    const isMatch = await comparePassword(currentPassword, user.passwordHash);
-    if (!isMatch) {
-      return NextResponse.json({ error: "Incorrect current password" }, { status: 400 });
-    }
-
-    const newPasswordHash = await hashPassword(newPassword);
-
-    await db.update(users)
-      .set({ passwordHash: newPasswordHash })
-      .where(eq(users.id, user.id));
-
-    return NextResponse.json({ message: "Password changed successfully" });
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Change password error:", error);
+    console.error("Change password proxy error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

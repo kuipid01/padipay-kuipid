@@ -1,36 +1,28 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { users } from "@/db/schema";
-import { hashPassword, signToken } from "@/lib/auth";
-import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 export async function POST(req: Request) {
   try {
-    const { email, password, fullName, phone } = await req.json();
+    const body = await req.json();
 
-    if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
-    }
-
-    const existingUser = await db.query.users.findFirst({
-      where: eq(users.email, email),
+    const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
 
-    if (existingUser) {
-      return NextResponse.json({ error: "User already exists" }, { status: 400 });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.error || "Registration failed" },
+        { status: response.status }
+      );
     }
 
-    const passwordHash = await hashPassword(password);
-
-    const [user] = await db.insert(users).values({
-      email,
-      passwordHash,
-      fullName,
-      phone,
-    }).returning();
-
-    const token = await signToken({ id: user.id, email: user.email, role: user.role });
+    const { user, token } = data;
 
     const cookieStore = await cookies();
     cookieStore.set("token", token, {
@@ -40,11 +32,9 @@ export async function POST(req: Request) {
       path: "/",
     });
 
-    const { passwordHash: _, ...userWithoutPassword } = user;
-
-    return NextResponse.json({ user: userWithoutPassword });
+    return NextResponse.json({ user });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Register proxy error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

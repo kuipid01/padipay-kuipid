@@ -1,60 +1,72 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/session";
-import { db } from "@/db";
-import { loanApps } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { cookies } from "next/headers";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 export async function POST(req: Request) {
   try {
-    const session = await getSession();
-    if (!session || !session.id) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, defaultInterestRate, defaultDurationMonths, slug } = await req.json();
+    const body = await req.json();
 
-    if (!name || !defaultInterestRate || !defaultDurationMonths || !slug) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    // Check slug uniqueness
-    const existingSlug = await db.query.loanApps.findFirst({
-      where: eq(loanApps.slug, slug),
+    const response = await fetch(`${BACKEND_URL}/api/loan-apps`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
     });
 
-    if (existingSlug) {
-      return NextResponse.json({ error: "Slug already taken" }, { status: 400 });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.error || "Failed to create loan app" },
+        { status: response.status }
+      );
     }
 
-    const [loanApp] = await db.insert(loanApps).values({
-      ownerId: session.id as string,
-      name,
-      slug,
-      defaultInterestRate: defaultInterestRate.toString(), // Drizzle decimal needs string or number
-      defaultDurationMonths,
-    }).returning();
-
-    return NextResponse.json({ loanApp });
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Create loan app error:", error);
+    console.error("Create loan app proxy error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
 export async function GET() {
   try {
-    const session = await getSession();
-    if (!session || !session.id) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const apps = await db.query.loanApps.findMany({
-      where: eq(loanApps.ownerId, session.id as string),
+    const response = await fetch(`${BACKEND_URL}/api/loan-apps`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
     });
 
-    return NextResponse.json({ loanApps: apps });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.error || "Failed to fetch loan apps" },
+        { status: response.status }
+      );
+    }
+
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Get loan apps error:", error);
+    console.error("Get loan apps proxy error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

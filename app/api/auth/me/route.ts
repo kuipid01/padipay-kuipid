@@ -1,30 +1,37 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/session";
-import { db } from "@/db";
-import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { cookies } from "next/headers";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 export async function GET() {
   try {
-    const session = await getSession();
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
 
-    if (!session || !session.id) {
+    if (!token) {
       return NextResponse.json({ user: null });
     }
 
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, session.id as string),
+    const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      // Important to prevent caching for auth status
+      cache: "no-store", 
     });
 
-    if (!user) {
-      return NextResponse.json({ user: null });
+    if (!response.ok) {
+        // If token invalid/expired, remove cookie
+        if (response.status === 401) {
+            cookieStore.delete("token");
+        }
+        return NextResponse.json({ user: null });
     }
 
-    const { passwordHash: _, ...userWithoutPassword } = user;
-
-    return NextResponse.json({ user: userWithoutPassword });
+    const data = await response.json();
+    return NextResponse.json({ user: data.user });
   } catch (error) {
-    console.error("Auth check error:", error);
+    console.error("Auth me proxy error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
