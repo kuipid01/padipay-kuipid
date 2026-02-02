@@ -123,7 +123,7 @@ export function ApplicationDetails({ application }: ApplicationDetailsProps) {
                                                 <h4 className="text-4xl font-black">{riskLevel} Risk</h4>
                                                 <span className="text-lemon-primary font-black text-2xl">{riskScore}/100</span>
                                             </div>
-                                            <Progress value={riskScore} className="h-2 bg-white/10" indicatorClassName="bg-lemon-primary" />
+                                            <Progress value={riskScore} className="h-2 bg-white/10" />
                                         </div>
                                         <div className="mt-8 grid grid-cols-2 gap-4">
                                             <div className="p-4 rounded-2xl bg-white/5">
