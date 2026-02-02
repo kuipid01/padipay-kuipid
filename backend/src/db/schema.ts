@@ -19,6 +19,40 @@ export const users = pgTable("users", {
   resetPasswordToken: varchar("reset_password_token", { length: 255 }),
   resetPasswordExpires: timestamp("reset_password_expires"),
   createdAt: timestamp("created_at").defaultNow(),
+
+  // Profile
+  avatarUrl: text("avatar_url"),
+  timezone: varchar("timezone", { length: 50 }).default("Africa/Lagos"),
+  language: varchar("language", { length: 20 }).default("English"),
+
+  // Security
+  isTwoFactorEnabled: boolean("is_two_factor_enabled").default(false),
+  twoFactorSecret: text("two_factor_secret"),
+
+  // Branding (Global/Account Level)
+  brandLogoUrl: text("brand_logo_url"),
+  brandColor: varchar("brand_color", { length: 10 }).default("#0D4715"),
+
+  // Notifications - Email
+  emailNotifyNewApplication: boolean("email_notify_new_application").default(true),
+  emailNotifyPaymentReceived: boolean("email_notify_payment_received").default(true),
+  emailNotifyPaymentFailed: boolean("email_notify_payment_failed").default(true),
+  emailNotifyLoanOverdue: boolean("email_notify_loan_overdue").default(true),
+
+  // Notifications - SMS
+  smsNotifyCriticalOnly: boolean("sms_notify_critical_only").default(false),
+});
+
+export const payoutAccounts = pgTable("payout_accounts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").references(() => users.id).notNull(),
+  bankName: varchar("bank_name", { length: 255 }).notNull(),
+  accountNumber: varchar("account_number", { length: 20 }).notNull(),
+  accountName: varchar("account_name", { length: 255 }).notNull(),
+  currency: varchar("currency", { length: 10 }).default("NGN"),
+  isDefault: boolean("is_default").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const loanApps = pgTable("loan_apps", {
@@ -101,6 +135,14 @@ export const newsletters = pgTable("newsletters", {
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   loanApps: many(loanApps),
+  payoutAccounts: many(payoutAccounts),
+}));
+
+export const payoutAccountsRelations = relations(payoutAccounts, ({ one }) => ({
+  user: one(users, {
+    fields: [payoutAccounts.userId],
+    references: [users.id],
+  }),
 }));
 
 export const loanAppsRelations = relations(loanApps, ({ one, many }) => ({

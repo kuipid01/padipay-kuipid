@@ -1,8 +1,8 @@
 
 import { Hono } from "hono";
 import { db } from "../db";
-import { users } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { users, payoutAccounts } from "../db/schema";
+import { eq, and } from "drizzle-orm";
 import { authMiddleware } from "../middleware/auth";
 
 const router = new Hono();

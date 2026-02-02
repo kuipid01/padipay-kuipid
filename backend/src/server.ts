@@ -1,9 +1,11 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import "dotenv/config";
+
 
 import { errorHandler, notFoundHandler } from "./middleware";
-import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes } from "./routes";
+import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes, uploadRoutes } from "./routes";
 
 /**
  * PadiLoan Backend Server
@@ -87,6 +89,7 @@ app.route("/api/webhooks", webhooksRoutes);
 app.route("/api/settings", settingsRoutes);
 app.route("/api/newsletter", newsletterRoutes);
 app.route("/api/public", publicRoutes);
+app.route("/api/upload", uploadRoutes);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 404 Handler

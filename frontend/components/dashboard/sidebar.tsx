@@ -11,6 +11,14 @@ import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState, useRef, createContext, useContext } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface DashboardSidebarProps {
     session: any;
@@ -278,16 +286,33 @@ export function DashboardHeader() {
                     <Button size="icon" variant="ghost" className="rounded-xl text-gray-400"><Bell size={20} /></Button>
                 </div>
 
-                <div className="flex items-center gap-1 bg-white rounded-2xl md:p-1 md:px-2 shadow-md">
-                    <Avatar className="size-10 md:size-12 rounded-full border-2 border-primary/10">
-                        <AvatarImage src={`/register-illustration.png`} />
-                        <AvatarFallback><User2 /></AvatarFallback>
-                    </Avatar>
-                    <div className="md:flex flex-col hidden gap-1">
-                        <p className="font-bold">Aderie John</p>
-                        <p className="text-xs text-gray-400">aderiejohn@gmail.com</p>
-                    </div>
-                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <div className="flex items-center gap-1 md:gap-2 bg-white rounded-2xl md:p-1 md:px-2 shadow-md cursor-pointer hover:bg-gray-50 transition-colors">
+                            <Avatar className="size-10 md:size-12 rounded-full border-2 border-primary/10">
+                                <AvatarImage src={`/register-illustration.png`} />
+                                <AvatarFallback><User2 /></AvatarFallback>
+                            </Avatar>
+                            <div className="md:flex flex-col hidden gap-1 text-left">
+                                <p className="font-bold">Aderie John</p>
+                                <p className="text-xs text-gray-400">aderiejohn@gmail.com</p>
+                            </div>
+                        </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[200px] rounded-2xl p-2">
+                        <DropdownMenuLabel className="font-bold text-gray-500 uppercase text-[10px] tracking-widest">My Account</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="rounded-xl font-bold cursor-pointer" onClick={() => router.push("/dashboard/settings")}>
+                            <Settings className="mr-2 h-4 w-4" />
+                            Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="rounded-xl font-bold text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer" onClick={() => router.push("/login")}>
+                            <LogOut className="mr-2 h-4 w-4" />
+                            Logout
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </header>
     );

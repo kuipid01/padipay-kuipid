@@ -10,3 +10,4 @@ export { default as webhooksRoutes } from "./webhooks";
 export { default as settingsRoutes } from "./settings";
 export { default as newsletterRoutes } from "./newsletter";
 export { default as publicRoutes } from "./public";
+export { default as uploadRoutes } from "./upload";

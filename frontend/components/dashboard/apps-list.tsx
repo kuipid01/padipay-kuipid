@@ -39,10 +39,19 @@ import {
     PopoverTrigger
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { format } from "date-fns";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface LoanApp {
     id: string;
@@ -64,6 +73,10 @@ interface AppsListProps {
 export function AppsList({ initialApps }: AppsListProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string[]>([]);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [appToDelete, setAppToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const router = useRouter();
 
     const filteredApps = initialApps.filter(app => {
         const matchesSearch =
@@ -84,6 +97,33 @@ export function AppsList({ initialApps }: AppsListProps) {
         const url = `${window.location.origin}/apply/${slug}`;
         navigator.clipboard.writeText(url);
         toast.success("Link copied to clipboard!");
+    };
+
+    const confirmDelete = (id: string) => {
+        setAppToDelete(id);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!appToDelete) return;
+        setIsDeleting(true);
+        try {
+            const res = await fetch(`/api/loan-apps/${appToDelete}`, {
+                method: "DELETE",
+            });
+
+            if (!res.ok) throw new Error("Failed to delete app");
+
+            toast.success("Loan app deleted successfully");
+            router.refresh();
+        } catch (error) {
+            toast.error("Error deleting loan app");
+            console.error(error);
+        } finally {
+            setIsDeleting(false);
+            setIsDeleteDialogOpen(false);
+            setAppToDelete(null);
+        }
     };
 
     return (
@@ -204,17 +244,42 @@ export function AppsList({ initialApps }: AppsListProps) {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filteredApps.map((app) => (
-                        <AppCard key={app.id} app={app} onCopyLink={copyLink} />
+                        <AppCard
+                            key={app.id}
+                            app={app}
+                            onCopyLink={copyLink}
+                            onDelete={confirmDelete}
+                        />
                     ))}
                 </div>
             )}
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete Loan App?</DialogTitle>
+                        <DialogDescription>
+                            This action cannot be undone. This will permanently delete the loan app and all associated data.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                            {isDeleting ? "Deleting..." : "Delete"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
 
-function AppCard({ app, onCopyLink }: { app: LoanApp; onCopyLink: (slug: string) => void }) {
+function AppCard({ app, onCopyLink, onDelete }: { app: LoanApp; onCopyLink: (slug: string) => void; onDelete: (id: string) => void }) {
+    const router = useRouter();
+
     return (
-        <Card className="border-none shadow-sm rounded-[32px] hover:shadow-md transition-all group overflow-hidden">
+        <Card className="border-none shadow-sm shadow-main-green rounded-[32px] hover:shadow-md transition-all group overflow-hidden">
             <CardHeader className="p-6 pb-0">
                 <div className="flex items-start justify-between">
                     <div className="flex items-center gap-4">
@@ -239,17 +304,29 @@ function AppCard({ app, onCopyLink }: { app: LoanApp; onCopyLink: (slug: string)
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-xl border-gray-100 font-bold">
-                            <DropdownMenuItem className="rounded-xl px-4 py-3 text-sm focus:bg-lemon-primary/10 focus:text-main-green cursor-pointer">
+                            <DropdownMenuItem
+                                className="rounded-xl px-4 py-3 text-sm focus:bg-lemon-primary/10 focus:text-main-green cursor-pointer"
+                                onClick={() => router.push(`/dashboard/apps/${app.id}`)}
+                            >
                                 <Eye size={16} className="mr-3" /> View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="rounded-xl px-4 py-3 text-sm focus:bg-lemon-primary/10 focus:text-main-green cursor-pointer">
+                            <DropdownMenuItem
+                                className="rounded-xl px-4 py-3 text-sm focus:bg-lemon-primary/10 focus:text-main-green cursor-pointer"
+                                onClick={() => router.push(`/dashboard/apps/${app.id}/settings`)}
+                            >
                                 <Edit3 size={16} className="mr-3" /> Edit App
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="rounded-xl px-4 py-3 text-sm focus:bg-lemon-primary/10 focus:text-main-green cursor-pointer">
+                            <DropdownMenuItem
+                                className="rounded-xl px-4 py-3 text-sm focus:bg-lemon-primary/10 focus:text-main-green cursor-pointer"
+                                onClick={() => router.push(`/dashboard/apps/${app.id}/analytics`)}
+                            >
                                 <BarChart3 size={16} className="mr-3" /> View Analytics
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="my-1 bg-gray-50" />
-                            <DropdownMenuItem className="rounded-xl px-4 py-3 text-sm focus:bg-red-50 focus:text-red-600 text-red-500 cursor-pointer">
+                            <DropdownMenuItem
+                                className="rounded-xl px-4 py-3 text-sm focus:bg-red-50 focus:text-red-600 text-red-500 cursor-pointer"
+                                onClick={() => onDelete(app.id)}
+                            >
                                 <Trash2 size={16} className="mr-3" /> Delete App
                             </DropdownMenuItem>
                         </DropdownMenuContent>

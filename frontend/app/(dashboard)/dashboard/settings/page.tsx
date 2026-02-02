@@ -22,6 +22,11 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger
+} from "@/components/ui/popover";
+import {
     Loader2,
     Shield,
     User,
@@ -140,6 +145,22 @@ export default function SettingsPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [showSecretKey, setShowSecretKey] = useState(false);
+    const [payoutAccounts, setPayoutAccounts] = useState<any[]>([]);
+    const [isAddingBank, setIsAddingBank] = useState(false);
+
+    // Image Upload State
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+
+    // Dynamic notification state
+    const [notificationSettings, setNotificationSettings] = useState({
+        emailNotifyNewApplication: true,
+        emailNotifyPaymentReceived: true,
+        emailNotifyPaymentFailed: true,
+        emailNotifyLoanOverdue: true,
+        smsNotifyCriticalOnly: false,
+    });
 
     const profileForm = useForm<ProfileFormValues>({
         resolver: zodResolver(profileSchema),
@@ -147,7 +168,7 @@ export default function SettingsPage() {
             fullName: "",
             phone: "",
             timezone: "Africa/Lagos",
-            language: "en",
+            language: "English",
         },
     });
 
@@ -169,30 +190,49 @@ export default function SettingsPage() {
     });
 
     useEffect(() => {
-        async function fetchUser() {
+        async function fetchSettings() {
             try {
-                const res = await fetch("/api/auth/me");
+                const res = await fetch("/api/settings");
+                if (!res.ok) throw new Error("Failed");
                 const data = await res.json();
-                if (data.user) {
-                    profileForm.reset({
-                        fullName: data.user.fullName || "",
-                        phone: data.user.phone || "",
-                    });
-                    paystackForm.reset({
-                        paystackPublicKey: data.user.paystackPublicKey || "",
-                        paystackSecretKey: data.user.paystackSecretKey || "",
-                    });
-                }
+
+                // Populate Forms
+                profileForm.reset({
+                    fullName: data.fullName || "",
+                    phone: data.phone || "",
+                    timezone: data.timezone || "Africa/Lagos",
+                    language: data.language || "English",
+                });
+
+                paystackForm.reset({
+                    paystackPublicKey: data.paystackPublicKey || "",
+                    paystackSecretKey: data.paystackSecretKey || "", // Ensure backed sends this if authorized, else keep empty
+                });
+
+                setPayoutAccounts(data.payoutAccounts || []);
+                setAvatarUrl(data.avatarUrl || null);
+                setBrandLogoUrl(data.brandLogoUrl || null);
+
+                setNotificationSettings({
+                    emailNotifyNewApplication: data.emailNotifyNewApplication ?? true,
+                    emailNotifyPaymentReceived: data.emailNotifyPaymentReceived ?? true,
+                    emailNotifyPaymentFailed: data.emailNotifyPaymentFailed ?? true,
+                    emailNotifyLoanOverdue: data.emailNotifyLoanOverdue ?? true,
+                    smsNotifyCriticalOnly: data.smsNotifyCriticalOnly ?? false,
+                });
+
             } catch (err) {
                 toast.error("Failed to load settings");
+                console.error(err);
             } finally {
                 setIsLoading(false);
             }
         }
-        fetchUser();
+        fetchSettings();
     }, [profileForm, paystackForm]);
 
-    async function onProfileSubmit(values: ProfileFormValues) {
+    // Generic Settings Update Handler
+    async function updateSettings(values: any) {
         setIsSaving(true);
         try {
             const res = await fetch("/api/settings", {
@@ -201,15 +241,54 @@ export default function SettingsPage() {
                 body: JSON.stringify(values),
             });
             if (!res.ok) throw new Error("Failed to update settings");
-            toast.success("Profile updated successfully");
+            toast.success("Settings updated successfully");
+            return true;
         } catch (err: any) {
             toast.error(err.message);
+            return false;
         } finally {
             setIsSaving(false);
         }
     }
 
-    async function onPaystackSubmit(values: PaystackFormValues) {
+    async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'brand') {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const uploadRes = await fetch("/api/upload", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!uploadRes.ok) throw new Error("Upload failed");
+            const { url } = await uploadRes.json();
+
+            // Update User Profile/Settings with new URL
+            const updateField = type === 'avatar' ? { avatarUrl: url } : { brandLogoUrl: url };
+
+            // Optimistic update
+            if (type === 'avatar') setAvatarUrl(url);
+            else setBrandLogoUrl(url);
+
+            await updateSettings(updateField);
+
+        } catch (error) {
+            toast.error("Failed to upload image");
+            console.error(error);
+        } finally {
+            setIsUploading(false);
+        }
+    }
+
+
+
+    // Generic Settings Update Handler
+    async function updateSettings(values: any) {
         setIsSaving(true);
         try {
             const res = await fetch("/api/settings", {
@@ -218,12 +297,22 @@ export default function SettingsPage() {
                 body: JSON.stringify(values),
             });
             if (!res.ok) throw new Error("Failed to update settings");
-            toast.success("Payment settings updated");
+            toast.success("Settings updated successfully");
+            return true;
         } catch (err: any) {
             toast.error(err.message);
+            return false;
         } finally {
             setIsSaving(false);
         }
+    }
+
+    async function onProfileSubmit(values: ProfileFormValues) {
+        await updateSettings(values);
+    }
+
+    async function onPaystackSubmit(values: PaystackFormValues) {
+        await updateSettings(values);
     }
 
     async function onSecuritySubmit(values: SecurityFormValues) {
@@ -242,6 +331,53 @@ export default function SettingsPage() {
             toast.error(err.message);
         } finally {
             setIsChangingPassword(false);
+        }
+    }
+
+    async function handleNotificationToggle(key: string, value: boolean) {
+        const newSettings = { ...notificationSettings, [key]: value };
+        setNotificationSettings(newSettings); // Optimistic update
+        const success = await updateSettings({ [key]: value });
+        if (!success) setNotificationSettings(notificationSettings); // Revert on fail
+    }
+
+    // Payout Account Handlers
+    async function addPayoutAccount(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        setIsAddingBank(true);
+        const formData = new FormData(e.currentTarget);
+        const data = {
+            bankName: formData.get("bankName"),
+            accountNumber: formData.get("accountNumber"),
+            accountName: formData.get("accountName"),
+        };
+
+        try {
+            const res = await fetch("/api/settings/payout-accounts", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+            if (!res.ok) throw new Error("Failed to add account");
+            const newAccount = await res.json();
+            setPayoutAccounts([...payoutAccounts, newAccount]);
+            toast.success("Bank account added");
+            // Close modal logic if we had one, but we'll implement inline or dialog later
+        } catch (error) {
+            toast.error("Failed to add bank account");
+        } finally {
+            setIsAddingBank(false);
+        }
+    }
+
+    async function removePayoutAccount(id: string) {
+        try {
+            const res = await fetch(`/api/settings/payout-accounts/${id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Failed");
+            setPayoutAccounts(payoutAccounts.filter(p => p.id !== id));
+            toast.success("Account removed");
+        } catch (error) {
+            toast.error("Failed to remove account");
         }
     }
 
@@ -333,13 +469,34 @@ export default function SettingsPage() {
                                         </CardHeader>
                                         <CardContent className="p-8 space-y-6">
                                             <div className="flex items-center gap-6">
-                                                <div className="size-20 rounded-3xl bg-lemon-primary/20 flex items-center justify-center text-main-green font-black text-2xl border-4 border-lemon-primary/10">
-                                                    {profileForm.watch("fullName")?.charAt(0)?.toUpperCase() || "U"}
+                                                <div className="size-20 rounded-3xl bg-lemon-primary/20 flex items-center justify-center text-main-green font-black text-2xl border-4 border-lemon-primary/10 overflow-hidden relative">
+                                                    {avatarUrl ? (
+                                                        <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        profileForm.watch("fullName")?.charAt(0)?.toUpperCase() || "U"
+                                                    )}
                                                 </div>
                                                 <div>
-                                                    <Button type="button" variant="outline" className="rounded-2xl font-bold border-gray-100 shadow-sm h-11">
-                                                        <Image size={16} className="mr-2" /> Upload Photo
-                                                    </Button>
+                                                    <div className="relative">
+                                                        <input
+                                                            type="file"
+                                                            id="avatar-upload"
+                                                            className="hidden"
+                                                            accept="image/*"
+                                                            onChange={(e) => handleFileUpload(e, 'avatar')}
+                                                            disabled={isUploading}
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            className="rounded-2xl font-bold border-gray-100 shadow-sm h-11"
+                                                            onClick={() => document.getElementById('avatar-upload')?.click()}
+                                                            disabled={isUploading}
+                                                        >
+                                                            {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Image size={16} className="mr-2" />}
+                                                            Upload Photo
+                                                        </Button>
+                                                    </div>
                                                     <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-widest">JPG, PNG. Max 2MB</p>
                                                 </div>
                                             </div>
@@ -649,19 +806,61 @@ export default function SettingsPage() {
                                             <CardTitle className="text-lg font-black text-main-green">Payout Accounts</CardTitle>
                                             <CardDescription className="text-gray-500">Bank accounts for receiving loan repayments.</CardDescription>
                                         </div>
-                                        <Button variant="outline" className="rounded-2xl font-bold border-gray-100 shadow-sm h-11 gap-2">
-                                            <Plus size={16} /> Add Bank
-                                        </Button>
+                                        {/* Add Bank Dialog Trigger - Simplified for now, typically would use a Dialog component */}
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button variant="outline" className="rounded-2xl font-bold border-gray-100 shadow-sm h-11 gap-2">
+                                                    <Plus size={16} /> Add Bank
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-80 p-4 rounded-2xl shadow-xl border-gray-100" align="end">
+                                                <form onSubmit={addPayoutAccount} className="space-y-3">
+                                                    <h4 className="font-bold text-main-green">Add New Account</h4>
+                                                    <Input name="bankName" placeholder="Bank Name" className="h-10 rounded-xl" required />
+                                                    <Input name="accountNumber" placeholder="Account Number" className="h-10 rounded-xl" required />
+                                                    <Input name="accountName" placeholder="Account Name" className="h-10 rounded-xl" required />
+                                                    <Button disabled={isAddingBank} className="w-full bg-lemon-primary text-main-green font-bold rounded-xl h-10">
+                                                        {isAddingBank ? <Loader2 className="animate-spin" /> : "Save Account"}
+                                                    </Button>
+                                                </form>
+                                            </PopoverContent>
+                                        </Popover>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="p-8">
-                                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                                        <div className="size-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-300 mb-4">
-                                            <Banknote size={32} />
+                                    {payoutAccounts.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                                            <div className="size-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-300 mb-4">
+                                                <Banknote size={32} />
+                                            </div>
+                                            <p className="font-black text-gray-400 mb-1">No bank accounts added</p>
+                                            <p className="text-sm text-gray-400">Add a bank account to receive payouts.</p>
                                         </div>
-                                        <p className="font-black text-gray-400 mb-1">No bank accounts added</p>
-                                        <p className="text-sm text-gray-400">Add a bank account to receive payouts.</p>
-                                    </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {payoutAccounts.map((account) => (
+                                                <div key={account.id} className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 bg-white shadow-sm">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="size-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-black">
+                                                            {account.bankName.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-main-green">{account.bankName}</p>
+                                                            <p className="text-xs text-gray-400 font-bold">{account.accountNumber} • {account.accountName}</p>
+                                                        </div>
+                                                    </div>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl"
+                                                        onClick={() => removePayoutAccount(account.id)}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>
@@ -773,10 +972,30 @@ export default function SettingsPage() {
                                     <CardTitle className="text-lg font-black text-main-green">Email Notifications</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-8 space-y-4">
-                                    <NotificationToggle label="New loan application" description="When a borrower submits an application" enabled />
-                                    <NotificationToggle label="Payment received" description="When a repayment is successfully collected" enabled />
-                                    <NotificationToggle label="Payment failed" description="When an auto-debit attempt fails" enabled />
-                                    <NotificationToggle label="Loan overdue" description="When a borrower misses a payment deadline" enabled />
+                                    <NotificationToggle
+                                        label="New loan application"
+                                        description="When a borrower submits an application"
+                                        enabled={notificationSettings.emailNotifyNewApplication}
+                                        onToggle={(val) => handleNotificationToggle("emailNotifyNewApplication", val)}
+                                    />
+                                    <NotificationToggle
+                                        label="Payment received"
+                                        description="When a repayment is successfully collected"
+                                        enabled={notificationSettings.emailNotifyPaymentReceived}
+                                        onToggle={(val) => handleNotificationToggle("emailNotifyPaymentReceived", val)}
+                                    />
+                                    <NotificationToggle
+                                        label="Payment failed"
+                                        description="When an auto-debit attempt fails"
+                                        enabled={notificationSettings.emailNotifyPaymentFailed}
+                                        onToggle={(val) => handleNotificationToggle("emailNotifyPaymentFailed", val)}
+                                    />
+                                    <NotificationToggle
+                                        label="Loan overdue"
+                                        description="When a borrower misses a payment deadline"
+                                        enabled={notificationSettings.emailNotifyLoanOverdue}
+                                        onToggle={(val) => handleNotificationToggle("emailNotifyLoanOverdue", val)}
+                                    />
                                 </CardContent>
                             </Card>
 
@@ -807,13 +1026,33 @@ export default function SettingsPage() {
                                 </CardHeader>
                                 <CardContent className="p-8 space-y-6">
                                     <div className="flex items-center gap-6">
-                                        <div className="size-20 rounded-3xl bg-gray-100 flex items-center justify-center text-gray-400 border-4 border-dashed border-gray-200">
-                                            <Image size={32} />
+                                        <div className="size-20 rounded-3xl bg-gray-100 flex items-center justify-center text-gray-400 border-4 border-dashed border-gray-200 overflow-hidden relative">
+                                            {brandLogoUrl ? (
+                                                <img src={brandLogoUrl} alt="Logo" className="w-full h-full object-contain p-2" />
+                                            ) : (
+                                                <Image size={32} />
+                                            )}
                                         </div>
                                         <div>
-                                            <Button type="button" variant="outline" className="rounded-2xl font-bold border-gray-100 shadow-sm h-11">
-                                                Upload Logo
-                                            </Button>
+                                            <div className="relative">
+                                                <input
+                                                    type="file"
+                                                    id="brand-upload"
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                    onChange={(e) => handleFileUpload(e, 'brand')}
+                                                    disabled={isUploading}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    className="rounded-2xl font-bold border-gray-100 shadow-sm h-11"
+                                                    onClick={() => document.getElementById('brand-upload')?.click()}
+                                                    disabled={isUploading}
+                                                >
+                                                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Upload Logo"}
+                                                </Button>
+                                            </div>
                                             <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-widest">PNG, SVG. Max 1MB</p>
                                         </div>
                                     </div>
@@ -1018,19 +1257,19 @@ function IntegrationCard({ name, description, status, logo, color }: { name: str
     );
 }
 
-function NotificationToggle({ label, description, enabled }: { label: string; description: string; enabled: boolean }) {
-    const [isEnabled, setIsEnabled] = useState(enabled);
+function NotificationToggle({ label, description, enabled, onToggle }: { label: string; description: string; enabled: boolean; onToggle?: (val: boolean) => void }) {
     return (
-        <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/30 border border-gray-100 hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => setIsEnabled(!isEnabled)}>
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/30 border border-gray-100 hover:bg-gray-50/50 transition-colors cursor-pointer"
+            onClick={() => onToggle && onToggle(!enabled)}>
             <div>
                 <p className="font-bold text-main-green">{label}</p>
                 <p className="text-xs text-gray-400 font-medium">{description}</p>
             </div>
             <div className={cn(
                 "size-6 rounded-full flex items-center justify-center transition-colors",
-                isEnabled ? "bg-green-500 text-white" : "bg-gray-200 text-gray-400"
+                enabled ? "bg-green-500 text-white" : "bg-gray-200 text-gray-400"
             )}>
-                {isEnabled ? <Check size={14} /> : <X size={14} />}
+                {enabled ? <Check size={14} /> : <X size={14} />}
             </div>
         </div>
     );
