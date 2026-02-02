@@ -1,3 +1,4 @@
+
 "use client";
 
 import { motion } from "framer-motion";
@@ -26,35 +27,70 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
+import { format, parseISO } from "date-fns";
 
-// Mock data based on provided request
-const topStats = [
-    { label: "Total Money Lent", value: "₦1,200,000", icon: <CreditCard className="text-blue-500" />, trend: "+12.5%", color: "bg-blue-50" },
-    { label: "Expected Repayment", value: "₦1,380,000", icon: <TrendingUp className="text-violet-500" />, trend: "+15.0%", color: "bg-violet-50" },
-    { label: "Amount Repaid", value: "₦820,000", icon: <ArrowDownLeft className="text-green-500" />, trend: "60% success", color: "bg-green-50" },
-    { label: "Outstanding Balance", value: "₦560,000", icon: <Clock className="text-orange-500" />, trend: "40% left", color: "bg-orange-50" },
-];
+interface DashboardStats {
+    totalMoneyLent: string;
+    expectedRepayment: string;
+    amountRepaid: string;
+    outstandingBalance: string;
+}
 
-const activeLoans = [
-    { id: "1", borrower: "Aisha Bakare", amount: "₦50,000", interest: "10%", dueDate: "Feb 12, 2026", status: "On Track", amountLeft: "₦25,000" },
-    { id: "2", borrower: "John Chukwu", amount: "₦120,000", interest: "15%", dueDate: "Feb 5, 2026", status: "Due Soon", amountLeft: "₦120,000" },
-    { id: "3", borrower: "Michael Obi", amount: "₦30,000", interest: "5%", dueDate: "Jan 28, 2026", status: "Overdue", amountLeft: "₦30,000" },
-];
+interface ActiveLoan {
+    id: string;
+    borrower: string;
+    amount: string;
+    interest: string;
+    dueDate: string;
+    status: string;
+    amountLeft: string;
+}
 
-const upcomingPayments = [
-    { day: "Today", time: "14:30", amount: "₦25,000", borrower: "John Chukwu", method: "Auto-debit" },
-    { day: "In 3 days", time: "09:00", amount: "₦40,000", borrower: "Aisha Bakare", method: "Manual" },
-];
+interface UpcomingPayment {
+    id: string;
+    amount: string;
+    dueDate: string;
+    borrower: string;
+    method: string;
+}
 
-const recentActivity = [
-    { text: "Aisha Bakare paid ₦20,000", time: "2 hours ago", type: "payment" },
-    { text: "Reminder sent to John Chukwu", time: "5 hours ago", type: "reminder" },
-    { text: "New loan request submitted by Michael", time: "1 day ago", type: "request" },
-];
+interface Activity {
+    text: string;
+    time: string;
+    type: "payment" | "reminder" | "request";
+}
 
 export function OverviewClient() {
+    const { data: stats } = useQuery<DashboardStats>({
+        queryKey: ["dashboard-stats"],
+        queryFn: () => fetch("/api/dashboard/stats").then((res) => res.json()),
+    });
+
+    const { data: activeLoans } = useQuery<ActiveLoan[]>({
+        queryKey: ["active-loans"],
+        queryFn: () => fetch("/api/dashboard/active-loans").then((res) => res.json()),
+    });
+
+    const { data: upcomingPayments } = useQuery<UpcomingPayment[]>({
+        queryKey: ["upcoming-payments"],
+        queryFn: () => fetch("/api/dashboard/upcoming-payments").then((res) => res.json()),
+    });
+
+    const { data: recentActivity } = useQuery<Activity[]>({
+        queryKey: ["recent-activity"],
+        queryFn: () => fetch("/api/dashboard/recent-activity").then((res) => res.json()),
+    });
+
+    const topStats = [
+        { label: "Total Money Lent", value: `₦${Number(stats?.totalMoneyLent || 0).toLocaleString()}`, icon: <CreditCard className="text-blue-500" />, trend: "+12.5%", color: "bg-blue-50" },
+        { label: "Expected Repayment", value: `₦${Number(stats?.expectedRepayment || 0).toLocaleString()}`, icon: <TrendingUp className="text-violet-500" />, trend: "+15.0%", color: "bg-violet-50" },
+        { label: "Amount Repaid", value: `₦${Number(stats?.amountRepaid || 0).toLocaleString()}`, icon: <ArrowDownLeft className="text-green-500" />, trend: "60% success", color: "bg-green-50" },
+        { label: "Outstanding Balance", value: `₦${Number(stats?.outstandingBalance || 0).toLocaleString()}`, icon: <Clock className="text-orange-500" />, trend: "40% left", color: "bg-orange-50" },
+    ];
+
     return (
-        <div className="space-y-8   pb-10">
+        <div className="space-y-8 pb-10">
             {/* 1. Top Summary (Money Snapshot) & 7. Wallet */}
             <div className="flex flex-col gap-6">
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -120,9 +156,9 @@ export function OverviewClient() {
                     <div className="w-full lg:w-[400px]">
                         <h2 className="text-xl font-black text-main-green tracking-tight mb-6">Upcoming Payments</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                            {upcomingPayments.map((payment, i) => (
+                            {upcomingPayments?.map((payment, i) => (
                                 <motion.div
-                                    key={payment.borrower}
+                                    key={payment.id}
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.1 }}
@@ -130,17 +166,17 @@ export function OverviewClient() {
                                 >
                                     <div className="absolute top-0 right-0 h-full w-1.5 bg-lemon-primary" />
                                     <div className="size-12 rounded-2xl bg-gray-50 flex flex-col items-center justify-center border border-gray-100 text-main-green shrink-0">
-                                        <span className="text-[10px] font-black uppercase text-gray-400 leading-none mb-1">{payment.day.includes("In") ? payment.day.split(" ")[1] : "T"}</span>
-                                        <span className="text-lg font-black leading-none">{payment.day.includes("In") ? payment.day.split(" ")[2] : "01"}</span>
+                                        <span className="text-[10px] font-black uppercase text-gray-400 leading-none mb-1">{format(new Date(payment.dueDate), "MMM")}</span>
+                                        <span className="text-lg font-black leading-none">{format(new Date(payment.dueDate), "dd")}</span>
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                            <h4 className="font-bold text-main-green truncate">{payment.amount}</h4>
+                                            <h4 className="font-bold text-main-green truncate">₦{Number(payment.amount).toLocaleString()}</h4>
                                             <Badge variant="outline" className="text-[9px] font-black uppercase border-gray-100">{payment.method}</Badge>
                                         </div>
                                         <p className="text-sm text-gray-500 font-medium truncate">{payment.borrower}</p>
                                         <p className="text-[10px] text-gray-400 font-bold mt-2 flex items-center gap-1">
-                                            <Clock size={10} /> {payment.day === "Today" ? "Expected today at " : "Due "} {payment.time}
+                                            <Clock size={10} /> Due {format(new Date(payment.dueDate), "h:mm a")}
                                         </p>
                                     </div>
                                 </motion.div>
@@ -150,8 +186,6 @@ export function OverviewClient() {
                 </div>
 
             </div>
-
-
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
@@ -177,14 +211,14 @@ export function OverviewClient() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {activeLoans.map((loan) => (
+                                    {activeLoans?.map((loan) => (
                                         <TableRow key={loan.id} className="hover:bg-gray-50/50 transition-colors border-gray-100 group">
                                             <TableCell className="px-6 py-4">
                                                 <p className="font-bold text-main-green group-hover:text-primary transition-colors whitespace-nowrap">{loan.borrower}</p>
                                             </TableCell>
                                             <TableCell className="py-4">
-                                                <p className="font-bold whitespace-nowrap">{loan.amount}</p>
-                                                <p className="text-[10px] text-gray-400 font-medium">at {loan.interest} interest</p>
+                                                <p className="font-bold whitespace-nowrap">₦{Number(loan.amount).toLocaleString()}</p>
+                                                <p className="text-[10px] text-gray-400 font-medium">at {loan.interest}% interest</p>
                                             </TableCell>
                                             <TableCell className="py-4">
                                                 <Badge
@@ -199,7 +233,7 @@ export function OverviewClient() {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="py-4 text-gray-500 font-medium text-sm whitespace-nowrap">
-                                                {loan.dueDate}
+                                                {format(new Date(loan.dueDate), "yyyy-MM-dd")}
                                             </TableCell>
                                             <TableCell className="px-6 py-4 text-right">
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400">
@@ -213,9 +247,6 @@ export function OverviewClient() {
                         </div>
                     </Card>
                 </div>
-
-                {/* Sidebar Column */}
-
             </div>
 
             {/* 5. Quick Actions */}
@@ -285,12 +316,14 @@ export function OverviewClient() {
                     <div>
                         <h2 className="text-xl font-black text-main-green tracking-tight mb-6">Recent Activity</h2>
                         <div className="relative pl-6 space-y-6 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
-                            {recentActivity.map((activity, i) => (
+                            {recentActivity?.map((activity, i) => (
                                 <div key={i} className="relative group">
                                     <div className="absolute -left-6 top-1.5 size-3 rounded-full border-2 border-white bg-lemon-primary ring-4 ring-lemon-primary/20 z-10" />
                                     <div>
                                         <p className="text-sm font-bold text-gray-700 leading-snug group-hover:text-main-green transition-colors">{activity.text}</p>
-                                        <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">{activity.time}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">
+                                            {format(new Date(activity.time), "MMM d, h:mm a")}
+                                        </p>
                                     </div>
                                 </div>
                             ))}

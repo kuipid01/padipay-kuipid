@@ -3,7 +3,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
 import { errorHandler, notFoundHandler } from "./middleware";
-import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes } from "./routes";
+import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes } from "./routes";
 
 /**
  * PadiLoan Backend Server
@@ -79,16 +79,14 @@ app.route("/api/auth", authRoutes);
 app.route("/api/loan-apps", loanAppsRoutes);
 app.route("/api/otp", otpRoutes);
 app.route("/api/dashboard", dashboardRoutes);
-
-// TODO: Add more routes as they are migrated
-// app.route("/api/loans", loansRoutes);
-// app.route("/api/payments", paymentsRoutes);
-// app.route("/api/repayments", repaymentsRoutes);
-// app.route("/api/verify", verifyRoutes);
-// app.route("/api/webhooks", webhooksRoutes);
-// app.route("/api/settings", settingsRoutes);
-// app.route("/api/newsletter", newsletterRoutes);
-// app.route("/api/public", publicRoutes);
+app.route("/api/loans", loansRoutes);
+app.route("/api/payments", paymentsRoutes);
+app.route("/api/repayments", repaymentsRoutes);
+app.route("/api/verify", verifyRoutes);
+app.route("/api/webhooks", webhooksRoutes);
+app.route("/api/settings", settingsRoutes);
+app.route("/api/newsletter", newsletterRoutes);
+app.route("/api/public", publicRoutes);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 404 Handler
@@ -100,7 +98,7 @@ app.notFound(notFoundHandler);
 // Start Server
 // ─────────────────────────────────────────────────────────────────────────────
 
-const port = parseInt(process.env.PORT || "3001", 10);
+const port = Number.parseInt(process.env.PORT || "3001", 10);
 
 console.log(`
 ╔════════════════════════════════════════════════════════════════╗

@@ -1,8 +1,8 @@
 
 import { Hono } from "hono";
 import { db } from "../db";
-import { loans, repayments, borrowers, loanApplications } from "../db/schema";
-import { sql, desc, eq, and, gt, sum } from "drizzle-orm";
+import { loans, repayments } from "../db/schema";
+import { desc, eq, and, sum } from "drizzle-orm";
 import { authMiddleware } from "../middleware/auth";
 
 const router = new Hono();
