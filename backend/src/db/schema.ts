@@ -1,11 +1,36 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean, integer, pgEnum, decimal } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  varchar,
+  text,
+  timestamp,
+  boolean,
+  integer,
+  pgEnum,
+  decimal,
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const userRoleEnum = pgEnum("user_role", ["LENDER", "ADMIN"]);
-export const loanAppStatusEnum = pgEnum("loan_app_status", ["PENDING", "APPROVED", "REJECTED"]);
-export const loanStatusEnum = pgEnum("loan_status", ["ACTIVE", "COMPLETED", "DEFAULTED"]);
-export const repaymentStatusEnum = pgEnum("repayment_status", ["PENDING", "PAID", "FAILED"]);
-export const notificationTypeEnum = pgEnum("notification_type", ["EMAIL", "SMS"]);
+export const loanAppStatusEnum = pgEnum("loan_app_status", [
+  "PENDING",
+  "APPROVED",
+  "REJECTED",
+]);
+export const loanStatusEnum = pgEnum("loan_status", [
+  "ACTIVE",
+  "COMPLETED",
+  "DEFAULTED",
+]);
+export const repaymentStatusEnum = pgEnum("repayment_status", [
+  "PENDING",
+  "PAID",
+  "FAILED",
+]);
+export const notificationTypeEnum = pgEnum("notification_type", [
+  "EMAIL",
+  "SMS",
+]);
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -34,9 +59,15 @@ export const users = pgTable("users", {
   brandColor: varchar("brand_color", { length: 10 }).default("#0D4715"),
 
   // Notifications - Email
-  emailNotifyNewApplication: boolean("email_notify_new_application").default(true),
-  emailNotifyPaymentReceived: boolean("email_notify_payment_received").default(true),
-  emailNotifyPaymentFailed: boolean("email_notify_payment_failed").default(true),
+  emailNotifyNewApplication: boolean("email_notify_new_application").default(
+    true,
+  ),
+  emailNotifyPaymentReceived: boolean("email_notify_payment_received").default(
+    true,
+  ),
+  emailNotifyPaymentFailed: boolean("email_notify_payment_failed").default(
+    true,
+  ),
   emailNotifyLoanOverdue: boolean("email_notify_loan_overdue").default(true),
 
   // Notifications - SMS
@@ -45,7 +76,9 @@ export const users = pgTable("users", {
 
 export const payoutAccounts = pgTable("payout_accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id").references(() => users.id).notNull(),
+  userId: uuid("user_id")
+    .references(() => users.id)
+    .notNull(),
   bankName: varchar("bank_name", { length: 255 }).notNull(),
   accountNumber: varchar("account_number", { length: 20 }).notNull(),
   accountName: varchar("account_name", { length: 255 }).notNull(),
@@ -55,9 +88,33 @@ export const payoutAccounts = pgTable("payout_accounts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const userSessions = pgTable("user_sessions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+
+  deviceName: varchar("device_name", { length: 100 }),
+  browser: varchar("browser", { length: 50 }),
+  os: varchar("os", { length: 50 }),
+
+  ipAddress: varchar("ip_address", { length: 45 }),
+  city: varchar("city", { length: 100 }),
+  country: varchar("country", { length: 50 }),
+
+  deviceFingerprint: varchar("device_fingerprint", { length: 64 }).notNull(),
+
+  isCurrent: boolean("is_current").default(false),
+  lastActiveAt: timestamp("last_active_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const loanApps = pgTable("loan_apps", {
   id: uuid("id").defaultRandom().primaryKey(),
-  ownerId: uuid("owner_id").references(() => users.id).notNull(),
+  ownerId: uuid("owner_id")
+    .references(() => users.id)
+    .notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   defaultInterestRate: decimal("default_interest_rate").notNull(),
@@ -78,8 +135,12 @@ export const borrowers = pgTable("borrowers", {
 
 export const loanApplications = pgTable("loan_applications", {
   id: uuid("id").defaultRandom().primaryKey(),
-  loanAppId: uuid("loan_app_id").references(() => loanApps.id).notNull(),
-  borrowerId: uuid("borrower_id").references(() => borrowers.id).notNull(),
+  loanAppId: uuid("loan_app_id")
+    .references(() => loanApps.id)
+    .notNull(),
+  borrowerId: uuid("borrower_id")
+    .references(() => borrowers.id)
+    .notNull(),
   amount: decimal("amount").notNull(),
   durationMonths: integer("duration_months").notNull(),
   interestRate: decimal("interest_rate").notNull(),
@@ -89,9 +150,15 @@ export const loanApplications = pgTable("loan_applications", {
 
 export const loans = pgTable("loans", {
   id: uuid("id").defaultRandom().primaryKey(),
-  applicationId: uuid("application_id").references(() => loanApplications.id).notNull(),
-  lenderId: uuid("lender_id").references(() => users.id).notNull(),
-  borrowerId: uuid("borrower_id").references(() => borrowers.id).notNull(),
+  applicationId: uuid("application_id")
+    .references(() => loanApplications.id)
+    .notNull(),
+  lenderId: uuid("lender_id")
+    .references(() => users.id)
+    .notNull(),
+  borrowerId: uuid("borrower_id")
+    .references(() => borrowers.id)
+    .notNull(),
   principal: decimal("principal").notNull(),
   interest: decimal("interest").notNull(),
   totalPayable: decimal("total_payable").notNull(),
@@ -101,7 +168,9 @@ export const loans = pgTable("loans", {
 
 export const repayments = pgTable("repayments", {
   id: uuid("id").defaultRandom().primaryKey(),
-  loanId: uuid("loan_id").references(() => loans.id).notNull(),
+  loanId: uuid("loan_id")
+    .references(() => loans.id)
+    .notNull(),
   amount: decimal("amount").notNull(),
   dueDate: timestamp("due_date").notNull(),
   paidAt: timestamp("paid_at"),
@@ -110,7 +179,9 @@ export const repayments = pgTable("repayments", {
 
 export const paymentMethods = pgTable("payment_methods", {
   id: uuid("id").defaultRandom().primaryKey(),
-  borrowerId: uuid("borrower_id").references(() => borrowers.id).notNull(),
+  borrowerId: uuid("borrower_id")
+    .references(() => borrowers.id)
+    .notNull(),
   provider: varchar("provider", { length: 50 }).default("PAYSTACK"),
   authorizationCode: text("authorization_code").notNull(),
   last4: varchar("last4", { length: 4 }),
@@ -153,16 +224,19 @@ export const loanAppsRelations = relations(loanApps, ({ one, many }) => ({
   applications: many(loanApplications),
 }));
 
-export const loanApplicationsRelations = relations(loanApplications, ({ one }) => ({
-  loanApp: one(loanApps, {
-    fields: [loanApplications.loanAppId],
-    references: [loanApps.id],
+export const loanApplicationsRelations = relations(
+  loanApplications,
+  ({ one }) => ({
+    loanApp: one(loanApps, {
+      fields: [loanApplications.loanAppId],
+      references: [loanApps.id],
+    }),
+    borrower: one(borrowers, {
+      fields: [loanApplications.borrowerId],
+      references: [borrowers.id],
+    }),
   }),
-  borrower: one(borrowers, {
-    fields: [loanApplications.borrowerId],
-    references: [borrowers.id],
-  }),
-}));
+);
 
 export const repaymentsRelations = relations(repayments, ({ one }) => ({
   loan: one(loans, {

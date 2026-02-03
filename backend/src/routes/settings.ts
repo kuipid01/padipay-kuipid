@@ -4,6 +4,7 @@ import { db } from "../db";
 import { users, payoutAccounts } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { authMiddleware } from "../middleware/auth";
+import { updateUserSchema } from "../zod-schemas/user";
 
 const router = new Hono();
 
@@ -20,7 +21,12 @@ router.get("/", async (c) => {
             email: true,
             phone: true,
             paystackPublicKey: true,
-            role: true
+            role: true,
+            avatarUrl:true,
+            brandColor:true,
+            brandLogoUrl:true,
+            isTwoFactorEnabled:true,
+            language:true
         }
     });
 
@@ -28,26 +34,78 @@ router.get("/", async (c) => {
 });
 
 router.patch("/", async (c) => {
+  console.log("➡️  PATCH /api/settings");
+
+  try {
+    // 1️⃣ Auth
     const user = c.get("user");
-    const { fullName, phone, paystackPublicKey, paystackSecretKey } = await c.req.json();
+    console.log("👤 user from context:", user);
 
-    const updated = await db.update(users)
-        .set({ 
-            fullName, 
-            phone, 
-            paystackPublicKey, 
-            paystackSecretKey // Warning: be careful returning/accepting secrets
-        })
-        .where(eq(users.id, user.id))
-        .returning({
-             id: users.id,
-             fullName: users.fullName,
-             email: users.email,
-             phone: users.phone,
-             paymentPublicKey: users.paystackPublicKey
-        });
+    if (!user?.id) {
+      console.error("❌ No user in context");
+      return c.json({ error: "Unauthorized" }, 401);
+    }
 
+    // 2️⃣ Raw body
+    let rawBody: unknown;
+    try {
+      rawBody = await c.req.json();
+      console.log("📦 Raw body received:", rawBody);
+    } catch (e) {
+      console.error("❌ Failed to parse JSON body", e);
+      return c.json({ error: "Invalid JSON body" }, 400);
+    }
+
+    // 3️⃣ Zod validation
+    let body;
+    try {
+      body = updateUserSchema.parse(rawBody);
+      console.log("✅ Parsed body after Zod:", body);
+    } catch (e) {
+      console.error("❌ Zod validation error:", e);
+      return c.json(
+        { error: "Invalid request payload", details: e },
+        400
+      );
+    }
+
+    // 4️⃣ Empty update guard
+    if (Object.keys(body).length === 0) {
+      console.warn("⚠️ Empty update payload");
+      return c.json({ error: "No fields to update" }, 400);
+    }
+
+    // 5️⃣ DB update
+    console.log("📝 Updating user:", user.id);
+    console.log("📝 Update payload:", body);
+
+    const updated = await db
+      .update(users)
+      .set(body)
+      .where(eq(users.id, user.id))
+      .returning();
+
+    console.log("📤 DB update result:", updated);
+
+    if (!updated.length) {
+      console.warn("⚠️ No rows updated for user:", user.id);
+      return c.json({ error: "User not found" }, 404);
+    }
+
+    // 6️⃣ Success
+    console.log("✅ User updated successfully:", updated[0].id);
     return c.json(updated[0]);
+
+  } catch (err) {
+    // 7️⃣ Catch-all (THIS is what your proxy sees)
+    console.error("🔥 PATCH /api/settings crashed:", err);
+
+    return c.json(
+      { error: "Internal Server Error" },
+      500
+    );
+  }
 });
+
 
 export default router;

@@ -1,0 +1,1 @@
+ALTER TABLE "user_sessions" ADD COLUMN "device_fingerprint" varchar(64) NOT NULL;

@@ -1,5 +1,6 @@
 import { usersRepo } from "./repo";
 import { hashPassword, comparePassword, signToken } from "../../lib/auth";
+import { InsertUserSession } from "../../zod-schemas/user";
 
 export interface ServiceError {
   code: number;
@@ -96,6 +97,9 @@ export const authService = {
     return { success: true, data: { user: userWithoutPassword, token } };
   },
 
+async saveSessions(data: InsertUserSession): Promise<void> {
+  await usersRepo.saveSession(data);
+},
   async getMe(userId: string): Promise<ServiceResult<{ user: SafeUser | null }>> {
     const user = await usersRepo.findById(userId);
     

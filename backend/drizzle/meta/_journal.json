@@ -8,6 +8,34 @@
       "when": 1770041446340,
       "tag": "0000_glamorous_bastion",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770092552169,
+      "tag": "0001_furry_namor",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770094929420,
+      "tag": "0002_white_sphinx",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770095147808,
+      "tag": "0003_perfect_shaman",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770096321820,
+      "tag": "0004_quick_madelyne_pryor",
+      "breakpoints": true
     }
   ]
 }

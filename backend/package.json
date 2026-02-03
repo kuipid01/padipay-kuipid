@@ -7,6 +7,7 @@
     "start": "bun run src/server.ts",
     "build": "bun build src/server.ts --outdir=dist --target=bun",
     "db:push": "drizzle-kit push",
+    "db:kui": "drizzle-kit generate && drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio"
   },
@@ -17,6 +18,7 @@
     "hono": "^4.6.0",
     "jose": "^6.1.3",
     "postgres": "^3.4.8",
+    "ua-parser-js": "^2.0.8",
     "zod": "^4.3.6"
   },
   "devDependencies": {

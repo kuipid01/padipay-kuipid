@@ -110,15 +110,7 @@ console.log(`
 ║  Runtime: Bun ${Bun.version}                                        
 ║  Port: ${port}                                                   
 ║  Environment: ${process.env.NODE_ENV || "development"}                           
-║                                                                
-║  Endpoints:                                                    
-║  - Health:     GET  /health                                    
-║  - Auth:       POST /api/auth/login                            
-║  - Auth:       POST /api/auth/register                         
-║  - Auth:       GET  /api/auth/me                               
-║  - Loan Apps:  GET  /api/loan-apps                             
-║  - OTP:        POST /api/otp/send                              
-║  - OTP:        POST /api/otp/verify                            
+║                                                                                         
 ╚════════════════════════════════════════════════════════════════╝
 `);
 

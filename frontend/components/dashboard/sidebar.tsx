@@ -19,6 +19,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useUser } from "../../hooks/use-user";
 
 interface DashboardSidebarProps {
     session: any;
@@ -182,13 +183,13 @@ export function DashboardSidebar({ session }: Readonly<DashboardSidebarProps>) {
 }
 
 export function DashboardHeader() {
+    const { user } = useUser()
     const { setIsMobileOpen } = useSidebar();
     const [isFocused, setIsFocused] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const searchRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const router = useRouter();
-
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -290,12 +291,12 @@ export function DashboardHeader() {
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center gap-1 md:gap-2 bg-white rounded-2xl md:p-1 md:px-2 shadow-md cursor-pointer hover:bg-gray-50 transition-colors">
                             <Avatar className="size-10 md:size-12 rounded-full border-2 border-primary/10">
-                                <AvatarImage src={`/register-illustration.png`} />
+                                <AvatarImage src={user?.avatarUrl} />
                                 <AvatarFallback><User2 /></AvatarFallback>
                             </Avatar>
                             <div className="md:flex flex-col hidden gap-1 text-left">
-                                <p className="font-bold">Aderie John</p>
-                                <p className="text-xs text-gray-400">aderiejohn@gmail.com</p>
+                                <p className="font-bold">{user?.fullName}</p>
+                                <p className="text-xs text-gray-400">{user?.email}</p>
                             </div>
                         </div>
                     </DropdownMenuTrigger>

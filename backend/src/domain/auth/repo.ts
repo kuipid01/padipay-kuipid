@@ -1,6 +1,7 @@
 import { db } from "../../db";
-import { users } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { users, userSessions } from "../../db/schema";
+import { and, eq } from "drizzle-orm";
+import { InsertUserSession } from "../../zod-schemas/user";
 
 export interface CreateUserInput {
   email: string;
@@ -18,6 +19,52 @@ export const usersRepo = {
       where: eq(users.email, email),
     });
   },
+  async saveSession(data: InsertUserSession) {
+    await db.transaction(async (tx) => {
+      // 1️⃣ Mark all inactive
+      await tx
+        .update(userSessions)
+        .set({ isCurrent: false })
+        .where(eq(userSessions.userId, data.userId));
+
+      // 2️⃣ Check existing session
+      const existing = await tx
+        .select()
+        .from(userSessions)
+        .where(
+          and(
+            eq(userSessions.userId, data.userId),
+            eq(userSessions.deviceFingerprint, data.deviceFingerprint),
+          ),
+        )
+        .limit(1);
+
+      if (existing.length) {
+        // 3️⃣ Update existing
+        await tx
+          .update(userSessions)
+          .set({
+            isCurrent: true,
+            lastActiveAt: new Date(),
+            ipAddress: data.ipAddress,
+          })
+          .where(eq(userSessions.id, existing[0].id));
+      } else {
+        // 4️⃣ Create new
+        await tx.insert(userSessions).values({
+          userId: data.userId,
+          deviceFingerprint: data.deviceFingerprint,
+          deviceName: data.deviceName,
+          browser: data.browser,
+          os: data.os,
+          ipAddress: data.ipAddress,
+          city: data.city,
+          country: data.country,
+          isCurrent: true,
+        });
+      }
+    });
+  },
 
   async findById(id: string) {
     return db.query.users.findFirst({
@@ -26,12 +73,15 @@ export const usersRepo = {
   },
 
   async create(data: CreateUserInput) {
-    const [user] = await db.insert(users).values({
-      email: data.email,
-      passwordHash: data.passwordHash,
-      fullName: data.fullName,
-      phone: data.phone,
-    }).returning();
+    const [user] = await db
+      .insert(users)
+      .values({
+        email: data.email,
+        passwordHash: data.passwordHash,
+        fullName: data.fullName,
+        phone: data.phone,
+      })
+      .returning();
     return user;
   },
 
@@ -53,10 +103,10 @@ export const usersRepo = {
   async updatePassword(id: string, passwordHash: string) {
     const [updated] = await db
       .update(users)
-      .set({ 
-        passwordHash, 
-        resetPasswordToken: null, 
-        resetPasswordExpires: null 
+      .set({
+        passwordHash,
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
       })
       .where(eq(users.id, id))
       .returning();
