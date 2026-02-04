@@ -7,6 +7,7 @@ export const useFetch = <T>(url:string, options?:RequestInit) : UseQueryResult<T
     const query = useQuery<T>({
         queryKey:[options?.key],
             queryFn: async () => {
+                console.log("URL PARSED", url)
                 const res = await fetch(url)
                 if (!res.ok) throw new Error("Failed to fetch data")
                 return res.json()

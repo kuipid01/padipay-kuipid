@@ -1,8 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge, MonitorSmartphone } from "lucide-react";
+import { Badge, Loader2, MonitorSmartphone } from "lucide-react";
 import { Button } from "../ui/button";
+import { useGetUserSessions } from "../../hooks/user/sessions";
 
 export const SessionsCard = () => {
+    const { userSessions, isLoading } = useGetUserSessions()
     return <Card className="border-none shadow-sm rounded-[32px]">
         <CardHeader className="p-8 pb-0">
             <CardTitle className="text-lg font-black text-main-green">
@@ -13,17 +15,17 @@ export const SessionsCard = () => {
             </CardDescription>
         </CardHeader>
         <CardContent className="p-8 space-y-4">
-            <SessionItem
-                device="Chrome on Windows"
-                location="Lagos, Nigeria"
-                time="Active now"
-                isCurrent
-            />
-            <SessionItem
-                device="Safari on iPhone"
-                location="Lagos, Nigeria"
-                time="2 hours ago"
-            />
+            {isLoading ? <div className="flex items-center justify-center">
+                <Loader2 className="animate-spin" />
+            </div> : userSessions?.map((session) => (
+                <SessionItem
+                    key={session.id}
+                    device={session.deviceName}
+                    location={`${session.city}, ${session.country}`}
+                    time={session.lastActiveAt}
+                    isCurrent={session.isCurrent}
+                />
+            ))}
         </CardContent>
     </Card>
 }

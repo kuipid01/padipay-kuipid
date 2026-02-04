@@ -18,7 +18,8 @@ export const updateUserSchema = z.object({
   isTwoFactorEnabled: z.boolean().optional(),
   emailNotifyPaymentFailed: z.boolean().optional(),
   emailNotifyLoanOverdue: z.boolean().optional(),
-
+paystackPublicKey:z.string().optional(),
+paystackSecretKey:z.string().optional(),
   smsNotifyCriticalOnly: z.boolean().optional(),
 });
 

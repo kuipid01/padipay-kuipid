@@ -182,6 +182,7 @@ export default function SettingsPage() {
   // Image Upload State
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
+  const [brandColor, setBrandColor] = useState<string | undefined>(undefined);
   const [isUploading, setIsUploading] = useState(false);
 
   // Dynamic notification state
@@ -243,6 +244,7 @@ export default function SettingsPage() {
         setPayoutAccounts(data.payoutAccounts || []);
         setAvatarUrl(data.avatarUrl || null);
         setBrandLogoUrl(data.brandLogoUrl || null);
+        setBrandColor(data.brandColor || "#aabbcc");
 
         setNotificationSettings({
           emailNotifyNewApplication: data.emailNotifyNewApplication ?? true,
@@ -785,7 +787,7 @@ export default function SettingsPage() {
 
           {/* Branding Section */}
           {activeSection === "branding" && (
-            <BrandingSection handleFileUpload={handleFileUpload} isUploading={isUploading} brandLogoUrl={brandLogoUrl} />
+            <BrandingSection brandColor={brandColor} handleFileUpload={handleFileUpload} isUploading={isUploading} brandLogoUrl={brandLogoUrl} updateSettings={updateSettings} />
           )}
 
           {/* Compliance Section */}

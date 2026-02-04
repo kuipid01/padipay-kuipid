@@ -19,7 +19,7 @@ export default async function DashboardLayout({ children }: Readonly<{ children:
                 <main className="flex-1 flex flex-col min-w-0">
                     <DashboardHeader />
 
-                    <div className="px-8 pb-8">
+                    <div className="md:px-8 px-4 md:pb-8 pb-4">
                         <div className="bg-white min-h-[calc(100vh-140px)] ">
                             {children}
                         </div>

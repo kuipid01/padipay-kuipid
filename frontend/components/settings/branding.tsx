@@ -1,18 +1,91 @@
-import React from 'react'
-import { SectionHeader } from './section-header'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { Button } from '../ui/button'
-import { Input } from '../ui/input'
-import { Copy, ExternalLink, Link2, Loader2, Palette } from 'lucide-react'
-import Image from 'next/image'
+import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { HexColorPicker } from "react-colorful";
+import {
+    Copy,
+    ExternalLink,
+    Link2,
+    Loader2,
+    Palette,
+} from "lucide-react";
+
+import { SectionHeader } from "./section-header";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "../ui/card";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { useGetUserLoanApps } from "../../hooks/user/loan-apps";
+import { toast } from "sonner";
 
 interface BrandingProps {
-    brandLogoUrl: string | null
-    handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, type: "avatar" | "brand") => void
-    isUploading: boolean
+    brandLogoUrl: string | null;
+    handleFileUpload: (
+        e: React.ChangeEvent<HTMLInputElement>,
+        type: "avatar" | "brand"
+    ) => void;
+    isUploading: boolean;
+    brandColor?: string;
+    updateSettings: (values: { brandColor: string }) => Promise<boolean>;
 }
 
-export const BrandingSection = ({ brandLogoUrl, handleFileUpload, isUploading }: BrandingProps) => {
+const DEFAULT_COLOR = "#000000";
+
+export const BrandingSection = ({
+    brandLogoUrl,
+    handleFileUpload,
+    isUploading,
+    brandColor,
+    updateSettings,
+}: BrandingProps) => {
+    const { loanApps, error, isLoading } = useGetUserLoanApps()
+
+    console.log(loanApps, "loandappps")
+    const [color, setColor] = useState(brandColor ?? DEFAULT_COLOR);
+    const [showPicker, setShowPicker] = useState(false);
+
+    const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+    /* Sync local state when prop changes */
+    useEffect(() => {
+        if (brandColor && brandColor !== color) {
+            setColor(brandColor);
+        }
+    }, [brandColor]);
+
+    // copy to clipboard
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text)
+        toast.success("Copied to clipboard")
+    }
+    const navigateToUrlNewTab = (link: string) => {
+        window.open(link, "_blank")
+    }
+
+
+    /* Debounced save */
+    useEffect(() => {
+        if (!color || color === brandColor) return;
+
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+
+        debounceRef.current = setTimeout(() => {
+            updateSettings({ brandColor: color });
+        }, 500);
+
+        return () => {
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+            }
+        };
+    }, [color]);
+
     return (
         <div className="space-y-8">
             <SectionHeader
@@ -21,106 +94,133 @@ export const BrandingSection = ({ brandLogoUrl, handleFileUpload, isUploading }:
                 description="Customize your loan application pages."
             />
 
+            {/* BRAND SETTINGS */}
             <Card className="border-none shadow-sm rounded-[32px]">
                 <CardHeader className="p-8 pb-0">
                     <CardTitle className="text-lg font-black text-main-green">
                         Brand Settings
                     </CardTitle>
-                    <CardDescription className="text-gray-500">
+                    <CardDescription>
                         Customize how borrowers see your loan pages.
                     </CardDescription>
                 </CardHeader>
+
                 <CardContent className="p-8 space-y-6">
+                    {/* Logo */}
                     <div className="flex items-center gap-6">
-                        <div className="size-20 rounded-3xl bg-gray-100 flex items-center justify-center text-gray-400 border-4 border-dashed border-gray-200 overflow-hidden relative">
+                        <div className="size-20 rounded-3xl bg-gray-100 border-4 border-dashed border-gray-200 flex items-center justify-center overflow-hidden">
                             {brandLogoUrl ? (
                                 <img
                                     src={brandLogoUrl}
-                                    alt="Logo"
+                                    alt="Brand logo"
                                     className="w-full h-full object-contain p-2"
                                 />
                             ) : (
                                 <Image src="/logo.svg" alt="Logo" width={32} height={32} />
                             )}
                         </div>
+
                         <div>
-                            <div className="relative">
-                                <input
-                                    type="file"
-                                    id="brand-upload"
-                                    className="hidden"
-                                    accept="image/*"
-                                    onChange={(e) => handleFileUpload(e, "brand")}
-                                    disabled={isUploading}
-                                />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="rounded-2xl font-bold border-gray-100 shadow-sm h-11"
-                                    onClick={() =>
-                                        document.getElementById("brand-upload")?.click()
-                                    }
-                                    disabled={isUploading}
-                                >
-                                    {isUploading ? (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    ) : (
-                                        "Upload Logo"
-                                    )}
-                                </Button>
-                            </div>
-                            <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-widest">
-                                PNG, SVG. Max 1MB
+                            <input
+                                type="file"
+                                id="brand-upload"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={(e) => handleFileUpload(e, "brand")}
+                                disabled={isUploading}
+                            />
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="rounded-2xl h-11 font-bold"
+                                disabled={isUploading}
+                                onClick={() =>
+                                    document.getElementById("brand-upload")?.click()
+                                }
+                            >
+                                {isUploading && (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                )}
+                                Upload Logo
+                            </Button>
+
+                            <p className="mt-2 text-[10px] uppercase tracking-widest text-gray-400 font-bold">
+                                PNG, SVG · Max 1MB
                             </p>
                         </div>
                     </div>
+
+                    {/* Brand Color */}
                     <div>
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">
+                        <label className="block mb-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
                             Brand Color
                         </label>
-                        <div className="flex items-center gap-3">
-                            <div className="size-12 rounded-2xl bg-main-green border-4 border-white shadow-sm" />
+
+                        <div className="relative flex items-center gap-3">
+                            <button
+                                type="button"
+                                className="size-12 rounded-2xl border-4 border-white shadow-sm"
+                                style={{ backgroundColor: color }}
+                                onClick={() => setShowPicker((v) => !v)}
+                            />
+
+                            {showPicker && (
+                                <>
+                                    {/* Click-outside overlay (BEHIND picker) */}
+                                    <div
+                                        className="fixed inset-0 z-40"
+                                        onClick={() => setShowPicker(false)}
+                                    />
+
+                                    {/* Color picker (ON TOP) */}
+                                    <div className="absolute z-50 top-full mt-3">
+                                        <HexColorPicker color={color} onChange={setColor} />
+                                    </div>
+                                </>
+                            )}
+
+
                             <Input
-                                placeholder="#0D4715"
-                                className="h-12 rounded-2xl border-gray-100 shadow-sm w-40 font-mono"
+                                value={color}
+                                onChange={(e) => setColor(e.target.value)}
+                                className="h-12 w-40 rounded-2xl font-mono"
+                                disabled={isUploading}
                             />
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
+            {/* LOAN LINKS */}
             <Card className="border-none shadow-sm rounded-[32px]">
                 <CardHeader className="p-8 pb-0">
                     <CardTitle className="text-lg font-black text-main-green">
                         Loan Links
                     </CardTitle>
-                    <CardDescription className="text-gray-500">
+                    <CardDescription>
                         Your shareable loan application links.
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="p-8">
-                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 border border-gray-100">
+
+                {loanApps?.loanApps.map((loanApp) => (<CardContent key={loanApp.id} className="_p-8 max-h-[300px] overflow-y-auto no-scrollbar">
+                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 border">
                         <Link2 size={18} className="text-gray-400" />
-                        <span className="font-mono text-sm text-gray-600 flex-1 truncate">
-                            https://padiloan.com/apply/your-app-slug
+
+                        <span className="flex-1 truncate font-mono text-sm text-gray-600">
+                            https://padiloan.com/apply/{loanApp.slug}
                         </span>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-gray-400 hover:text-main-green"
-                        >
-                            <Copy size={16} />
+
+                        <Button className="group" onClick={() => copyToClipboard(`https://padiloan.com/apply/${loanApp.slug}`)} variant="ghost" size="icon">
+                            <Copy size={16} className=" group-hover:text-main-green" />
                         </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-gray-400 hover:text-main-green"
-                        >
-                            <ExternalLink size={16} />
+
+                        <Button className="group" onClick={() => navigateToUrlNewTab(`https://padiloan.com/apply/${loanApp.slug}`)} variant="ghost" size="icon">
+                            <ExternalLink size={16} className=" group-hover:text-main-green" />
                         </Button>
                     </div>
-                </CardContent>
+                </CardContent>))}
             </Card>
         </div>
-    )
-}
+    );
+};
