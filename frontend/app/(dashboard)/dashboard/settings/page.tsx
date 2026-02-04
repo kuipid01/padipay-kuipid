@@ -78,6 +78,15 @@ import {
   Plus,
   Lock,
 } from "lucide-react";
+import { SessionsCard } from "../../../../components/settings/sessions";
+import { TwoFA } from "../../../../components/settings/twofa";
+import { IntegrationsSection } from "../../../../components/settings/integrations";
+import { SectionHeader } from "../../../../components/settings/section-header";
+import { BrandingSection } from "../../../../components/settings/branding";
+import { LoanPreferenceSection } from "../../../../components/settings/loand-preference";
+import { BankAccounts } from "../../../../components/settings/bank-accounts";
+import { PaystackInt } from "../../../../components/settings/paystack-int";
+import { PasswordCard } from "../../../../components/settings/password";
 
 // =============================================
 // SCHEMAS
@@ -449,7 +458,7 @@ export default function SettingsPage() {
                       className={cn(
                         "opacity-0 -translate-x-2 transition-all duration-200",
                         activeSection === item.id &&
-                          "opacity-100 translate-x-0",
+                        "opacity-100 translate-x-0",
                       )}
                     />
                   </button>
@@ -666,178 +675,13 @@ export default function SettingsPage() {
               />
 
               {/* Password Card */}
-              <Form {...securityForm}>
-                <form onSubmit={securityForm.handleSubmit(onSecuritySubmit)}>
-                  <Card className="border-none shadow-sm rounded-[32px]">
-                    <CardHeader className="p-8 pb-0">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-lg font-black text-main-green">
-                            Password
-                          </CardTitle>
-                          <CardDescription className="text-gray-500">
-                            Update your password regularly for security.
-                          </CardDescription>
-                        </div>
-                        <Badge className="bg-green-50 text-green-600 font-bold border-none text-[10px] uppercase tracking-widest">
-                          Strong
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-8 space-y-6">
-                      <FormField
-                        control={securityForm.control}
-                        name="currentPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                              Current Password
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="password"
-                                placeholder="••••••••"
-                                className="h-12 rounded-2xl border-gray-100 shadow-sm"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={securityForm.control}
-                          name="newPassword"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                New Password
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="password"
-                                  placeholder="••••••••"
-                                  className="h-12 rounded-2xl border-gray-100 shadow-sm"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={securityForm.control}
-                          name="confirmPassword"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                Confirm Password
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="password"
-                                  placeholder="••••••••"
-                                  className="h-12 rounded-2xl border-gray-100 shadow-sm"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <p className="text-[10px] text-gray-400 font-bold">
-                        Last updated: 30 days ago
-                      </p>
-                    </CardContent>
-                    <CardFooter className="p-8 pt-0 flex justify-end">
-                      <Button
-                        type="submit"
-                        disabled={isChangingPassword}
-                        className="bg-lemon-primary text-main-green hover:bg-lemon-primary/90 font-black h-12 px-8 rounded-2xl shadow-lg shadow-lemon-primary/20"
-                      >
-                        {isChangingPassword && (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        )}
-                        Update Password
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </form>
-              </Form>
+              <PasswordCard securityForm={securityForm} onSecuritySubmit={onSecuritySubmit} isChangingPassword={isChangingPassword} />
 
               {/* 2FA Card */}
-              <Card className="border-none shadow-sm rounded-[32px]">
-                <CardHeader className="p-8">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="size-12 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500">
-                        <Smartphone size={24} />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg font-black text-main-green">
-                          Two-Factor Authentication
-                        </CardTitle>
-                        <CardDescription className="text-gray-500">
-                          Add an extra layer of security to your account.
-                        </CardDescription>
-                      </div>
-                    </div>
-                    {isTwoFactorEnabled ? (
-                      <Badge className="bg-green-50 text-green-600 font-bold border-none text-[10px] uppercase tracking-widest">
-                        Enabled
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-orange-50 text-orange-600 font-bold border-none text-[10px] uppercase tracking-widest">
-                        Not Enabled
-                      </Badge>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="p-8 pt-0">
-                  <Button
-                    disabled={isUpdating2FA}
-                    onClick={() => {
-                      setIsUpdating2FA(true);
-                      setIsTwoFactorEnabled(!isTwoFactorEnabled);
-                      updateSettings({
-                        isTwoFactorEnabled: !isTwoFactorEnabled,
-                      });
-                      setIsUpdating2FA(false);
-                    }}
-                    variant="outline"
-                    className={cn("rounded-2xl font-bold border-gray-100 shadow-sm h-12 gap-2", isTwoFactorEnabled ? "bg-green-600 text-white" :"bg-orange-600 text-white")}
-                  >
-                    <Shield size={18} />{ isTwoFactorEnabled ? "Disable 2FA"  : "Enable 2FA"}
-                  </Button>
-                </CardContent>
-              </Card>
 
+              <TwoFA updateSettings={updateSettings} />
               {/* Sessions Card */}
-              <Card className="border-none shadow-sm rounded-[32px]">
-                <CardHeader className="p-8 pb-0">
-                  <CardTitle className="text-lg font-black text-main-green">
-                    Active Sessions
-                  </CardTitle>
-                  <CardDescription className="text-gray-500">
-                    Devices currently logged into your account.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 space-y-4">
-                  <SessionItem
-                    device="Chrome on Windows"
-                    location="Lagos, Nigeria"
-                    time="Active now"
-                    isCurrent
-                  />
-                  <SessionItem
-                    device="Safari on iPhone"
-                    location="Lagos, Nigeria"
-                    time="2 hours ago"
-                  />
-                </CardContent>
-              </Card>
+              <SessionsCard />
             </div>
           )}
 
@@ -851,348 +695,21 @@ export default function SettingsPage() {
               />
 
               {/* Paystack Integration */}
-              <Form {...paystackForm}>
-                <form onSubmit={paystackForm.handleSubmit(onPaystackSubmit)}>
-                  <Card className="border-none shadow-sm rounded-[32px]">
-                    <CardHeader className="p-8 pb-0">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="size-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 font-black text-lg">
-                            P
-                          </div>
-                          <div>
-                            <CardTitle className="text-lg font-black text-main-green">
-                              Paystack Integration
-                            </CardTitle>
-                            <CardDescription className="text-gray-500">
-                              Connect your Paystack account to receive payments.
-                            </CardDescription>
-                          </div>
-                        </div>
-                        <Badge className="bg-green-50 text-green-600 font-bold border-none text-[10px] uppercase tracking-widest">
-                          Connected
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-8 space-y-6">
-                      <FormField
-                        control={paystackForm.control}
-                        name="paystackPublicKey"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                              Public Key
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="pk_test_..."
-                                className="h-12 rounded-2xl border-gray-100 shadow-sm font-mono text-sm"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormDescription className="text-xs text-gray-400">
-                              Used for frontend payment initialization.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={paystackForm.control}
-                        name="paystackSecretKey"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                              Secret Key
-                            </FormLabel>
-                            <div className="relative">
-                              <FormControl>
-                                <Input
-                                  type={showSecretKey ? "text" : "password"}
-                                  placeholder="sk_test_..."
-                                  className="h-12 rounded-2xl border-gray-100 shadow-sm font-mono text-sm pr-12"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
-                                onClick={() => setShowSecretKey(!showSecretKey)}
-                              >
-                                {showSecretKey ? (
-                                  <EyeOff size={18} />
-                                ) : (
-                                  <Eye size={18} />
-                                )}
-                              </Button>
-                            </div>
-                            <FormDescription className="text-xs text-gray-400">
-                              Keep this secret! Used for backend transactions.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-50/50 border border-blue-100">
-                        <Badge className="bg-blue-100 text-blue-600 font-bold border-none text-[10px] uppercase">
-                          Test Mode
-                        </Badge>
-                        <span className="text-sm text-blue-700 font-medium">
-                          Switch to Live Mode in production.
-                        </span>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="p-8 pt-0 flex justify-end">
-                      <Button
-                        type="submit"
-                        disabled={isSaving}
-                        className="bg-lemon-primary text-main-green hover:bg-lemon-primary/90 font-black h-12 px-8 rounded-2xl shadow-lg shadow-lemon-primary/20"
-                      >
-                        {isSaving && (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        )}
-                        Save Keys
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </form>
-              </Form>
 
+              <PaystackInt isSaving={isSaving} showSecretKey={showSecretKey} setShowSecretKey={setShowSecretKey} paystackForm={paystackForm} onPaystackSubmit={onPaystackSubmit} />
               {/* Bank Accounts */}
-              <Card className="border-none shadow-sm rounded-[32px]">
-                <CardHeader className="p-8 pb-0">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg font-black text-main-green">
-                        Payout Accounts
-                      </CardTitle>
-                      <CardDescription className="text-gray-500">
-                        Bank accounts for receiving loan repayments.
-                      </CardDescription>
-                    </div>
-                    {/* Add Bank Dialog Trigger - Simplified for now, typically would use a Dialog component */}
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="rounded-2xl font-bold border-gray-100 shadow-sm h-11 gap-2"
-                        >
-                          <Plus size={16} /> Add Bank
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="w-80 p-4 rounded-2xl shadow-xl border-gray-100"
-                        align="end"
-                      >
-                        <form onSubmit={addPayoutAccount} className="space-y-3">
-                          <h4 className="font-bold text-main-green">
-                            Add New Account
-                          </h4>
-                          <Input
-                            name="bankName"
-                            placeholder="Bank Name"
-                            className="h-10 rounded-xl"
-                            required
-                          />
-                          <Input
-                            name="accountNumber"
-                            placeholder="Account Number"
-                            className="h-10 rounded-xl"
-                            required
-                          />
-                          <Input
-                            name="accountName"
-                            placeholder="Account Name"
-                            className="h-10 rounded-xl"
-                            required
-                          />
-                          <Button
-                            disabled={isAddingBank}
-                            className="w-full bg-lemon-primary text-main-green font-bold rounded-xl h-10"
-                          >
-                            {isAddingBank ? (
-                              <Loader2 className="animate-spin" />
-                            ) : (
-                              "Save Account"
-                            )}
-                          </Button>
-                        </form>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-8">
-                  {payoutAccounts.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="size-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-300 mb-4">
-                        <Banknote size={32} />
-                      </div>
-                      <p className="font-black text-gray-400 mb-1">
-                        No bank accounts added
-                      </p>
-                      <p className="text-sm text-gray-400">
-                        Add a bank account to receive payouts.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {payoutAccounts.map((account) => (
-                        <div
-                          key={account.id}
-                          className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 bg-white shadow-sm"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="size-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-black">
-                              {account.bankName.charAt(0)}
-                            </div>
-                            <div>
-                              <p className="font-bold text-main-green">
-                                {account.bankName}
-                              </p>
-                              <p className="text-xs text-gray-400 font-bold">
-                                {account.accountNumber} • {account.accountName}
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl"
-                            onClick={() => removePayoutAccount(account.id)}
-                          >
-                            <Trash2 size={16} />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <BankAccounts addPayoutAccount={addPayoutAccount} removePayoutAccount={removePayoutAccount} payoutAccounts={payoutAccounts} isAddingBank={isAddingBank} />
             </div>
           )}
 
           {/* Loan Preferences Section */}
           {activeSection === "loans" && (
-            <div className="space-y-8">
-              <SectionHeader
-                icon={<FileText size={24} />}
-                title="Loan Preferences"
-                description="Configure default loan rules and approval settings."
-              />
-
-              <Card className="border-none shadow-sm rounded-[32px]">
-                <CardHeader className="p-8 pb-0">
-                  <CardTitle className="text-lg font-black text-main-green">
-                    Loan Rules
-                  </CardTitle>
-                  <CardDescription className="text-gray-500">
-                    Set default parameters for new loan applications.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">
-                        Minimum Loan Amount
-                      </label>
-                      <Input
-                        placeholder="₦10,000"
-                        className="h-12 rounded-2xl border-gray-100 shadow-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">
-                        Maximum Loan Amount
-                      </label>
-                      <Input
-                        placeholder="₦5,000,000"
-                        className="h-12 rounded-2xl border-gray-100 shadow-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">
-                        Default Interest Rate
-                      </label>
-                      <Input
-                        placeholder="5%"
-                        className="h-12 rounded-2xl border-gray-100 shadow-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">
-                        Grace Period (Days)
-                      </label>
-                      <Input
-                        placeholder="3"
-                        className="h-12 rounded-2xl border-gray-100 shadow-sm"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-none shadow-sm rounded-[32px]">
-                <CardHeader className="p-8">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg font-black text-main-green">
-                        Auto-Approve
-                      </CardTitle>
-                      <CardDescription className="text-gray-500">
-                        Automatically approve low-risk applications.
-                      </CardDescription>
-                    </div>
-                    <Badge className="bg-gray-50 text-gray-500 font-bold border-none text-[10px] uppercase tracking-widest">
-                      Disabled
-                    </Badge>
-                  </div>
-                </CardHeader>
-              </Card>
-            </div>
+            <LoanPreferenceSection />
           )}
 
           {/* Integrations Section */}
           {activeSection === "integrations" && (
-            <div className="space-y-8">
-              <SectionHeader
-                icon={<Zap size={24} />}
-                title="Integrations"
-                description="Connect third-party services to enhance your workflow."
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <IntegrationCard
-                  name="Paystack"
-                  description="Payment processing"
-                  status="connected"
-                  logo="P"
-                  color="bg-blue-50 text-blue-600"
-                />
-                <IntegrationCard
-                  name="BVN Verification"
-                  description="Identity verification"
-                  status="not_connected"
-                  logo="BVN"
-                  color="bg-green-50 text-green-600"
-                />
-                <IntegrationCard
-                  name="Termii"
-                  description="SMS notifications"
-                  status="not_connected"
-                  logo="T"
-                  color="bg-purple-50 text-purple-600"
-                />
-                <IntegrationCard
-                  name="Webhooks"
-                  description="Event notifications"
-                  status="not_connected"
-                  logo={<Webhook size={20} />}
-                  color="bg-orange-50 text-orange-600"
-                />
-              </div>
-            </div>
+            <IntegrationsSection />
           )}
 
           {/* Notifications Section */}
@@ -1268,114 +785,7 @@ export default function SettingsPage() {
 
           {/* Branding Section */}
           {activeSection === "branding" && (
-            <div className="space-y-8">
-              <SectionHeader
-                icon={<Palette size={24} />}
-                title="Branding & Links"
-                description="Customize your loan application pages."
-              />
-
-              <Card className="border-none shadow-sm rounded-[32px]">
-                <CardHeader className="p-8 pb-0">
-                  <CardTitle className="text-lg font-black text-main-green">
-                    Brand Settings
-                  </CardTitle>
-                  <CardDescription className="text-gray-500">
-                    Customize how borrowers see your loan pages.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 space-y-6">
-                  <div className="flex items-center gap-6">
-                    <div className="size-20 rounded-3xl bg-gray-100 flex items-center justify-center text-gray-400 border-4 border-dashed border-gray-200 overflow-hidden relative">
-                      {brandLogoUrl ? (
-                        <img
-                          src={brandLogoUrl}
-                          alt="Logo"
-                          className="w-full h-full object-contain p-2"
-                        />
-                      ) : (
-                        <Image size={32} />
-                      )}
-                    </div>
-                    <div>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          id="brand-upload"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={(e) => handleFileUpload(e, "brand")}
-                          disabled={isUploading}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="rounded-2xl font-bold border-gray-100 shadow-sm h-11"
-                          onClick={() =>
-                            document.getElementById("brand-upload")?.click()
-                          }
-                          disabled={isUploading}
-                        >
-                          {isUploading ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            "Upload Logo"
-                          )}
-                        </Button>
-                      </div>
-                      <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-widest">
-                        PNG, SVG. Max 1MB
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">
-                      Brand Color
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <div className="size-12 rounded-2xl bg-main-green border-4 border-white shadow-sm" />
-                      <Input
-                        placeholder="#0D4715"
-                        className="h-12 rounded-2xl border-gray-100 shadow-sm w-40 font-mono"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-none shadow-sm rounded-[32px]">
-                <CardHeader className="p-8 pb-0">
-                  <CardTitle className="text-lg font-black text-main-green">
-                    Loan Links
-                  </CardTitle>
-                  <CardDescription className="text-gray-500">
-                    Your shareable loan application links.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                    <Link2 size={18} className="text-gray-400" />
-                    <span className="font-mono text-sm text-gray-600 flex-1 truncate">
-                      https://padiloan.com/apply/your-app-slug
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-gray-400 hover:text-main-green"
-                    >
-                      <Copy size={16} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-gray-400 hover:text-main-green"
-                    >
-                      <ExternalLink size={16} />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <BrandingSection handleFileUpload={handleFileUpload} isUploading={isUploading} brandLogoUrl={brandLogoUrl} />
           )}
 
           {/* Compliance Section */}
@@ -1464,27 +874,8 @@ export default function SettingsPage() {
 // SUB-COMPONENTS
 // =============================================
 
-function SectionHeader({
-  icon,
-  title,
-  description,
-}: {
-  icon: ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex items-center gap-4 mb-2">
-      <div className="size-14 rounded-3xl bg-lemon-primary/20 flex items-center justify-center text-main-green shrink-0">
-        {icon}
-      </div>
-      <div>
-        <h2 className="text-2xl font-black text-main-green">{title}</h2>
-        <p className="text-gray-500 font-medium">{description}</p>
-      </div>
-    </div>
-  );
-}
+
+
 
 function StatusCard({
   label,
@@ -1537,95 +928,8 @@ function StatusCard({
   );
 }
 
-function SessionItem({
-  device,
-  location,
-  time,
-  isCurrent,
-}: {
-  device: string;
-  location: string;
-  time: string;
-  isCurrent?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 border border-gray-100">
-      <div className="flex items-center gap-4">
-        <div className="size-10 rounded-xl bg-white flex items-center justify-center border border-gray-100 text-gray-400">
-          <MonitorSmartphone size={18} />
-        </div>
-        <div>
-          <p className="font-bold text-main-green">{device}</p>
-          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-            {location} • {time}
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        {isCurrent && (
-          <Badge className="bg-green-50 text-green-600 font-bold border-none text-[9px] uppercase">
-            Current
-          </Badge>
-        )}
-        {!isCurrent && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-red-500 hover:text-red-600 font-bold"
-          >
-            Revoke
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
 
-function IntegrationCard({
-  name,
-  description,
-  status,
-  logo,
-  color,
-}: {
-  name: string;
-  description: string;
-  status: "connected" | "not_connected";
-  logo: ReactNode;
-  color: string;
-}) {
-  return (
-    <Card className="border-none shadow-sm rounded-[32px] hover:shadow-md transition-shadow">
-      <CardContent className="p-6 flex items-center gap-4">
-        <div
-          className={cn(
-            "size-12 rounded-2xl flex items-center justify-center font-black text-lg shrink-0",
-            color,
-          )}
-        >
-          {logo}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-black text-main-green">{name}</p>
-          <p className="text-xs text-gray-400 font-medium">{description}</p>
-        </div>
-        {status === "connected" ? (
-          <Badge className="bg-green-50 text-green-600 font-bold border-none text-[9px] uppercase tracking-widest">
-            Connected
-          </Badge>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-xl font-bold border-gray-100 shadow-sm"
-          >
-            Connect
-          </Button>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+
 
 function NotificationToggle({
   label,
@@ -1681,7 +985,7 @@ function DangerItem({
         className={cn(
           "rounded-2xl font-bold h-11 px-6 shrink-0",
           variant === "outline" &&
-            "border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700",
+          "border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700",
         )}
       >
         {buttonLabel}

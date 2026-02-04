@@ -11,3 +11,4 @@ export { default as settingsRoutes } from "./settings";
 export { default as newsletterRoutes } from "./newsletter";
 export { default as publicRoutes } from "./public";
 export { default as uploadRoutes } from "./upload";
+export { default as userRoutes } from "./user";
