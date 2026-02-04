@@ -8,6 +8,7 @@ import {
   integer,
   pgEnum,
   decimal,
+  numeric,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -44,6 +45,9 @@ export const users = pgTable("users", {
   resetPasswordToken: varchar("reset_password_token", { length: 255 }),
   resetPasswordExpires: timestamp("reset_password_expires"),
   createdAt: timestamp("created_at").defaultNow(),
+  deletedAt: timestamp("deleted_at"),
+  deletionRequestedAt: timestamp("deletion_requested_at"),
+  disabledAt: timestamp("disabled_at"),
 
   // Profile
   avatarUrl: text("avatar_url"),
@@ -203,12 +207,66 @@ export const newsletters = pgTable("newsletters", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const loanPreferences = pgTable("loan_preferences", {
+  id: uuid("id").primaryKey().defaultRandom(),
+
+  // 🔗 One-to-one relationship
+  userId: uuid("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+
+  /* ================= Loan Rules ================= */
+  minLoanAmount: integer("min_loan_amount").notNull().default(10_000),
+  maxLoanAmount: integer("max_loan_amount").notNull().default(5_000_000),
+
+  // percentage (e.g. 5.5%)
+  defaultInterestRate: numeric("default_interest_rate", {
+    precision: 5,
+    scale: 2,
+  })
+    .notNull()
+    .default("5.00"),
+
+  gracePeriodDays: integer("grace_period_days").notNull().default(3),
+
+  /* ================= Documents Required ================= */
+  requireGovernmentId: boolean("require_government_id").notNull().default(true),
+  requireProofOfAddress: boolean("require_proof_of_address").notNull().default(true),
+  requireBankStatement: boolean("require_bank_statement").notNull().default(false),
+  requireUtilityBill: boolean("require_utility_bill").notNull().default(false),
+  requireEmploymentLetter: boolean("require_employment_letter").notNull().default(false),
+
+  /* ================= Verification Requirements ================= */
+  requireBVNVerification: boolean("require_bvn_verification").notNull().default(true),
+  requirePhoneVerification: boolean("require_phone_verification").notNull().default(true),
+  requireBankAccountValidation: boolean("require_bank_account_validation").notNull().default(true),
+  requireCreditBureauCheck: boolean("require_credit_bureau_check").notNull().default(false),
+
+  /* ================= Auto-Approve ================= */
+  autoApproveEnabled: boolean("auto_approve_enabled").notNull().default(false),
+
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   loanApps: many(loanApps),
   payoutAccounts: many(payoutAccounts),
+   loanPreferences: one(loanPreferences),
 }));
 
+
+export const loanPreferencesRelations = relations(
+  loanPreferences,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [loanPreferences.userId],
+      references: [users.id],
+    }),
+  })
+);
 export const payoutAccountsRelations = relations(payoutAccounts, ({ one }) => ({
   user: one(users, {
     fields: [payoutAccounts.userId],

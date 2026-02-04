@@ -80,18 +80,23 @@ auth.post("/login", async (c) => {
     );
   }
 
+  // Check if user account is soft-deleted
+  if (result.data.user.deletedAt) {
+    return c.json(
+      { error: "Account has been deleted and cannot be used for login" },
+      401
+    );
+  }
   // ✅ Get IP safely
   const ip =
-    c.req.header("cf-connecting-ip") ||
-    c.req.header("x-forwarded-for") ||
-    c.req.header("x-real-ip") ||
-    "unknown";
+  c.req.header("cf-connecting-ip") ??
+  c.req.header("x-forwarded-for") ??
+  c.req.header("x-real-ip") ??
+  "unknown";
 
-  console.log("📍 IP detected:", ip);
+const geoCountry = c.req.header("cf-ipcountry") ?? "unknown";
+const geoCity = c.req.header("cf-ipcity") ?? "unknown";
 
-// TODO: resolve geo from IP
-const city = "Lagos";
-const country = "Nigeria";
 const deviceFingerprint = await createDeviceFingerprint(
   ua.browser.name ?? "Unknown",
   ua.os.name ?? "Unknown",
@@ -104,8 +109,8 @@ await authService.saveSessions({
   browser: ua.browser.name,
   os: ua.os.name,
   ipAddress: ip,
-  city,
-  country,
+  city:geoCity,
+  country:geoCountry,
   isCurrent: true,
   deviceFingerprint,
 });

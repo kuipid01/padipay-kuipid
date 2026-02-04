@@ -5,6 +5,8 @@ import { users, payoutAccounts } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { authMiddleware } from "../middleware/auth";
 import { updateUserSchema } from "../zod-schemas/user";
+import { comparePassword } from "../lib";
+import { usersRepo } from "../domain/auth";
 
 const router = new Hono();
 
@@ -26,7 +28,17 @@ router.get("/", async (c) => {
             brandColor:true,
             brandLogoUrl:true,
             isTwoFactorEnabled:true,
-            language:true
+            language:true,
+            timezone:true,
+            emailNotifyNewApplication:true,
+            emailNotifyPaymentFailed:true,
+            emailNotifyPaymentReceived:true,
+            emailNotifyLoanOverdue:true,
+            smsNotifyCriticalOnly:true,
+            disabledAt:true,
+            deletedAt:true,
+            deletionRequestedAt:true,
+            
         }
     });
 
@@ -106,6 +118,39 @@ router.patch("/", async (c) => {
     );
   }
 });
+
+
+//enable user 
+
+//enable user 
+router.post("/enable", async (c) => { 
+    const userCtx = c.get("user");
+    if(!userCtx?.id){
+        return c.json({error:"Unauthorized"}, 401);
+    }
+    
+    const {password} = await c.req.json();
+
+    const user = await usersRepo.findById(userCtx.id);
+    if (!user) {
+        return c.json({
+            success: false,
+            error: { code: 401, message: "Invalid credentials" }
+        }, 401);
+    }
+    
+    const isValid = await comparePassword(password, user.passwordHash);
+    if(!isValid) {
+        return c.json({error:"Invalid password"}, 401);
+    }
+
+    const updated = await db.update(users)
+        .set({disabledAt: null})
+        .where(eq(users.id, user.id))
+        .returning();
+        
+    return c.json(updated[0]);
+})
 
 
 export default router;

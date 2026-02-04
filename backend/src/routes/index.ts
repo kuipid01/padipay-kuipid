@@ -12,3 +12,4 @@ export { default as newsletterRoutes } from "./newsletter";
 export { default as publicRoutes } from "./public";
 export { default as uploadRoutes } from "./upload";
 export { default as userRoutes } from "./user";
+export { default as loanPreferenceRoute } from "./loanPreference";

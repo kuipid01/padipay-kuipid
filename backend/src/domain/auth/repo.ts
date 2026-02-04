@@ -19,6 +19,11 @@ export const usersRepo = {
       where: eq(users.email, email),
     });
   },
+  async findById(id: string) {
+    return db.query.users.findFirst({
+      where: eq(users.id, id),
+    });
+  },
   async saveSession(data: InsertUserSession) {
     await db.transaction(async (tx) => {
       // 1️⃣ Mark all inactive
@@ -66,11 +71,7 @@ export const usersRepo = {
     });
   },
 
-  async findById(id: string) {
-    return db.query.users.findFirst({
-      where: eq(users.id, id),
-    });
-  },
+
 
   async create(data: CreateUserInput) {
     const [user] = await db

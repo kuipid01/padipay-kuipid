@@ -36,6 +36,20 @@
       "when": 1770096321820,
       "tag": "0004_quick_madelyne_pryor",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1770194508107,
+      "tag": "0005_pretty_dark_phoenix",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770199616156,
+      "tag": "0006_lowly_guardian",
+      "breakpoints": true
     }
   ]
 }

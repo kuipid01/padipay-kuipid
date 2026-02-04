@@ -17,7 +17,9 @@ interface User {
   emailNotifyPaymentFailed?: boolean;
   emailNotifyLoanOverdue?: boolean;
   smsNotifyCriticalOnly?: boolean;
+  disabledAt?: Date;
 }
+
 
 export function useUser() {
   const query = useQuery<User>({

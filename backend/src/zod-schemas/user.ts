@@ -1,6 +1,14 @@
-import { z } from "zod";
+import  { z } from "zod";
 import { InferInsertModel } from "drizzle-orm";
 import { userSessions } from "../db/schema";
+
+
+const dateSchema = z.preprocess(
+  (val) => (typeof val === "string" ? new Date(val) : val),
+  z.date()
+);
+
+
 
 
 export const updateUserSchema = z.object({
@@ -21,6 +29,9 @@ export const updateUserSchema = z.object({
 paystackPublicKey:z.string().optional(),
 paystackSecretKey:z.string().optional(),
   smsNotifyCriticalOnly: z.boolean().optional(),
+    deletedAt: dateSchema.optional(),
+    deletionRequestedAt: dateSchema.optional(),
+    disabledAt: dateSchema.optional(),
 });
 
 

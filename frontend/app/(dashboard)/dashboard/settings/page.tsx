@@ -87,6 +87,8 @@ import { LoanPreferenceSection } from "../../../../components/settings/loand-pre
 import { BankAccounts } from "../../../../components/settings/bank-accounts";
 import { PaystackInt } from "../../../../components/settings/paystack-int";
 import { PasswordCard } from "../../../../components/settings/password";
+import { DangerZone } from "../../../../components/settings/danger";
+import { useQueryClient } from "@tanstack/react-query";
 
 // =============================================
 // SCHEMAS
@@ -157,10 +159,10 @@ const navItems: NavItem[] = [
     icon: <CreditCard size={18} />,
   },
   { id: "loans", label: "Loan Preferences", icon: <FileText size={18} /> },
-  { id: "integrations", label: "Integrations", icon: <Zap size={18} /> },
+  // { id: "integrations", label: "Integrations", icon: <Zap size={18} /> },
   { id: "notifications", label: "Notifications", icon: <Bell size={18} /> },
   { id: "branding", label: "Branding & Links", icon: <Palette size={18} /> },
-  { id: "compliance", label: "Compliance", icon: <FileCheck size={18} /> },
+  // { id: "compliance", label: "Compliance", icon: <FileCheck size={18} /> },
   { id: "danger", label: "Danger Zone", icon: <AlertTriangle size={18} /> },
 ];
 
@@ -300,6 +302,7 @@ export default function SettingsPage() {
     }
   }
 
+  const queryClient = useQueryClient()
   // Generic Settings Update Handler
   async function updateSettings(values: any) {
     setIsSaving(true);
@@ -309,6 +312,7 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
+      queryClient.invalidateQueries({ queryKey: ["user"] })
       if (!res.ok) throw new Error("Failed to update settings");
       toast.success("Settings updated successfully");
       return true;
@@ -778,7 +782,10 @@ export default function SettingsPage() {
                   <NotificationToggle
                     label="Critical alerts only"
                     description="Security and high-priority notifications"
-                    enabled={false}
+                    enabled={notificationSettings.smsNotifyCriticalOnly}
+                    onToggle={(val) =>
+                      handleNotificationToggle("smsNotifyCriticalOnly", val)
+                    }
                   />
                 </CardContent>
               </Card>
@@ -833,38 +840,7 @@ export default function SettingsPage() {
 
           {/* Danger Zone Section */}
           {activeSection === "danger" && (
-            <div className="space-y-8">
-              <SectionHeader
-                icon={<AlertTriangle size={24} />}
-                title="Danger Zone"
-                description="Irreversible actions. Proceed with caution."
-              />
-
-              <Card className="border-2 border-red-100 shadow-sm rounded-[32px] bg-red-50/30">
-                <CardContent className="p-8 space-y-6">
-                  <DangerItem
-                    title="Disable Account"
-                    description="Temporarily disable your account. You can re-enable it later."
-                    buttonLabel="Disable"
-                    variant="outline"
-                  />
-                  <Separator className="bg-red-100" />
-                  <DangerItem
-                    title="Revoke All API Keys"
-                    description="Invalidate all active API keys immediately."
-                    buttonLabel="Revoke Keys"
-                    variant="outline"
-                  />
-                  <Separator className="bg-red-100" />
-                  <DangerItem
-                    title="Delete Account"
-                    description="Permanently delete your account and all associated data. This cannot be undone."
-                    buttonLabel="Delete Account"
-                    variant="destructive"
-                  />
-                </CardContent>
-              </Card>
-            </div>
+            <DangerZone updateSetting={updateSettings} />
           )}
         </main>
       </div>
@@ -965,33 +941,4 @@ function NotificationToggle({
   );
 }
 
-function DangerItem({
-  title,
-  description,
-  buttonLabel,
-  variant,
-}: {
-  title: string;
-  description: string;
-  buttonLabel: string;
-  variant: "outline" | "destructive";
-}) {
-  return (
-    <div className="flex items-center justify-between gap-6">
-      <div>
-        <p className="font-black text-red-700">{title}</p>
-        <p className="text-sm text-red-600/70 font-medium">{description}</p>
-      </div>
-      <Button
-        variant={variant === "destructive" ? "destructive" : "outline"}
-        className={cn(
-          "rounded-2xl font-bold h-11 px-6 shrink-0",
-          variant === "outline" &&
-          "border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700",
-        )}
-      >
-        {buttonLabel}
-      </Button>
-    </div>
-  );
-}
+
