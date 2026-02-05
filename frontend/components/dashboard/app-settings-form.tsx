@@ -17,15 +17,12 @@ import {
     Trash2,
     AlertTriangle,
     Settings,
-    Percent,
-    Calendar,
     Save
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
     Form,
     FormControl,
@@ -35,6 +32,7 @@ import {
     FormMessage,
     FormDescription,
 } from "@/components/ui/form";
+
 import {
     Dialog,
     DialogContent,
@@ -46,24 +44,37 @@ import {
 } from "@/components/ui/dialog";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { RepaymentplansCards } from "./repaymentplans-cards";
 
 const appSettingsSchema = z.object({
     name: z.string().min(3, "Name must be at least 3 characters"),
     slug: z.string().min(3, "Slug must be at least 3 characters").regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens"),
-    defaultInterestRate: z.number().min(0).max(100),
-    defaultDurationMonths: z.number().min(1).max(60),
 });
 
 type AppSettingsFormValues = z.infer<typeof appSettingsSchema>;
+
+type RepaymentPlan = {
+    id: string;
+    name: string;
+    durationDays: number;
+    interestRate: number;
+    creditTier: "excellent" | "good" | "fair" | "poor" | "all";
+    earlyRepaymentAllowed: boolean;
+    earlyRepaymentDiscount?: number | null;
+    gracePeriodDays: number;
+    lateFeesPercentage: number;
+    isDefault: boolean;
+    isActive: boolean;
+    loanAppId?: string;
+};
 
 interface LoanApp {
     id: string;
     name: string;
     slug: string;
-    defaultInterestRate: string;
-    defaultDurationMonths: number;
     isActive: boolean | null;
     createdAt: string;
+    repaymentPlans: RepaymentPlan[];
 }
 
 interface AppSettingsFormProps {
@@ -73,23 +84,23 @@ interface AppSettingsFormProps {
 export function AppSettingsForm({ app }: AppSettingsFormProps) {
     const router = useRouter();
     const [isSaving, setIsSaving] = useState(false);
+  
     const [isToggling, setIsToggling] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isActive, setIsActive] = useState(app.isActive ?? true);
+   
 
     const form = useForm<AppSettingsFormValues>({
         resolver: zodResolver(appSettingsSchema),
         defaultValues: {
             name: app.name,
             slug: app.slug,
-            defaultInterestRate: parseFloat(app.defaultInterestRate),
-            defaultDurationMonths: app.defaultDurationMonths,
         },
     });
 
     const copyLink = () => {
-        const url = `${window.location.origin}/apply/${app.slug}`;
+        const url = `${window.location.origin}/loan/${app.slug}`;
         navigator.clipboard.writeText(url);
         toast.success("Link copied to clipboard!");
     };
@@ -164,6 +175,8 @@ export function AppSettingsForm({ app }: AppSettingsFormProps) {
         }
     }
 
+  
+
     return (
         <div className="space-y-8">
             {/* Back Button */}
@@ -215,7 +228,7 @@ export function AppSettingsForm({ app }: AppSettingsFormProps) {
                             className="h-11 rounded-2xl font-bold border-gray-100 shadow-sm gap-2"
                             asChild
                         >
-                            <a href={`/apply/${app.slug}`} target="_blank" rel="noopener noreferrer">
+                            <a href={`/loan/${app.slug}`} target="_blank" rel="noopener noreferrer">
                                 <ExternalLink size={16} /> Preview Page
                             </a>
                         </Button>
@@ -262,7 +275,7 @@ export function AppSettingsForm({ app }: AppSettingsFormProps) {
                                             <FormControl>
                                                 <div className="flex items-center">
                                                     <span className="px-4 h-12 flex items-center bg-gray-50 border border-r-0 border-gray-100 rounded-l-2xl text-sm text-gray-400 font-bold whitespace-nowrap">
-                                                        /apply/
+                                                        /loan/
                                                     </span>
                                                     <Input
                                                         className="h-12 rounded-l-none rounded-r-2xl border-gray-100 shadow-sm"
@@ -272,61 +285,6 @@ export function AppSettingsForm({ app }: AppSettingsFormProps) {
                                                 </div>
                                             </FormControl>
                                             <FormDescription className="text-xs text-gray-400">This is your public loan application link.</FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <Separator className="bg-gray-50" />
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <FormField
-                                    control={form.control}
-                                    name="defaultInterestRate"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                <Percent size={12} /> Default Interest Rate
-                                            </FormLabel>
-                                            <FormControl>
-                                                <div className="flex items-center">
-                                                    <Input
-                                                        type="number"
-                                                        className="h-12 rounded-l-2xl rounded-r-none border-gray-100 shadow-sm"
-                                                        {...field}
-                                                        onChange={e => field.onChange(Number(e.target.value))}
-                                                    />
-                                                    <span className="px-4 h-12 flex items-center bg-gray-50 border border-l-0 border-gray-100 rounded-r-2xl text-sm text-gray-400 font-bold">
-                                                        %
-                                                    </span>
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="defaultDurationMonths"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                <Calendar size={12} /> Default Duration
-                                            </FormLabel>
-                                            <FormControl>
-                                                <div className="flex items-center">
-                                                    <Input
-                                                        type="number"
-                                                        className="h-12 rounded-l-2xl rounded-r-none border-gray-100 shadow-sm"
-                                                        {...field}
-                                                        onChange={e => field.onChange(Number(e.target.value))}
-                                                    />
-                                                    <span className="px-4 h-12 flex items-center bg-gray-50 border border-l-0 border-gray-100 rounded-r-2xl text-sm text-gray-400 font-bold">
-                                                        months
-                                                    </span>
-                                                </div>
-                                            </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -347,6 +305,8 @@ export function AppSettingsForm({ app }: AppSettingsFormProps) {
                 </form>
             </Form>
 
+            {/* Repayment Plans */}
+         <RepaymentplansCards app={app} />
             {/* App Status Card */}
             <Card className="border-none shadow-sm rounded-[32px]">
                 <CardHeader className="p-8">

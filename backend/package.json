@@ -12,6 +12,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.7.6",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",
     "drizzle-orm": "^0.45.1",

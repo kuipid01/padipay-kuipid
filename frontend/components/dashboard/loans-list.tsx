@@ -51,6 +51,7 @@ interface LoansListProps {
 }
 
 export function LoansList({ initialLoans }: LoansListProps) {
+    console.log(initialLoans,"initialLoans")
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string[]>([]);
 

@@ -9,6 +9,7 @@ import {
   pgEnum,
   decimal,
   numeric,
+  doublePrecision
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -32,6 +33,10 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "EMAIL",
   "SMS",
 ]);
+
+// Enums matching your Zod creditTier and collectionStrategy
+export const creditTierEnum = pgEnum("credit_tier", ["excellent", "good", "fair", "poor", "all"]);
+export const collectionStrategyEnum = pgEnum("collection_strategy", ["standard", "aggressive", "lenient"]);
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -114,18 +119,67 @@ export const userSessions = pgTable("user_sessions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+
+
+
+/**
+ * Loan Applications Table
+ * Stores the main portal configuration
+ */
 export const loanApps = pgTable("loan_apps", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
   ownerId: uuid("owner_id")
     .references(() => users.id)
     .notNull(),
-  name: varchar("name", { length: 255 }).notNull(),
-  slug: varchar("slug", { length: 255 }).notNull().unique(),
-  defaultInterestRate: decimal("default_interest_rate").notNull(),
-  defaultDurationMonths: integer("default_duration_months").notNull(),
+    isActive:boolean("is_active").default(true),
+  // Amounts
+  minLoanAmount: integer("min_loan_amount").notNull().default(100),
+  maxLoanAmount: integer("max_loan_amount").notNull().default(10000),
+  autoApprovalLimit: integer("auto_approval_limit"),
+  
+  // Global Settings
+  allowCustomAmounts: boolean("allow_custom_amounts").notNull().default(true),
+  requireCreditCheck: boolean("require_credit_check").notNull().default(false),
+  collectionStrategy: collectionStrategyEnum("collection_strategy").notNull().default("standard"),
+  
+  // Metadata
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});   
+
+
+/**
+ * Repayment Plans Table
+ * Linked to a specific Loan App
+ */
+export const repaymentPlans = pgTable("repayment_plans", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  loanAppId: uuid("loan_app_id")
+    .references(() => loanApps.id, { onDelete: "cascade" })
+    .notNull(),
+  
+  name: text("name").notNull(),
+  durationDays: integer("duration_days").notNull(),
+  interestRate: doublePrecision("interest_rate").notNull(),
+  creditTier: creditTierEnum("credit_tier").notNull().default("all"),
+  
+  // Repayment Specifics
+  earlyRepaymentAllowed: boolean("early_repayment_allowed").default(true),
+  earlyRepaymentDiscount: doublePrecision("early_repayment_discount").default(0),
+  lateFeesPercentage: doublePrecision("late_fees_percentage").notNull().default(5),
+  gracePeriodDays: integer("grace_period_days").notNull().default(3),
+  
+  // UI/Logic States
+  isDefault: boolean("is_default").default(false),
   isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
 });
+
+
+
+
+
 
 export const borrowers = pgTable("borrowers", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -141,6 +195,9 @@ export const loanApplications = pgTable("loan_applications", {
   id: uuid("id").defaultRandom().primaryKey(),
   loanAppId: uuid("loan_app_id")
     .references(() => loanApps.id)
+    .notNull(),
+    repaymentPlanId: uuid("repayment_plan_id")
+    .references(() => repaymentPlans.id)
     .notNull(),
   borrowerId: uuid("borrower_id")
     .references(() => borrowers.id)
@@ -250,6 +307,12 @@ export const loanPreferences = pgTable("loan_preferences", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+
+
+
+
+
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   loanApps: many(loanApps),
@@ -280,7 +343,17 @@ export const loanAppsRelations = relations(loanApps, ({ one, many }) => ({
     references: [users.id],
   }),
   applications: many(loanApplications),
+  repaymentPlans: many(repaymentPlans),
 }));
+
+export const repaymentPlansRelations = relations(repaymentPlans, ({ one, many  }) => ({
+  loanApp: one(loanApps, {
+    fields: [repaymentPlans.loanAppId],
+    references: [loanApps.id],
+  }),
+  applications: many(loanApplications),
+}));
+
 
 export const loanApplicationsRelations = relations(
   loanApplications,
@@ -293,7 +366,11 @@ export const loanApplicationsRelations = relations(
       fields: [loanApplications.borrowerId],
       references: [borrowers.id],
     }),
-  }),
+    repaymentPlan: one(repaymentPlans, {
+      fields: [loanApplications.repaymentPlanId],
+      references: [repaymentPlans.id],
+    }),
+  }), 
 );
 
 export const repaymentsRelations = relations(repayments, ({ one }) => ({

@@ -1,0 +1,1 @@
+ALTER TABLE "loan_apps" ADD COLUMN "is_active" boolean DEFAULT true;

@@ -636,7 +636,7 @@ export default function SettingsPage() {
               </Form>
 
               {/* Account Status Card */}
-              <Card className="border-none shadow-sm rounded-[32px]">
+              {/* <Card className="border-none shadow-sm rounded-[32px]">
                 <CardHeader className="p-8 pb-0">
                   <CardTitle className="text-lg font-black text-main-green">
                     Account Status
@@ -667,7 +667,7 @@ export default function SettingsPage() {
                     />
                   </div>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
           )}
 

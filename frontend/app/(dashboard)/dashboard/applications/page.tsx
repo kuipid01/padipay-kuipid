@@ -1,24 +1,18 @@
-import { db } from "@/db";
-import { loanApplications } from "@/db/schema";
-import { getSession } from "@/lib/session";
-import { desc } from "drizzle-orm";
+"use client";
+
 import { ApplicationsList } from "@/components/dashboard/applications-list";
+import { Button } from "@/components/ui/button";
+import { useFetch } from "@/hooks/general";
 
-export default async function ApplicationsPage() {
-    const session = await getSession();
-    const userId = session?.id as string;
+type ApplicationsResponse = {
+    applications: any[];
+};
 
-    // Fetch applications for all apps owned by this user
-    const applications = await db.query.loanApplications.findMany({
-        with: {
-            loanApp: true,
-            borrower: true,
-        },
-        orderBy: [desc(loanApplications.createdAt)],
+export default function ApplicationsPage() {
+    const { data, isLoading, error } = useFetch<ApplicationsResponse>("/api/loan-applications", {
+        key: "loan-applications",
     });
-
-    // Filter applications where owner is current user
-    const userApplications = applications.filter(app => app.loanApp.ownerId === userId);
+    const applications = data?.applications ?? [];
 
     return (
         <div className="space-y-8">
@@ -27,7 +21,18 @@ export default async function ApplicationsPage() {
                 <p className="text-gray-500 font-medium">Scan, filter, and review incoming borrower requests with ease.</p>
             </div>
 
-            <ApplicationsList initialApplications={userApplications} />
+            {isLoading ? (
+                <div className="h-64 rounded-[32px] bg-gray-50 animate-pulse" />
+            ) : error ? (
+                <div className="space-y-4">
+                    <p className="text-sm font-bold text-red-500">Failed to load applications.</p>
+                    <Button variant="outline" className="border-gray-100 rounded-2xl font-bold h-11">
+                        Retry
+                    </Button>
+                </div>
+            ) : (
+                <ApplicationsList initialApplications={applications} />
+            )}
         </div>
     );
 }

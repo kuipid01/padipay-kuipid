@@ -1,9 +1,8 @@
 
-import { db } from "@/db";
-import { loanApps } from "@/db/schema";
-import { getSession } from "@/lib/session";
-import { eq, and } from "drizzle-orm";
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import {
     Users,
     CreditCard,
@@ -19,42 +18,153 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { LoanApp } from "@/hooks/user/loan-apps";
 
-interface AppDetailsPageProps {
-    params: Promise<{ appId: string }>;
-}
+type LoanApplication = {
+    id: string;
+    loanAppId: string;
+    borrowerId: string;
+    amount: string;
+    durationMonths: number;
+    interestRate: string;
+    status: "PENDING" | "APPROVED" | "REJECTED";
+    createdAt: string;
+    borrower?: {
+        fullName: string;
+        email: string;
+        phone: string;
+    };
+};
 
-export default async function AppDetailsPage({ params }: AppDetailsPageProps) {
-    const { appId } = await params;
-    const session = await getSession();
-    const userId = session?.id as string;
+type LoanAppResponse = {
+    loanApp?: LoanApp;
+    app?: LoanApp;
+    data?: LoanApp;
+    applications?: LoanApplication[];
+    loanApplications?: LoanApplication[];
+};
 
-    const app = await db.query.loanApps.findFirst({
-        where: and(
-            eq(loanApps.id, appId),
-            eq(loanApps.ownerId, userId)
-        ),
-    });
+const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("en-NG", {
+        style: "currency",
+        currency: "NGN",
+        maximumFractionDigits: 0,
+    }).format(value);
 
-    if (!app) {
-        notFound();
+export default function AppDetailsPage() {
+    const params = useParams<{ appId: string }>();
+    const router = useRouter();
+    const appId = params?.appId;
+    const [app, setApp] = useState<LoanApp | null>(null);
+    const [applications, setApplications] = useState<LoanApplication[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!appId) return;
+        let isMounted = true;
+        setIsLoading(true);
+        setError(null);
+
+        fetch(`/api/loan-apps/${appId}`)
+            .then(async (res) => {
+                const data = (await res.json()) as LoanAppResponse | LoanApp;
+                if (!res.ok) {
+                    const message = (data as { error?: string })?.error || "Failed to fetch loan app";
+                    throw new Error(message);
+                }
+                return data;
+            })
+            .then((data) => {
+                if (!isMounted) return;
+                const payload = data as LoanAppResponse;
+                const appData = payload.loanApp ?? payload.app ?? payload.data ?? (data as LoanApp);
+                if (!appData?.id) {
+                    setError("Loan app not found.");
+                    return;
+                }
+                const appsList =
+                    (Array.isArray(payload.applications) && payload.applications) ||
+                    (Array.isArray(payload.loanApplications) && payload.loanApplications) ||
+                    (Array.isArray((appData as any).applications) && (appData as any).applications) ||
+                    [];
+                setApp(appData);
+                setApplications(appsList);
+            })
+            .catch((err: Error) => {
+                if (!isMounted) return;
+                setError(err.message);
+            })
+            .finally(() => {
+                if (!isMounted) return;
+                setIsLoading(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [appId]);
+    const stats = useMemo(() => {
+        const total = applications.length;
+        const approved = applications.filter((item) => item.status === "APPROVED").length;
+        const rejected = applications.filter((item) => item.status === "REJECTED").length;
+        const totalDisbursed = applications
+            .filter((item) => item.status === "APPROVED")
+            .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+        return [
+            { label: "Total Applications", value: total.toString(), icon: <Users size={20} className="text-blue-500" />, color: "bg-blue-50" },
+            { label: "Approved Loans", value: approved.toString(), icon: <CheckCircle2 size={20} className="text-green-500" />, color: "bg-green-50" },
+            { label: "Rejected", value: rejected.toString(), icon: <XCircle size={20} className="text-red-500" />, color: "bg-red-50" },
+            { label: "Total Disbursed", value: formatCurrency(totalDisbursed), icon: <CreditCard size={20} className="text-violet-500" />, color: "bg-violet-50" },
+        ];
+    }, [applications]);
+
+    const recentApplications = useMemo(() => {
+        const sorted = [...applications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        return sorted.slice(0, 5);
+    }, [applications]);
+
+    const filteredApplications = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return recentApplications;
+        return recentApplications.filter((item) =>
+            item.id.toLowerCase().includes(query) ||
+            item.borrowerId.toLowerCase().includes(query) ||
+            item.borrower?.fullName?.toLowerCase().includes(query) ||
+            item.borrower?.email?.toLowerCase().includes(query)
+        );
+    }, [recentApplications, searchQuery]);
+
+    if (isLoading) {
+        return (
+            <div className="space-y-8">
+                <div className="h-8 w-64 rounded-lg bg-gray-100 animate-pulse" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <Card key={i} className="border-none shadow-sm rounded-[24px]">
+                            <CardContent className="p-6">
+                                <div className="h-3 w-24 bg-gray-100 rounded-full mb-3 animate-pulse" />
+                                <div className="h-6 w-20 bg-gray-100 rounded-full animate-pulse" />
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            </div>
+        );
     }
 
-    // Mock Data for this specific app
-    const stats = [
-        { label: "Total Applications", value: "156", icon: <Users size={20} className="text-blue-500" />, color: "bg-blue-50" },
-        { label: "Approved Loans", value: "89", icon: <CheckCircle2 size={20} className="text-green-500" />, color: "bg-green-50" },
-        { label: "Rejected", value: "24", icon: <XCircle size={20} className="text-red-500" />, color: "bg-red-50" },
-        { label: "Total Disbursed", value: "₦4.2M", icon: <CreditCard size={20} className="text-violet-500" />, color: "bg-violet-50" },
-    ];
-
-    const recentApplications = [
-        { id: "APP-001", name: "John Doe", amount: "₦50,000", date: "2 mins ago", status: "Pending" },
-        { id: "APP-002", name: "Sarah Smith", amount: "₦150,000", date: "1 hour ago", status: "Approved" },
-        { id: "APP-003", name: "Michael Brown", amount: "₦30,000", date: "3 hours ago", status: "Rejected" },
-        { id: "APP-004", name: "Emily Davis", amount: "₦500,000", date: "1 day ago", status: "Pending" },
-        { id: "APP-005", name: "Chris Wilson", amount: "₦75,000", date: "2 days ago", status: "Approved" },
-    ];
+    if (error || !app) {
+        return (
+            <div className="space-y-6">
+                <p className="text-sm font-bold text-red-500">{error || "Unable to load this loan app."}</p>
+                <Button variant="outline" className="border-gray-100 rounded-2xl font-bold h-11" onClick={() => router.push("/dashboard/apps")}>
+                    Back to Apps
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">
@@ -109,7 +219,12 @@ export default async function AppDetailsPage({ params }: AppDetailsPageProps) {
                     <div className="flex gap-4 mb-6">
                         <div className="relative flex-1 max-w-sm">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                            <Input placeholder="Search applicants..." className="pl-10 rounded-xl bg-gray-50 border-gray-100 h-10 font-bold" />
+                            <Input
+                                placeholder="Search applicants..."
+                                className="pl-10 rounded-xl bg-gray-50 border-gray-100 h-10 font-bold"
+                                value={searchQuery}
+                                onChange={(event) => setSearchQuery(event.target.value)}
+                            />
                         </div>
                         <Button variant="outline" className="rounded-xl border-gray-100 font-bold text-gray-500 gap-2 h-10">
                             <Filter size={16} /> Filter
@@ -117,23 +232,29 @@ export default async function AppDetailsPage({ params }: AppDetailsPageProps) {
                     </div>
 
                     <div className="space-y-4">
-                        {recentApplications.map((item, i) => (
+                        {filteredApplications.length === 0 ? (
+                            <div className="p-6 text-center text-sm font-bold text-gray-400">
+                                No recent applications found.
+                            </div>
+                        ) : filteredApplications.map((item, i) => (
                             <div key={i} className="flex items-center justify-between p-4 rounded-2xl hover:bg-gray-50 transition-colors cursor-pointer group border border-transparent hover:border-gray-100">
                                 <div className="flex items-center gap-4">
                                     <div className="size-10 rounded-full bg-main-green/10 flex items-center justify-center font-black text-main-green">
-                                        {item.name.charAt(0)}
+                                        {(item.borrower?.fullName || item.borrowerId).charAt(0)}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-main-green group-hover:text-primary transition-colors">{item.name}</p>
-                                        <p className="text-xs text-gray-400 font-bold">{item.id} • {item.date}</p>
+                                        <p className="font-bold text-main-green group-hover:text-primary transition-colors">
+                                            {item.borrower?.fullName || "Unknown Borrower"}
+                                        </p>
+                                        <p className="text-xs text-gray-400 font-bold">{item.id}</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="font-black text-main-green">{item.amount}</p>
+                                    <p className="font-black text-main-green">{formatCurrency(Number(item.amount || 0))}</p>
                                     <Badge className={cn(
                                         "capitalize font-bold border-none text-[10px] h-5 mt-1",
-                                        item.status === "Approved" ? "bg-green-100 text-green-700" :
-                                            item.status === "Rejected" ? "bg-red-100 text-red-700" :
+                                        item.status === "APPROVED" ? "bg-green-100 text-green-700" :
+                                            item.status === "REJECTED" ? "bg-red-100 text-red-700" :
                                                 "bg-orange-100 text-orange-700"
                                     )}>
                                         {item.status}
@@ -142,6 +263,74 @@ export default async function AppDetailsPage({ params }: AppDetailsPageProps) {
                             </div>
                         ))}
                     </div>
+                </CardContent>
+            </Card>
+
+            {/* Repayment Plans */}
+            <Card className="border-none shadow-sm rounded-[32px]">
+                <CardHeader className="p-8 pb-0 flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle className="text-xl font-black text-main-green">Repayment Plans</CardTitle>
+                        <p className="text-sm font-medium text-gray-400 mt-1">Terms available for this loan app</p>
+                    </div>
+                </CardHeader>
+                <CardContent className="p-8">
+                    {app.repaymentPlans.length === 0 ? (
+                        <div className="p-6 text-center text-sm font-bold text-gray-400">
+                            No repayment plans available.
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {app.repaymentPlans.map((plan) => (
+                                <div
+                                    key={plan.name}
+                                    className="rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow"
+                                >
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <p className="text-sm font-black text-main-green">{plan.name}</p>
+                                            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                                                {plan.durationDays} Days • {plan.creditTier} Tier
+                                            </p>
+                                        </div>
+                                        {plan.isDefault && (
+                                            <Badge className="bg-lemon-primary/40 text-main-green border-none text-[10px] font-black uppercase tracking-widest">
+                                                Default
+                                            </Badge>
+                                        )}
+                                    </div>
+                                    <div className="mt-4 grid grid-cols-2 gap-3 text-xs font-bold text-gray-500">
+                                        <div>
+                                            <p className="text-[10px] uppercase tracking-widest text-gray-400">Interest</p>
+                                            <p className="text-sm text-main-green">{plan.interestRate}%</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] uppercase tracking-widest text-gray-400">Late Fee</p>
+                                            <p className="text-sm text-main-green">{plan.lateFeesPercentage}%</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] uppercase tracking-widest text-gray-400">Grace Period</p>
+                                            <p className="text-sm text-main-green">{plan.gracePeriodDays} Days</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] uppercase tracking-widest text-gray-400">Early Repay</p>
+                                            <p className="text-sm text-main-green">
+                                                {plan.earlyRepaymentAllowed ? `${plan.earlyRepaymentDiscount ?? 0}%` : "Not Allowed"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4">
+                                        <Badge className={cn(
+                                            "text-[10px] font-black uppercase tracking-widest border-none",
+                                            plan.isActive ? "bg-green-50 text-green-600" : "bg-gray-100 text-gray-500"
+                                        )}>
+                                            {plan.isActive ? "Active" : "Inactive"}
+                                        </Badge>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>

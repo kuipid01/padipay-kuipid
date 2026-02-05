@@ -52,19 +52,9 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { LoanApp } from "../../hooks/user/loan-apps";
 
-interface LoanApp {
-    id: string;
-    name: string;
-    slug: string;
-    defaultInterestRate: string;
-    defaultDurationMonths: number;
-    isActive: boolean | null;
-    createdAt: string;
-    _count?: {
-        applications: number;
-    };
-}
+
 
 interface AppsListProps {
     initialApps: LoanApp[];
@@ -91,10 +81,11 @@ export function AppsList({ initialApps }: AppsListProps) {
     });
 
     const activeApps = initialApps.filter(app => app.isActive).length;
-    const totalApplications = initialApps.reduce((sum, app) => sum + (app._count?.applications || 0), 0);
+    //TODO:USE LIVE DATA
+    const totalApplications = 100
 
     const copyLink = (slug: string) => {
-        const url = `${window.location.origin}/apply/${slug}`;
+        const url = `${window.location.origin}/loan/${slug}`;
         navigator.clipboard.writeText(url);
         toast.success("Link copied to clipboard!");
     };
@@ -151,13 +142,7 @@ export function AppsList({ initialApps }: AppsListProps) {
                     trend="Across all apps"
                     color="bg-violet-50"
                 />
-                <StatCard
-                    label="Avg. Interest Rate"
-                    value={`${initialApps.length > 0 ? (initialApps.reduce((sum, app) => sum + parseFloat(app.defaultInterestRate), 0) / initialApps.length).toFixed(1) : 0}%`}
-                    icon={<Percent className="text-orange-500" size={20} />}
-                    trend="Default rate"
-                    color="bg-orange-50"
-                />
+             
             </div>
 
             {/* Search & Filters */}
@@ -349,20 +334,7 @@ function AppCard({ app, onCopyLink, onDelete }: { app: LoanApp; onCopyLink: (slu
                 </div>
 
                 {/* Stats Row */}
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-3 rounded-2xl bg-gray-50/50">
-                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Interest</p>
-                        <p className="font-black text-main-green text-lg">{app.defaultInterestRate}%</p>
-                    </div>
-                    <div className="text-center p-3 rounded-2xl bg-gray-50/50">
-                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Duration</p>
-                        <p className="font-black text-main-green text-lg">{app.defaultDurationMonths}mo</p>
-                    </div>
-                    <div className="text-center p-3 rounded-2xl bg-gray-50/50">
-                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Apps</p>
-                        <p className="font-black text-main-green text-lg">{app._count?.applications || 0}</p>
-                    </div>
-                </div>
+            
 
                 {/* Action Buttons */}
                 <div className="flex gap-2 pt-2">
@@ -379,7 +351,7 @@ function AppCard({ app, onCopyLink, onDelete }: { app: LoanApp; onCopyLink: (slu
                         className="h-11 w-11 rounded-2xl bg-gray-50 text-gray-400 hover:text-main-green"
                         asChild
                     >
-                        <a href={`/apply/${app.slug}`} target="_blank" rel="noopener noreferrer">
+                        <a href={`/loan/${app.slug}`} target="_blank" rel="noopener noreferrer">
                             <ExternalLink size={16} />
                         </a>
                     </Button>
