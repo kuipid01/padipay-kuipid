@@ -1,26 +1,52 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, XCircle } from "lucide-react";
 
-export default function Page() {
+function SubscriptionSuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     const plan = searchParams.get("plan");
     const reference = searchParams.get("reference");
 
     useEffect(() => {
-        // Simulate verification delay
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 2000);
+        const verifyPayment = async () => {
+            if (!reference) {
+                setIsLoading(false);
+                setError("Transaction reference is missing.");
+                return;
+            }
 
-        return () => clearTimeout(timer);
-    }, []);
+            try {
+                const response = await fetch("/api/subscription/verify", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ reference }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Payment verification failed.");
+                }
+
+                setIsLoading(false);
+            } catch (err: any) {
+                console.error("Verification error:", err);
+                setError(err.message || "An error occurred while verifying your payment.");
+                setIsLoading(false);
+            }
+        };
+
+        verifyPayment();
+    }, [reference]);
 
     if (isLoading) {
         return (
@@ -30,6 +56,45 @@ export default function Page() {
                     <p className="text-white text-lg font-semibold">
                         Verifying your subscription...
                     </p>
+                    <p className="text-white/60 text-sm mt-2">
+                        Please don't close this page
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-main-green to-main-green/80 p-4">
+                <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center">
+                    <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <XCircle className="w-10 h-10 text-red-600" />
+                    </div>
+
+                    <h1 className="text-2xl md:text-3xl font-black text-main-green mb-4">
+                        Verification Failed
+                    </h1>
+
+                    <p className="text-gray-600 mb-8 font-medium">
+                        {error}
+                    </p>
+
+                    <div className="space-y-4">
+                        <Button
+                            onClick={() => window.location.reload()}
+                            className="w-full h-14 rounded-2xl text-lg font-black bg-lemon-primary text-main-green hover:bg-lemon-primary/90 shadow-lg shadow-lemon-primary/20"
+                        >
+                            Retry Verification
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={() => router.push("/dashboard")}
+                            className="w-full h-12 text-gray-500 font-bold hover:text-main-green"
+                        >
+                            Go to Dashboard anyway
+                        </Button>
+                    </div>
                 </div>
             </div>
         );
@@ -87,3 +152,17 @@ export default function Page() {
         </div>
     );
 }
+
+export default function Page() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-main-green to-main-green/80">
+                <Loader2 className="w-16 h-16 text-lemon-primary animate-spin" />
+            </div>
+        }>
+            <SubscriptionSuccessContent />
+        </Suspense>
+    );
+}
+
+

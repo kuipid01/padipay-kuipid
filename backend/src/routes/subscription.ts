@@ -238,29 +238,10 @@ subscription.post(
         );
       }
 
-      // Update payment record
-      await db
-        .update(subscriptionPayments)
-        .set({
-          paymentStatus: "success",
-          paidAt: new Date(verification.data.paid_at),
-          updatedAt: new Date(),
-        })
-        .where(eq(subscriptionPayments.reference, reference));
-
-      // Update user subscription
-      await db
-        .update(users)
-        .set({
-          plan: payment.plan,
-          subscriptionStatus: "active",
-          subscriptionEndsAt: payment.subscriptionEndDate,
-        })
-        .where(eq(users.id, user.id));
-
+      
       return c.json({
         success: true,
-        message: "Subscription activated successfully",
+        message: "Subscription payment verified successfully",
         data: {
           plan: payment.plan,
           subscriptionEndsAt: payment.subscriptionEndDate,
