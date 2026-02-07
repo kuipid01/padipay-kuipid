@@ -117,10 +117,14 @@ function SidebarContent({
   isCollapsed,
   setUpgradeModal,
   upgradeModal,
+  setIsMobileOpen,
+  isMobileOpen,
 }: {
   isCollapsed: boolean;
   upgradeModal: boolean;
   setUpgradeModal: Dispatch<SetStateAction<boolean>>;
+  setIsMobileOpen: (open: boolean) => void;
+  isMobileOpen: boolean;
 }) {
   const pathname = usePathname();
   const { user } = useUser();
@@ -256,6 +260,8 @@ export function DashboardSidebar({
             setUpgradeModal={setUpgradeModal}
             upgradeModal={upgradeModal}
             isCollapsed={false}
+            setIsMobileOpen={setIsMobileOpen}
+            isMobileOpen={isMobileOpen}
           />
         </SheetContent>
       </Sheet>
@@ -283,6 +289,8 @@ export function DashboardSidebar({
           setUpgradeModal={setUpgradeModal}
           upgradeModal={upgradeModal}
           isCollapsed={isCollapsed}
+          setIsMobileOpen={setIsMobileOpen}
+          isMobileOpen={isMobileOpen}
         />
       </aside>
     </>
