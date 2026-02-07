@@ -111,8 +111,8 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
   ];
 
   return (
-    <section id="pricing" className="py-16 md:py-24 bg-white">
-      <div className="container mx-auto px-5 sm:px-6 lg:px-8 overflow-x-hidden">
+    <section id="pricing" className="py-16 md:py-24 bg-white overflow-hidden">
+      <div className="container mx-auto px-5 sm:px-6 lg:px-8">
         {headerShown && (
           <div className="text-center mb-12 md:mb-16">
             <div className="inline-block px-4 py-1.5 mb-5 rounded-full border border-gray-200 bg-gray-50 text-xs sm:text-sm font-semibold text-gray-600">
@@ -122,7 +122,7 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
               Choose The Plan That Fits
               <br className="hidden sm:inline" /> Your Finances
             </h2>
-            <p className="text-gray-600 max-w-xl mx-auto text-base sm:text-lg">
+            <p className="text-gray-600 max-w-xl mx-auto text-base sm:text-lg font-medium">
               Simple, transparent pricing — perfect for startups and growing teams.
             </p>
           </div>
@@ -159,7 +159,7 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
         {/* Plans grid */}
         <div
           className={cn(
-            "grid gap-4 md:gap-6 lg:gap-8",
+            "grid gap-6 md:gap-10 lg:gap-12",
             isTablet ? "grid-cols-2" : "grid-cols-1",
             isDesktop ? "grid-cols-3" : ""
           )}
@@ -173,13 +173,13 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
                 key={plan.name}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ delay: idx * 0.08, duration: 0.6, type: "spring", stiffness: 110 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ delay: idx * 0.1, duration: 0.5, ease: "easeOut" }}
                 className={cn(
-                  "relative rounded-3xl p-7 md:p-9 flex flex-col border transition-all duration-400 h-full",
+                  "relative rounded-[2.5rem] p-8 md:p-10 flex flex-col border transition-all duration-300 h-full",
                   plan.featured
-                    ? "bg-main-green text-white border-transparent shadow-2xl shadow-green-900/20 md:scale-105 lg:scale-110 z-10"
-                    : "bg-white border-gray-200 shadow-lg hover:shadow-xl hover:-translate-y-1",
+                    ? "bg-main-green text-white border-transparent shadow-[0_20px_50px_rgba(31,73,65,0.2)] md:scale-105 lg:scale-110 z-10"
+                    : "bg-white border-gray-100 shadow-xl hover:shadow-2xl hover:-translate-y-1",
                   isActive && "ring-4 ring-offset-4 ring-lemon-primary/70"
                 )}
               >
