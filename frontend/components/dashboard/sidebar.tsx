@@ -123,6 +123,10 @@ function SidebarContent({
   setUpgradeModal: Dispatch<SetStateAction<boolean>>;
 }) {
   const pathname = usePathname();
+  const { user } = useUser();
+
+  console.log(user, "USER")
+  const showUpgrade = user?.plan !== "Enterprise";
 
   return (
     <div className="flex flex-col h-full gap-4">
@@ -175,7 +179,7 @@ function SidebarContent({
       </div>
 
       {/* Upgrade CTA Card */}
-      {!isCollapsed && (
+      {showUpgrade && !isCollapsed && (
         <div
           onClick={() => {
             setUpgradeModal(!upgradeModal);
@@ -200,7 +204,7 @@ function SidebarContent({
           </div>
         </div>
       )}
-      {isCollapsed && (
+      {showUpgrade && isCollapsed && (
         <div
           onClick={() => {
             setUpgradeModal(!upgradeModal);

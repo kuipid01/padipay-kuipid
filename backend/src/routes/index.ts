@@ -15,4 +15,5 @@ export { default as userRoutes } from "./user";
 export { default as loanPreferenceRoute } from "./loanPreference";
 export { default as repaymentPlansRoutes } from "./repayment-plans";
 export { default as applicationsRoutes } from "./applications";
+export { default as subscriptionRoutes } from "./subscription";
 

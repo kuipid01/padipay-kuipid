@@ -1,23 +1,75 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Check, ThumbsUp, Award, Zap, X } from "lucide-react";
+import { Check, ThumbsUp, Award, Zap, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { toast } from "sonner";
+import { useUser } from "@/hooks/use-user";
 
 export function Plans({ headerShown = true }: { headerShown?: boolean }) {
   const [isAnnual, setIsAnnual] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const isTablet = useMediaQuery("(min-width: 768px)");
+  const router = useRouter();
+  const { user } = useUser();
+
+  const currentPlan = user?.plan;
+  const isSubscribed = user?.subscriptionStatus === "active";
+
+  const handleSubscribe = async (planName: string, price: string) => {
+    if (price === "Custom") {
+      router.push("/contact?plan=enterprise");
+      return;
+    }
+
+    setLoadingPlan(planName);
+
+    try {
+      const amount = Number.parseFloat(price.replaceAll(",", ""));
+
+      const res = await fetch("/api/subscription/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan: planName,
+          billingCycle: isAnnual ? "annual" : "monthly",
+          amount,
+          callbackUrl: `${globalThis.location.origin}/subscription/success`,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Failed to initialize subscription");
+
+      const paymentUrl = data.data?.authorizationUrl || data.data?.paymentUrl;
+      if (paymentUrl) {
+        globalThis.location.href = paymentUrl;
+      } else {
+        router.push(`/subscription/success?plan=${planName}`);
+      }
+    } catch (err: any) {
+      console.error("Subscription error:", err);
+      toast.error(err.message || "Failed to start subscription. Please try again.");
+      setLoadingPlan(null);
+    }
+  };
 
   const plans = [
     {
-      name: "Free",
-      monthlyPrice: "0",
-      annualPrice: "0",
+      name: "Basic",
+      monthlyPrice: "2,000",
+      annualPrice: "20,000",
       features: [
-        "Up to 3 Loan Apps",
-        "Basic Dashboards",
+        "Up to 50 Loan Apps",
+        "Standard Dashboards",
         "Card Authorization",
+        "Email Notifications",
         "Standard Support",
       ],
       icon: ThumbsUp,
@@ -34,6 +86,9 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
         "Advanced Analytics",
         "Priority Support",
         "Automated SMS Reminders",
+        "Fraud Detection",
+        "Team Management",
+        "Export to Excel/PDF",
       ],
       icon: Award,
       buttonText: "Get Started",
@@ -50,39 +105,39 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
         "Custom Verifications",
       ],
       icon: Zap,
-      buttonText: "Get Started",
+      buttonText: "Contact Us",
       featured: false,
     },
   ];
 
   return (
-    <section id="pricing" className="py-24 bg-white relative">
-     
-      <div className="container mx-auto px-4 text-center">
+    <section id="pricing" className="py-16 md:py-24 bg-white">
+      <div className="container mx-auto px-5 sm:px-6 lg:px-8">
         {headerShown && (
-          <div className="flex flex-col items-center mb-12">
-            <div className="px-4 py-1.5 rounded-full border border-gray-100 bg-white shadow-sm text-xs font-medium text-gray-500 mb-6">
+          <div className="text-center mb-12 md:mb-16">
+            <div className="inline-block px-4 py-1.5 mb-5 rounded-full border border-gray-200 bg-gray-50 text-xs sm:text-sm font-semibold text-gray-600">
               Pricing
             </div>
-            <h2 className="text-4xl md:text-5xl font-black mb-4 text-main-green leading-tight">
-              Choose The Plan That <br /> Fits Your Finances
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-4 md:mb-5 text-main-green leading-tight">
+              Choose The Plan That Fits
+              <br className="hidden sm:inline" /> Your Finances
             </h2>
-            <p className="text-gray-500 max-w-2xl text-lg">
-              Simple, affordable pricing for individuals and growing teams.
+            <p className="text-gray-600 max-w-xl mx-auto text-base sm:text-lg">
+              Simple, transparent pricing — perfect for startups and growing teams.
             </p>
           </div>
         )}
 
-        {/* Toggle */}
-        <div className="flex justify-center mb-16">
-          <div className="bg-gray-100/50 p-1 rounded-full flex items-center gap-1 border border-gray-200">
+        {/* Billing toggle */}
+        <div className="flex justify-center mb-10 md:mb-16">
+          <div className="inline-flex items-center p-1.5 bg-gray-100/70 rounded-full border border-gray-200 shadow-sm">
             <button
               onClick={() => setIsAnnual(false)}
               className={cn(
-                "px-6 py-2 rounded-full text-sm font-bold transition-all duration-200 cursor-pointer",
+                "px-5 sm:px-7 py-2 rounded-full text-sm font-bold transition-all",
                 !isAnnual
-                  ? "bg-lemon-primary text-main-green shadow-sm"
-                  : "text-gray-500 hover:text-gray-700",
+                  ? "bg-white shadow-sm text-main-green"
+                  : "text-gray-600 hover:text-gray-800"
               )}
             >
               Monthly
@@ -90,10 +145,10 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
             <button
               onClick={() => setIsAnnual(true)}
               className={cn(
-                "px-6 py-2 rounded-full text-sm font-bold transition-all duration-200 cursor-pointer",
+                "px-5 sm:px-7 py-2 rounded-full text-sm font-bold transition-all",
                 isAnnual
-                  ? "bg-lemon-primary text-main-green shadow-sm"
-                  : "text-gray-500 hover:text-gray-700",
+                  ? "bg-white shadow-sm text-main-green"
+                  : "text-gray-600 hover:text-gray-800"
               )}
             >
               Annual
@@ -101,125 +156,160 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto items-stretch">
-          {plans.map((p, idx) => (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              key={p.name}
-              className={cn(
-                "relative p-8 md:p-10 rounded-[40px] border flex flex-col items-start text-left transition-all duration-300",
-                p.featured
-                  ? "bg-main-green text-white border-transparent shadow-2xl md:scale-105 z-10"
-                  : "bg-white border-gray-100 shadow-sm hover:shadow-md",
-              )}
-            >
-              <div className="mb-8 flex flex-col gap-6">
-                <div
-                  className={cn(
-                    "p-3 rounded-xl w-fit",
-                    p.featured ? "bg-white/10" : "bg-main-green",
-                  )}
-                >
-                  <p.icon className={cn("w-6 h-6", "text-lemon-primary")} />
-                </div>
+        {/* Plans grid */}
+        <div
+          className={cn(
+            "grid gap-6 md:gap-8",
+            isTablet ? "grid-cols-2" : "grid-cols-1",
+            isDesktop ? "grid-cols-3" : ""
+          )}
+        >
+          {plans.map((plan, idx) => {
+            const isActive = currentPlan === plan.name && isSubscribed;
+            const price = isAnnual ? plan.annualPrice : plan.monthlyPrice;
 
-                <div>
-                  <h3
-                    className={cn(
-                      "text-2xl font-black mb-2",
-                      p.featured ? "text-white" : "text-main-green",
-                    )}
-                  >
-                    {p.name}
-                  </h3>
-                </div>
-
-                <div className="flex items-baseline gap-1">
-                  <span
-                    className={cn(
-                      "text-3xl font-bold align-top mt-1",
-                      p.featured ? "text-white" : "text-black",
-                    )}
-                  >
-                    {p.monthlyPrice !== "Custom" && "₦"}
-                  </span>
-                  <span
-                    className={cn(
-                      "text-5xl font-black",
-                      p.featured ? "text-white" : "text-black",
-                    )}
-                  >
-                    {isAnnual ? p.annualPrice : p.monthlyPrice}
-                  </span>
-                  {p.monthlyPrice !== "Custom" && (
-                    <span
-                      className={cn(
-                        "text-lg font-medium",
-                        p.featured ? "text-white/60" : "text-gray-400",
-                      )}
-                    >
-                      / {isAnnual ? "Year" : "Month"}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <Button
+            return (
+              <motion.div
+                key={plan.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ delay: idx * 0.08, duration: 0.6, type: "spring", stiffness: 110 }}
                 className={cn(
-                  "w-full mb-10 h-14 rounded-2xl text-lg font-black transition-transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer",
-                  "bg-lemon-primary text-main-green hover:bg-lemon-primary/90 shadow-lg shadow-lemon-primary/20",
-                  p.featured && "border-none",
+                  "relative rounded-3xl p-7 md:p-9 flex flex-col border transition-all duration-400 h-full",
+                  plan.featured
+                    ? "bg-main-green text-white border-transparent shadow-2xl shadow-green-900/20 scale-[1.02] md:scale-110 z-10"
+                    : "bg-white border-gray-200 shadow-lg hover:shadow-xl hover:-translate-y-1",
+                  isActive && "ring-4 ring-offset-4 ring-lemon-primary/70"
                 )}
               >
-                {p.buttonText}
-              </Button>
+                {isActive && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-lemon-primary text-main-green px-5 py-1.5 rounded-full text-xs font-black uppercase tracking-wide shadow-md">
+                    Current Plan
+                  </div>
+                )}
 
-              <div className="space-y-5 w-full">
-                <p
-                  className={cn(
-                    "text-sm font-black uppercase tracking-wider",
-                    p.featured ? "text-white/80" : "text-gray-900",
-                  )}
-                >
-                  Features
-                </p>
-                {p.features.map((f, i) => (
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    key={f}
-                    className="flex items-center gap-3"
+                <div className="flex flex-col gap-6 mb-8">
+                  <div
+                    className={cn(
+                      "w-12 h-12 rounded-2xl flex items-center justify-center",
+                      plan.featured ? "bg-white/15" : "bg-main-green/10"
+                    )}
                   >
-                    <div
+                    <plan.icon
                       className={cn(
-                        "shrink-0 w-6 h-6 rounded-full flex items-center justify-center",
-                        p.featured ? "bg-lemon-primary" : "bg-main-green",
+                        "w-6 h-6",
+                        plan.featured ? "text-lemon-primary" : "text-main-green"
                       )}
-                    >
-                      <Check
+                    />
+                  </div>
+
+                  <h3
+                    className={cn(
+                      "text-2xl md:text-3xl font-black",
+                      plan.featured ? "text-white" : "text-main-green"
+                    )}
+                  >
+                    {plan.name}
+                  </h3>
+
+                  <div className="flex items-baseline gap-1.5">
+                    {price !== "Custom" && (
+                      <span
                         className={cn(
-                          "w-3.5 h-3.5",
-                          p.featured ? "text-main-green" : "text-lemon-primary",
+                          "text-2xl md:text-3xl font-bold",
+                          plan.featured ? "text-white/90" : "text-gray-700"
                         )}
-                        strokeWidth={4}
-                      />
-                    </div>
+                      >
+                        ₦
+                      </span>
+                    )}
                     <span
                       className={cn(
-                        "text-sm font-semibold",
-                        p.featured ? "text-white/90" : "text-gray-600",
+                        "text-4xl md:text-5xl font-black tracking-tight",
+                        plan.featured ? "text-white" : "text-black"
                       )}
                     >
-                      {f}
+                      {price}
                     </span>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          ))}
+                    {price !== "Custom" && (
+                      <span
+                        className={cn(
+                          "text-base md:text-lg font-medium mt-1",
+                          plan.featured ? "text-white/60" : "text-gray-500"
+                        )}
+                      >
+                        /{isAnnual ? "year" : "month"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => !isActive && handleSubscribe(plan.name, price)}
+                  disabled={loadingPlan === plan.name || isActive}
+                  className={cn(
+                    "w-full h-14 rounded-2xl text-base md:text-lg font-black mb-8 md:mb-10 transition-all",
+                    isActive
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : plan.featured
+                        ? "bg-lemon-primary hover:bg-lemon-primary/90 text-main-green shadow-lg shadow-lemon-primary/30"
+                        : "bg-main-green hover:bg-main-green/90 text-white shadow-md",
+                    "disabled:opacity-70 active:scale-[0.98]"
+                  )}
+                >
+                  {loadingPlan === plan.name ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : isActive ? (
+                    "Active Plan"
+                  ) : (
+                    plan.buttonText
+                  )}
+                </Button>
+
+                <div className="mt-auto space-y-4">
+                  <p
+                    className={cn(
+                      "text-xs md:text-sm font-black uppercase tracking-wider mb-4",
+                      plan.featured ? "text-white/80" : "text-gray-800"
+                    )}
+                  >
+                    What's included
+                  </p>
+
+                  {plan.features.map((feature, i) => (
+                    <div key={feature} className="flex items-start gap-3">
+                      <div
+                        className={cn(
+                          "shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5",
+                          plan.featured ? "bg-lemon-primary" : "bg-main-green/10"
+                        )}
+                      >
+                        <Check
+                          className={cn(
+                            "w-4 h-4",
+                            plan.featured ? "text-main-green" : "text-main-green"
+                          )}
+                          strokeWidth={3.5}
+                        />
+                      </div>
+                      <span
+                        className={cn(
+                          "text-sm md:text-base",
+                          plan.featured ? "text-white/95" : "text-gray-700"
+                        )}
+                      >
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

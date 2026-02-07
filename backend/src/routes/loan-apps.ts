@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { authMiddleware } from "../middleware/auth";
+import { checkLoanAppLimit } from "../middleware/subscription";
 import { loanAppsService } from "../domain/loan-apps";
 import { CreateLoanAppSchema, UpdateLoanAppSchema } from "../zod-schemas/loan-apps";
 import { zValidator } from "@hono/zod-validator";
@@ -37,8 +38,8 @@ loanApps.get("/", async (c) => {
 });
 
 
-// POST /api/loan-apps
-loanApps.post("/", zValidator("json", CreateLoanAppSchema), async (c) => {
+// POST /api/loan-apps - Check subscription limit before creating
+loanApps.post("/", checkLoanAppLimit, zValidator("json", CreateLoanAppSchema), async (c) => {
   const user = c.get("user");
   // This is now type-safe and fully validated
   const body = c.req.valid("json"); 

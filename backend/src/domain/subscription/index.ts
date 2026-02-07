@@ -1,0 +1,1 @@
+export { subscriptionService } from "./service";

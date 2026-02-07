@@ -18,6 +18,9 @@ interface User {
   emailNotifyLoanOverdue?: boolean;
   smsNotifyCriticalOnly?: boolean;
   disabledAt?: Date;
+  plan?: "Basic" | "Pro" | "Enterprise";
+  subscriptionStatus?: "active" | "inactive" | "expired" | "cancelled";
+  subscriptionEndsAt?: string;
 }
 
 

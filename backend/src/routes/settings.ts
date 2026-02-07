@@ -38,7 +38,9 @@ router.get("/", async (c) => {
             disabledAt:true,
             deletedAt:true,
             deletionRequestedAt:true,
-            
+            plan:true,
+            subscriptionStatus:true,
+            subscriptionEndsAt:true,
         }
     });
 

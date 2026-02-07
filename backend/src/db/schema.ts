@@ -34,6 +34,23 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "SMS",
 ]);
 
+export const planEnum = pgEnum("plan", ["Basic", "Pro", "Enterprise"]);
+export const subscriptionStatusEnum = pgEnum("subscription_status", [
+  "active",
+  "inactive",
+  "past_due",
+  "canceled",
+]);
+
+export const paymentStatusEnum = pgEnum("payment_status", [
+  "pending",
+  "success",
+  "failed",
+  "abandoned",
+]);
+
+export const billingCycleEnum = pgEnum("billing_cycle", ["monthly", "annual"]);
+
 // Enums matching your Zod creditTier and collectionStrategy
 export const creditTierEnum = pgEnum("credit_tier", ["excellent", "good", "fair", "poor", "all"]);
 export const collectionStrategyEnum = pgEnum("collection_strategy", ["standard", "aggressive", "lenient"]);
@@ -66,6 +83,11 @@ export const users = pgTable("users", {
   // Branding (Global/Account Level)
   brandLogoUrl: text("brand_logo_url"),
   brandColor: varchar("brand_color", { length: 10 }).default("#0D4715"),
+
+  // Subscription
+  plan: planEnum("plan").default("Basic"),
+  subscriptionStatus: subscriptionStatusEnum("subscription_status").default("inactive"),
+  subscriptionEndsAt: timestamp("subscription_ends_at"),
 
   // Notifications - Email
   emailNotifyNewApplication: boolean("email_notify_new_application").default(
@@ -303,6 +325,41 @@ export const loanPreferences = pgTable("loan_preferences", {
   /* ================= Auto-Approve ================= */
   autoApproveEnabled: boolean("auto_approve_enabled").notNull().default(false),
 
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+/**
+ * Subscription Payments Table
+ * Tracks subscription purchases and payment status
+ */
+export const subscriptionPayments = pgTable("subscription_payments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  
+  // Plan details
+  plan: planEnum("plan").notNull(),
+  billingCycle: billingCycleEnum("billing_cycle").notNull(),
+  amount: decimal("amount").notNull(),
+  
+  // Paystack details
+  reference: varchar("reference", { length: 255 }).notNull().unique(),
+  paystackAccessCode: text("paystack_access_code"),
+  paystackAuthorizationUrl: text("paystack_authorization_url"),
+  
+  // Payment status
+  paymentStatus: paymentStatusEnum("payment_status").notNull().default("pending"),
+  paidAt: timestamp("paid_at"),
+  
+  // Subscription period
+  subscriptionStartDate: timestamp("subscription_start_date"),
+  subscriptionEndDate: timestamp("subscription_end_date"),
+  
+  // Metadata
+  metadata: text("metadata"), // JSON string for additional data
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

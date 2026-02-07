@@ -32,6 +32,11 @@ paystackSecretKey:z.string().optional(),
     deletedAt: dateSchema.optional(),
     deletionRequestedAt: dateSchema.optional(),
     disabledAt: dateSchema.optional(),
+  
+  // Subscription fields
+  plan: z.enum(["Basic", "Pro", "Enterprise"]).optional(),
+  subscriptionStatus: z.enum(["active", "inactive", "past_due", "canceled"]).optional(),
+  subscriptionEndsAt: dateSchema.optional(),
 });
 
 
