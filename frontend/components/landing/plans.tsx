@@ -112,7 +112,7 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
 
   return (
     <section id="pricing" className="py-16 md:py-24 bg-white">
-      <div className="container mx-auto px-5 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-5 sm:px-6 lg:px-8 overflow-x-hidden">
         {headerShown && (
           <div className="text-center mb-12 md:mb-16">
             <div className="inline-block px-4 py-1.5 mb-5 rounded-full border border-gray-200 bg-gray-50 text-xs sm:text-sm font-semibold text-gray-600">
@@ -159,7 +159,7 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
         {/* Plans grid */}
         <div
           className={cn(
-            "grid gap-6 md:gap-8",
+            "grid gap-4 md:gap-6 lg:gap-8",
             isTablet ? "grid-cols-2" : "grid-cols-1",
             isDesktop ? "grid-cols-3" : ""
           )}
@@ -178,7 +178,7 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
                 className={cn(
                   "relative rounded-3xl p-7 md:p-9 flex flex-col border transition-all duration-400 h-full",
                   plan.featured
-                    ? "bg-main-green text-white border-transparent shadow-2xl shadow-green-900/20 scale-[1.02] md:scale-110 z-10"
+                    ? "bg-main-green text-white border-transparent shadow-2xl shadow-green-900/20 md:scale-105 lg:scale-110 z-10"
                     : "bg-white border-gray-200 shadow-lg hover:shadow-xl hover:-translate-y-1",
                   isActive && "ring-4 ring-offset-4 ring-lemon-primary/70"
                 )}
