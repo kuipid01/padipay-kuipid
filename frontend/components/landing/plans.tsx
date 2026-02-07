@@ -111,7 +111,7 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
   ];
 
   return (
-    <section id="pricing" className="py-16 md:py-24 bg-white overflow-hidden">
+    <section id="pricing" className="py-16 md:py-24 bg-white overflow-x-clip relative">
       <div className="container mx-auto px-5 sm:px-6 lg:px-8">
         {headerShown && (
           <div className="text-center mb-12 md:mb-16">

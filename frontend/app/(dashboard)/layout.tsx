@@ -35,29 +35,24 @@ export default function DashboardLayout({
             </div>
           </main>
           {upgradeModal && (
-            <>
-              <div className="fixed inset-0 z-100 bg-white overflow-y-auto">
-                <style
-                  dangerouslySetInnerHTML={{
-                    __html: `body { overflow: hidden; }`,
-                  }}
-                />
-                
+            <div className="fixed inset-0 z-[100] bg-white overflow-y-auto overscroll-contain">
+              <style
+                dangerouslySetInnerHTML={{
+                  __html: `body { overflow: hidden !important; }`,
+                }}
+              />
+
+              <div className="relative min-h-full py-20">
                 <Plans headerShown={false} />
-              </div>
-              <button
-                  onClick={() => {
-                    setUpgradeModal(false);
-                  }}
-                  className=" fixed translate-y-10 top-2 md:top-5 z-150 right-5 md:right-10"
+
+                <button
+                  onClick={() => setUpgradeModal(false)}
+                  className="fixed top-4 right-4 md:top-10 md:right-10 z-[110] p-2 hover:scale-110 transition-transform text-main-green"
                 >
-                       <X
-                size={60}
-                className="md:hover:size-13 hover:size-6 cursor-pointer transition-all duration-300 text-main-green size-8 md:size-15"
-              />{" "}
+                  <X className="size-8 md:size-12" />
                 </button>
-         
-            </>
+              </div>
+            </div>
           )}
         </div>
       </AccountDisabledWrapper>

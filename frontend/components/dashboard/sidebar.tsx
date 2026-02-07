@@ -182,9 +182,10 @@ function SidebarContent({
       {showUpgrade && !isCollapsed && (
         <div
           onClick={() => {
-            setUpgradeModal(!upgradeModal);
+            setUpgradeModal(true);
+            setIsMobileOpen(false);
           }}
-          className="relative my-3 bg-lemon-primary rounded-[32px] p-6 shadow-xl shadow-blue-500/20 overflow-hidden group"
+          className="relative my-3 bg-lemon-primary rounded-[32px] p-6 shadow-xl shadow-blue-500/20 overflow-hidden group cursor-pointer"
         >
           <div className="absolute -right-4 -bottom-4 size-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors" />
 
@@ -207,7 +208,8 @@ function SidebarContent({
       {showUpgrade && isCollapsed && (
         <div
           onClick={() => {
-            setUpgradeModal(!upgradeModal);
+            setUpgradeModal(true);
+            setIsMobileOpen(false);
           }}
           className="flex justify-center my-3"
         >
