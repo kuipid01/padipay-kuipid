@@ -47,7 +47,7 @@ export const LoanPreferenceSection = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(patch),
       });
-        toast.success("Preference updated")
+      toast.success("Preference updated")
     },
     []
   );
@@ -69,6 +69,7 @@ export const LoanPreferenceSection = () => {
         <CardHeader className="p-8 pb-0">
           <CardTitle className="text-lg font-black text-main-green">
             Loan Rules
+
           </CardTitle>
           <CardDescription className="text-gray-500">
             Set default parameters for new loan applications.
@@ -204,7 +205,7 @@ const ToggleCard = ({
           className="flex items-center justify-between rounded-2xl border px-5 py-4"
         >
           <span className="font-semibold text-gray-700">{label}</span>
-         { typeof preferences[key]==="boolean" &&   <Switch
+          {typeof preferences[key] === "boolean" && <Switch
             checked={preferences[key] as boolean}
             onCheckedChange={(v) => onToggle({ [key]: v })}
             className="data-[state=checked]:bg-main-green"

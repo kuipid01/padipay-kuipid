@@ -44,6 +44,25 @@ export const applicationsRepo = {
     return app;
   },
 
+  async findByIdPublic(id: string) {
+    return db.query.loanApplications.findFirst({
+      where: eq(loanApplications.id, id),
+      with: {
+        loanApp: {
+          columns: {
+            name: true,
+          }
+        },
+        borrower: {
+          columns: {
+            fullName: true,
+          }
+        },
+        repaymentPlan: true
+      }
+    });
+  },
+
   async update(id: string, data: UpdateApplicationInput) {
     const [updated] = await db
       .update(loanApplications)

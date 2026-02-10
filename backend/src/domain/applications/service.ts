@@ -16,6 +16,16 @@ export const applicationsService = {
     return { success: true, data: apps };
   },
 
+  async getPublicStatus(id: string): Promise<ServiceResult<any>> {
+    const app = await applicationsRepo.findByIdPublic(id);
+    
+    if (!app) {
+      return { success: false, error: { code: 404, message: "Application not found" } };
+    }
+
+    return { success: true, data: app };
+  },
+
   async getById(id: string, ownerId: string): Promise<ServiceResult<NonNullable<Awaited<ReturnType<typeof applicationsRepo.findByIdAndOwner>>>>> {
     const app = await applicationsRepo.findByIdAndOwner(id, ownerId);
     

@@ -1,14 +1,9 @@
 import { Hono } from "hono";
 import { termii } from "../lib/termii";
 import { brevo } from "../lib/brevo";
+import { redis } from "bun";
 
 const otp = new Hono();
-
-/**
- * In-memory OTP storage
- * NOTE: In production, use Redis or similar for shared state across instances
- */
-const otpStore = new Map<string, { otp: string; pinId?: string; expiresAt: Date }>();
 
 /**
  * OTP Routes
@@ -20,30 +15,134 @@ const otpStore = new Map<string, { otp: string; pinId?: string; expiresAt: Date 
 
 // POST /api/otp/send
 otp.post("/send", async (c) => {
-  const { type, value } = await c.req.json();
+  try {
+    const { type, value, loanAppSlug } = await c.req.json();
+    console.log("[OTP SEND] Request received", { type, value, loanAppSlug });
 
-  if (!type || !value) {
-    return c.json({ error: "Type and value are required" }, 400);
-  }
+    if (!type || !value) {
+      console.warn("[BLOCK] Missing type or value");
+      return c.json({ error: "Type and value are required" }, 400);
+    }
 
-  const key = `${type}:${value}`;
+    // -----------------------------
+    // 1. Check if user exists & BVN verified
+    // -----------------------------
+    let bvnVerified = false;
 
-  if (type === "phone") {
-    // Use Termii for SMS OTP
-    const result = await termii.sendOTP({
-      to: value,
-      pinLength: 6,
-      pinTimeToLive: 10, // 10 minutes
-      pinAttempts: 3,
-    });
+    if (type === "phone" && loanAppSlug) {
+      console.log("[STEP 1] Checking existing user status");
 
-    if (!result.success) {
-      // Fallback to local OTP generation if Termii fails
-      const otpCode = termii.generateOTP(6);
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-      otpStore.set(key, { otp: otpCode, expiresAt });
+      try {
+        const { eq } = await import("drizzle-orm");
+        const { db, borrowers, tempBorrowers } = await import("../db");
 
-      console.log(`[FALLBACK] SMS OTP to ${value}: ${otpCode}`);
+        let creditScore: any = null;
+
+        // Check permanent borrowers
+        const existingBorrower = await db.query.borrowers.findFirst({
+          where: eq(borrowers.phone, value),
+          with: { applications: true },
+        });
+
+        if (existingBorrower) {
+          console.log("[INFO] Found permanent borrower", {
+            borrowerId: existingBorrower.id,
+            bvn: existingBorrower.bvn,
+            kycVerified: existingBorrower.kycVerified,
+            applicationsCount: existingBorrower.applications.length,
+          });
+
+          if (
+            (existingBorrower.bvn || existingBorrower.kycVerified) &&
+            existingBorrower.applications.length > 0
+          ) {
+            bvnVerified = true;
+            console.log("[INFO] Borrower BVN verified + has applications");
+          }
+        } else {
+          // Check temp borrowers
+          const existingTemp = await db.query.tempBorrowers.findFirst({
+            where: eq(tempBorrowers.phoneNumber, value),
+          });
+
+          if (existingTemp) {
+            console.log("[INFO] Found temp borrower", {
+              tempBorrowerId: existingTemp.id,
+              bvn: existingTemp.bvn,
+              kycVerified: existingTemp.kycVerified,
+            });
+
+            if (existingTemp.bvn || existingTemp.kycVerified) {
+              bvnVerified = true;
+              console.log("[INFO] Temp borrower BVN verified");
+            }
+          } else {
+            console.log("[INFO] No borrower found");
+          }
+        }
+      } catch (error) {
+        console.error("[ERROR] Checking existing user status:", error);
+      }
+    }
+
+    const key = `otp:${type}:${value}`;
+    console.log("[STEP 2] OTP Redis key", key);
+
+    // -----------------------------
+    // 2. Handle phone OTP
+    // -----------------------------
+    if (type === "phone") {
+      console.log("[STEP 3] Sending phone OTP via Termii");
+      const result = await termii.sendOTP({
+        to: value,
+        pinLength: 6,
+        pinTimeToLive: 10, // minutes
+        pinAttempts: 3,
+      });
+
+      if (!result.success) {
+        // Fallback to local OTP
+        const otpCode = termii.generateOTP(6);
+        console.warn(`[FALLBACK] Termii failed, local OTP: ${otpCode}`);
+
+        await redis.set(key, JSON.stringify({ otp: otpCode }), "EX", 600);
+
+        return c.json({
+          success: true,
+          message: `OTP sent to ${value}`,
+          devOtp: process.env.NODE_ENV === "development" ? otpCode : undefined,
+          bvnVerified,
+        });
+      }
+
+      console.log("[INFO] Termii OTP sent successfully", { pinId: result.pinId });
+
+      // Store Termii pinId in Redis
+      await redis.set(key, JSON.stringify({ pinId: result.pinId }), "EX", 600);
+
+      return c.json({
+        success: true,
+        message: `OTP sent to ${value}`,
+        useTermii: true,
+        bvnVerified,
+      });
+    }
+
+    // -----------------------------
+    // 3. Handle email OTP
+    // -----------------------------
+    if (type === "email") {
+      console.log("[STEP 3] Sending email OTP via Brevo");
+      const otpCode = brevo.generateOTP(6);
+      const result = await brevo.sendOTPEmail(value, otpCode);
+
+      if (!result.success) {
+        console.warn(`[FALLBACK] Email OTP send failed, OTP: ${otpCode}`);
+      } else {
+        console.log("[INFO] Email OTP sent successfully");
+      }
+
+      await redis.set(key, JSON.stringify({ otp: otpCode }), "EX", 600);
 
       return c.json({
         success: true,
@@ -52,38 +151,14 @@ otp.post("/send", async (c) => {
       });
     }
 
-    // Store Termii pinId for verification
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-    otpStore.set(key, { otp: "", pinId: result.pinId, expiresAt });
-
-    return c.json({
-      success: true,
-      message: `OTP sent to ${value}`,
-      useTermii: true,
-    });
-  } else if (type === "email") {
-    // Use Brevo for Email OTP
-    const otpCode = brevo.generateOTP(6);
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    const result = await brevo.sendOTPEmail(value, otpCode);
-
-    if (!result.success) {
-      console.log(`[FALLBACK] Email OTP to ${value}: ${otpCode}`);
-    }
-
-    // Store OTP locally (Brevo doesn't manage OTP verification)
-    otpStore.set(key, { otp: otpCode, expiresAt });
-
-    return c.json({
-      success: true,
-      message: `OTP sent to ${value}`,
-      devOtp: process.env.NODE_ENV === "development" ? otpCode : undefined,
-    });
+    console.warn("[BLOCK] Invalid type", type);
+    return c.json({ error: "Invalid type" }, 400);
+  } catch (error: any) {
+    console.error("[ERROR] /otp/send", error);
+    return c.json({ error: error?.message ?? "Something went wrong" }, 500);
   }
-
-  return c.json({ error: "Invalid type" }, 400);
 });
+
 
 // POST /api/otp/verify
 otp.post("/verify", async (c) => {
@@ -93,32 +168,29 @@ otp.post("/verify", async (c) => {
     return c.json({ error: "Type, value, and OTP are required" }, 400);
   }
 
-  const key = `${type}:${value}`;
-  const stored = otpStore.get(key);
+  const key = `otp:${type}:${value}`;
+  const storedStr = await redis.get(key);
 
-  if (!stored) {
+  if (!storedStr) {
     return c.json(
       { error: "OTP not found or expired. Please request a new one." },
       400
     );
   }
 
-  if (new Date() > stored.expiresAt) {
-    otpStore.delete(key);
-    return c.json(
-      { error: "OTP has expired. Please request a new one." },
-      400
-    );
-  }
+  const stored = JSON.parse(storedStr);
+  let isVerified = false;
 
-  // For phone OTP, try Termii verification first if we have a pinId
+  // For phone OTP with Termii pinId
   if (type === "phone" && stored.pinId) {
     const result = await termii.verifyOTP({
       pinId: stored.pinId,
       pin: otpCode,
     });
 
-    if (!result.success || !result.verified) {
+    if (result.success && result.verified) {
+      isVerified = true;
+    } else {
       return c.json(
         {
           error: result.error || "Invalid OTP. Please try again.",
@@ -127,30 +199,67 @@ otp.post("/verify", async (c) => {
         400
       );
     }
+  } else {
+    // For email or fallback phone verification, check Redis store
+    if (stored.otp === otpCode) {
+      isVerified = true;
+    } else {
+      return c.json({ error: "Invalid OTP. Please try again." }, 400);
+    }
+  }
 
-    // OTP verified - remove from store
-    otpStore.delete(key);
+  if (isVerified) {
+    // OTP verified - remove from Redis
+    await redis.del(key);
+
+    // Update or create temp borrower record
+    try {
+      const { eq } = await import("drizzle-orm");
+      const { db, tempBorrowers } = await import("../db");
+
+      if (type === "phone") {
+        const existing = await db.query.tempBorrowers.findFirst({
+          where: eq(tempBorrowers.phoneNumber, value),
+        });
+
+        if (existing) {
+          await db.update(tempBorrowers)
+            .set({ phoneNumberVerified: true, updatedAt: new Date() })
+            .where(eq(tempBorrowers.id, existing.id));
+        } else {
+          await db.insert(tempBorrowers).values({
+            phoneNumber: value,
+            phoneNumberVerified: true,
+          });
+        }
+      } else if (type === "email") {
+        const existing = await db.query.tempBorrowers.findFirst({
+          where: eq(tempBorrowers.email, value),
+        });
+
+        if (existing) {
+          await db.update(tempBorrowers)
+            .set({ emailVerified: true, updatedAt: new Date() })
+            .where(eq(tempBorrowers.id, existing.id));
+        } else {
+          await db.insert(tempBorrowers).values({
+            email: value,
+            emailVerified: true,
+          });
+        }
+      }
+    } catch (dbError) {
+      console.error("Database error while updating temp borrower:", dbError);
+    }
 
     return c.json({
       success: true,
-      message: "Phone verified successfully",
+      message: `${type === "phone" ? "Phone" : "Email"} verified successfully`,
       verified: true,
     });
   }
 
-  // For email or fallback phone verification, check local store
-  if (stored.otp !== otpCode) {
-    return c.json({ error: "Invalid OTP. Please try again." }, 400);
-  }
-
-  // OTP verified successfully - remove from store
-  otpStore.delete(key);
-
-  return c.json({
-    success: true,
-    message: `${type === "phone" ? "Phone" : "Email"} verified successfully`,
-    verified: true,
-  });
+  return c.json({ error: "Verification failed" }, 400);
 });
 
 export default otp;

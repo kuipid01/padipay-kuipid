@@ -1,160 +1,78 @@
+
 import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { borrowers, loanApplications, loanApps } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { initializeTransaction } from "@/lib/paystack";
+import { z } from "zod";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+
+const expectedBodySchema = z.object({
+  email: z.string().email("Invalid email address"),
+  phoneNumber: z.string().min(10, "Phone number is too short").max(15, "Phone number is too long"),
+  durationMonths: z.coerce.number().positive("Duration must be greater than 0"),
+  amount: z.coerce.number().positive("Amount must be greater than 0"),
+  repaymentPlanId: z.string().min(1, "Plan is required"),
+  loanAppId: z.string().min(1, "Loan app is required"),
+});
 
 export async function POST(
-  req: Request,
+  request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const { slug } = await params;
-    
-    // Handle both JSON and FormData
-    const contentType = req.headers.get("content-type") || "";
-    let formData: Record<string, any> = {};
-    
-    if (contentType.includes("multipart/form-data")) {
-      const data = await req.formData();
-      data.forEach((value, key) => {
-        if (value instanceof File) {
-          formData[key] = value;
-        } else {
-          formData[key] = value;
-        }
-      });
-    } else {
-      formData = await req.json();
+    const body = await request.json();
+
+    const durationMonths =
+      body.durationMonths ??
+      (body.durationDays
+        ? Math.ceil(Number(body.durationDays) / 30)
+        : body.duration);
+
+    const mappedBody = {
+      email: body.email,
+      phoneNumber: body.phone ?? body.phoneNumber,
+      durationMonths,
+      amount: body.amount,
+      repaymentPlanId: body.planId ?? body.repaymentPlanId,
+      loanAppId: slug,
+    };
+
+    const parsed = expectedBodySchema.safeParse(mappedBody);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request body", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
 
-    const {
-      fullName,
-      email,
-      phone,
-      amount,
-      duration,
-      dateOfBirth,
-      address,
-      city,
-      state,
-      // Guarantor
-      guarantorName,
-      guarantorPhone,
-      guarantorEmail,
-      guarantorRelationship,
-      guarantorAddress,
-      // Verification
-      bvn,
-      nin,
-      // Documents (Files)
-      idDocument,
-      proofOfAddress,
-      bankStatement,
-    } = formData;
-
-    // 1. Fetch the loan app
-    const loanApp = await db.query.loanApps.findFirst({
-      where: eq(loanApps.slug, slug),
-    });
-
-    if (!loanApp || !loanApp.isActive) {
-      return NextResponse.json({ error: "Loan app not found or inactive" }, { status: 404 });
-    }
-
-    // 2. Create or find borrower
-    let borrower = await db.query.borrowers.findFirst({
-      where: eq(borrowers.email, email),
-    });
-
-    if (!borrower) {
-      const [newBorrower] = await db.insert(borrowers).values({
-        fullName,
-        email,
-        phone,
-        bvn: bvn || null,
-        nin: nin || null,
-      }).returning();
-      borrower = newBorrower;
-    } else {
-      // Update existing borrower with new info
-      await db.update(borrowers)
-        .set({
-          fullName,
-          phone,
-          bvn: bvn || borrower.bvn,
-          nin: nin || borrower.nin,
-        })
-        .where(eq(borrowers.id, borrower.id));
-    }
-
-    // 3. Handle document uploads (in production, upload to S3/Cloudinary)
-    let documentUrls: Record<string, string> = {};
-    
-    if (idDocument instanceof File) {
-      // TODO: Upload to cloud storage
-      console.log(`[DEV] ID Document: ${idDocument.name} (${idDocument.size} bytes)`);
-      documentUrls.idDocument = `uploads/${idDocument.name}`;
-    }
-    if (proofOfAddress instanceof File) {
-      console.log(`[DEV] Proof of Address: ${proofOfAddress.name} (${proofOfAddress.size} bytes)`);
-      documentUrls.proofOfAddress = `uploads/${proofOfAddress.name}`;
-    }
-    if (bankStatement instanceof File) {
-      console.log(`[DEV] Bank Statement: ${bankStatement.name} (${bankStatement.size} bytes)`);
-      documentUrls.bankStatement = `uploads/${bankStatement.name}`;
-    }
-
-    // 4. Create Loan Application
-    const [application] = await db.insert(loanApplications).values({
-      loanAppId: loanApp.id,
-      borrowerId: borrower.id,
-      amount: amount.toString(),
-      durationMonths: parseInt(duration || formData.durationMonths),
-      interestRate: loanApp.defaultInterestRate,
-      status: "PENDING",
-    }).returning();
-
-    // 5. Store additional application data (guarantor, documents)
-    // In production, create separate tables for guarantors and documents
-    console.log("[DEV] Application metadata:", {
-      applicationId: application.id,
-      guarantor: {
-        name: guarantorName,
-        phone: guarantorPhone,
-        email: guarantorEmail,
-        relationship: guarantorRelationship,
-        address: guarantorAddress,
+    const response = await fetch(`${BACKEND_URL}/api/public/application`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      applicantDetails: {
-        dateOfBirth,
-        address,
-        city,
-        state,
-      },
-      documents: documentUrls,
+      body: JSON.stringify(parsed.data),
     });
 
-    // 6. Initialize Paystack Transaction for Card Authorization
-    const paystackSession = await initializeTransaction(email, 100, {
-      applicationId: application.id,
-      borrowerId: borrower.id,
-      type: "CARD_AUTHORIZATION",
-    });
-
-    if (!paystackSession.status) {
-      return NextResponse.json({ error: "Failed to initialize payment" }, { status: 500 });
+    const contentType = response.headers.get("content-type");
+    if (!contentType?.includes("application/json")) {
+      const errorText = await response.text();
+      console.error("Backend returned non-JSON response:", errorText);
+      return NextResponse.json(
+        { error: `Backend error: ${errorText.slice(0, 100)}` },
+        { status: response.status }
+      );
     }
 
-    return NextResponse.json({
-      success: true,
-      application,
-      authorizationUrl: paystackSession.data.authorization_url,
-      reference: paystackSession.data.reference,
-    });
+    const data = await response.json();
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.error || "Failed to submit application" },
+        { status: response.status }
+      );
+    }
+
+    return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Public apply error:", error);
+    console.error("Public apply proxy error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-

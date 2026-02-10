@@ -21,6 +21,26 @@ export const loanAppsService = {
     return { success: true, data: apps };
   },
 
+  async getPublicById(id: string): Promise<ServiceResult<any>> {
+    const app = await loanAppsRepo.getPublicById(id);
+    
+    if (!app) {
+      return { success: false, error: { code: 404, message: "App not found" } };
+    }
+
+    return { success: true, data: app };
+  },
+
+  async getPublicBySlug(slug: string): Promise<ServiceResult<any>> {
+    const app = await loanAppsRepo.findBySlug(slug);
+    
+    if (!app) {
+      return { success: false, error: { code: 404, message: "App not found" } };
+    }
+
+    return { success: true, data: app };
+  },
+
   async getById(id: string, ownerId: string): Promise<ServiceResult<NonNullable<Awaited<ReturnType<typeof loanAppsRepo.findById>>>>> {
     const app = await loanAppsRepo.findByIdAndOwner(id, ownerId);
     

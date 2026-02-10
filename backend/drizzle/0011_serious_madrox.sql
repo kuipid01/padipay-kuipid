@@ -1,0 +1,1 @@
+ALTER TABLE "borrowers" ALTER COLUMN "credit_score" SET DATA TYPE jsonb;

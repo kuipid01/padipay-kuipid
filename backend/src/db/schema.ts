@@ -9,11 +9,12 @@ import {
   pgEnum,
   decimal,
   numeric,
-  doublePrecision
+  doublePrecision,
+  jsonb
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-export const userRoleEnum = pgEnum("user_role", ["LENDER", "ADMIN"]);
+export const userRoleEnum = pgEnum("user_role", ["LENDER", "ADMIN", "BORROWER"]);
 export const loanAppStatusEnum = pgEnum("loan_app_status", [
   "PENDING",
   "APPROVED",
@@ -205,13 +206,76 @@ export const repaymentPlans = pgTable("repayment_plans", {
 
 export const borrowers = pgTable("borrowers", {
   id: uuid("id").defaultRandom().primaryKey(),
-  fullName: varchar("full_name", { length: 255 }).notNull(),
   phone: varchar("phone", { length: 20 }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
   bvn: varchar("bvn", { length: 20 }),
   nin: varchar("nin", { length: 20 }),
+  passcodeHash: text("passcode_hash"),
   createdAt: timestamp("created_at").defaultNow(),
+  firstName: varchar("first_name", { length: 255 }),
+  lastName: varchar("last_name", { length: 255 }),
+  middleName: varchar("middle_name", { length: 255 }),
+  gender: varchar("gender", { length: 20 }),
+  dob: varchar("dob", { length: 50 }),
+  image: text("image"),
+  kycVerified: boolean("kyc_verified").default(false),
+  
+  // Address & Location
+  address: text("address"),
+  city: varchar("city", { length: 255 }),
+  state: varchar("state", { length: 255 }),
+  country: varchar("country", { length: 255 }).default("Nigeria"),
+  
+  // Employment
+  employmentType: varchar("employment_type", { length: 50 }), // e.g., "Full-time", "Part-time", "Self-employed"
+  monthlyIncome: decimal("monthly_income", { precision: 12, scale: 2 }),
+  employerName: varchar("employer_name", { length: 255 }),
+  
+  // Credit Check
+  creditReport: jsonb("credit_report"),
+  creditScore: jsonb("credit_score"),
+  
+  bankAccounts: jsonb("bank_accounts").default([]),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+export const tempBorrowers = pgTable("temp_borrowers", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  phoneNumber: varchar("phone_number", { length: 20 }),
+  phoneNumberVerified: boolean("phone_number_verified").default(false),
+  email: varchar("email", { length: 255 }),
+  emailVerified: boolean("email_verified").default(false),
+  bvn: varchar("bvn", { length: 20 }),
+  firstName: varchar("first_name", { length: 255 }),
+  lastName: varchar("last_name", { length: 255 }),
+  middleName: varchar("middle_name", { length: 255 }),
+  gender: varchar("gender", { length: 20 }),
+  dob: varchar("dob", { length: 50 }),
+  image: text("image"),
+  kycVerified: boolean("kyc_verified").default(false),
+  
+  // Address & Location
+  address: text("address"),
+  city: varchar("city", { length: 255 }),
+  state: varchar("state", { length: 255 }),
+  country: varchar("country", { length: 255 }).default("Nigeria"),
+  
+  // Employment
+  employmentType: varchar("employment_type", { length: 50 }), // e.g., "Full-time", "Part-time", "Self-employed"
+  monthlyIncome: text("monthly_income"),
+  employerName: varchar("employer_name", { length: 255 }),
+  
+  // Credit Check
+  creditReport: jsonb("credit_report"),
+  creditScore: jsonb("credit_score"),
+  
+  bankAccounts: jsonb("bank_accounts").default([]),
+  passcodeHash: text("passcode_hash"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+
 
 export const loanApplications = pgTable("loan_applications", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -226,7 +290,6 @@ export const loanApplications = pgTable("loan_applications", {
     .notNull(),
   amount: decimal("amount").notNull(),
   durationMonths: integer("duration_months").notNull(),
-  interestRate: decimal("interest_rate").notNull(),
   status: loanAppStatusEnum("status").default("PENDING"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -269,6 +332,37 @@ export const paymentMethods = pgTable("payment_methods", {
   authorizationCode: text("authorization_code").notNull(),
   last4: varchar("last4", { length: 4 }),
   expiry: varchar("expiry", { length: 10 }),
+});
+
+export const bankAccounts = pgTable("bank_accounts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  borrowerId: uuid("borrower_id")
+    .references(() => borrowers.id)
+    .notNull(),
+  bankName: varchar("bank_name", { length: 255 }).notNull(),
+  accountNumberMasked: varchar("account_number_masked", { length: 50 }).notNull(),
+  provider: varchar("provider", { length: 50 }).notNull(), // Mono, Okra, Stitch
+  accountToken: text("account_token").notNull(), // Encrypted
+  status: varchar("status", { length: 20 }).default("ACTIVE"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const debitMandates = pgTable("debit_mandates", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  borrowerId: uuid("borrower_id")
+    .references(() => borrowers.id)
+    .notNull(),
+  bankAccountId: uuid("bank_account_id")
+    .references(() => bankAccounts.id)
+    .notNull(),
+  provider: varchar("provider", { length: 50 }).notNull(), // Paystack, Monnify, Remita
+  mandateReference: varchar("mandate_reference", { length: 255 }).notNull().unique(),
+  maxAmount: decimal("max_amount", { precision: 12, scale: 2 }),
+  status: varchar("status", { length: 20 }).default("PENDING"), // PENDING, APPROVED, REJECTED, ACTIVE
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const notifications = pgTable("notifications", {
@@ -448,4 +542,25 @@ export const loansRelations = relations(loans, ({ one, many }) => ({
 export const borrowersRelations = relations(borrowers, ({ many }) => ({
   applications: many(loanApplications),
   loans: many(loans),
+  bankAccounts: many(bankAccounts),
+  debitMandates: many(debitMandates),
+}));
+
+export const bankAccountsRelations = relations(bankAccounts, ({ one, many }) => ({
+  borrower: one(borrowers, {
+    fields: [bankAccounts.borrowerId],
+    references: [borrowers.id],
+  }),
+  mandates: many(debitMandates),
+}));
+
+export const debitMandatesRelations = relations(debitMandates, ({ one }) => ({
+  borrower: one(borrowers, {
+    fields: [debitMandates.borrowerId],
+    references: [borrowers.id],
+  }),
+  bankAccount: one(bankAccounts, {
+    fields: [debitMandates.bankAccountId],
+    references: [bankAccounts.id],
+  }),
 }));

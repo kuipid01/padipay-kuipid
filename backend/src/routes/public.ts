@@ -1,8 +1,10 @@
 
 import { Hono } from "hono";
 import { db } from "../db";
-import { loanApps, loanApplications, borrowers } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { loanApps, loanApplications, borrowers, repaymentPlans } from "../db/schema";
+import { and, eq, or } from "drizzle-orm";
+import { zValidator } from "@hono/zod-validator";
+import { CreateLoanApplicationSchema } from "../zod-schemas/applications";
 
 const router = new Hono();
 
@@ -34,46 +36,154 @@ router.get("/loan-apps/:slug", async (c) => {
     return c.json(loanApp);
 });
 
-// Submit Application
-router.post("/application", async (c) => {
-    const { loanAppId, firstName, lastName, email, phone, bvn, nin, amount, durationMonths } = await c.req.json();
+// Get Loan App Details by ID (Public)
+router.get("/loan-apps/id/:id", async (c) => {
+    const id = c.req.param("id");
+    const { loanAppsService } = await import("../domain/loan-apps");
+    const result = await loanAppsService.getPublicById(id);
 
-    // 1. Find or create borrower
-    // This is simplified. In reality you'd check uniqueness on Email/Phone/BVN carefully.
-    let borrower = await db.query.borrowers.findFirst({
-        where: eq(borrowers.email, email)
+    if (!result.success) {
+        return c.json({ error: result.error.message }, result.error.code as any);
+    }
+
+    return c.json(result.data);
+});
+
+// Get Application Status (Public)
+router.get("/application/status/:id", async (c) => {
+    const id = c.req.param("id");
+    const { applicationsService } = await import("../domain/applications");
+    const result = await applicationsService.getPublicStatus(id);
+
+    if (!result.success) {
+        return c.json({ error: result.error.message }, result.error.code as any);
+    }
+
+    return c.json(result.data);
+});
+
+// Submit Application
+
+router.post(
+  "/application",
+  zValidator("json", CreateLoanApplicationSchema),
+  async (c) => {
+    console.log("[POST /application] Incoming request");
+
+    const {
+      phoneNumber,
+      email,
+      loanAppId,        // ⚠️ this is a SLUG
+      repaymentPlanId,  // ✅ UUID
+      amount,
+      durationMonths,
+    } = c.req.valid("json");
+
+    console.log("[INPUT]", {
+      phoneNumber,
+      email,
+      loanAppId,
+      repaymentPlanId,
+      amount,
+      durationMonths,
+    });
+
+    // -----------------------------
+    // 1. Find borrower
+    // -----------------------------
+    console.log("[STEP 1] Looking up borrower");
+
+    const borrower = await db.query.borrowers.findFirst({
+      where: or(
+        eq(borrowers.phone, phoneNumber),
+        eq(borrowers.email, email),
+      ),
     });
 
     if (!borrower) {
-        const newBorrowers = await db.insert(borrowers).values({
-            fullName: `${firstName} ${lastName}`,
-            email,
-            phone,
-            bvn,
-            nin
-        }).returning();
-        borrower = newBorrowers[0];
+      console.error("[BLOCK] Borrower not found", { phoneNumber, email });
+      return c.json({ error: "Borrower not found" }, 404);
     }
 
-    // 2. Create Application
-    // Need to find default interest rate from loan app if not provided, or dynamic calculation
-    const loanApp = await db.query.loanApps.findFirst({ where: eq(loanApps.id, loanAppId) });
-    if (!loanApp) return c.json({ error: "Invalid loan app" }, 400);
+    console.log("[OK] Borrower found", { borrowerId: borrower.id });
 
-    const application = await db.insert(loanApplications).values({
-        loanAppId,
+    // -----------------------------
+    // 2. Find loan app by SLUG
+    // -----------------------------
+    console.log("[STEP 2] Resolving loan app by slug", loanAppId);
+
+    const loanApp = await db.query.loanApps.findFirst({
+      where: eq(loanApps.slug, loanAppId),
+    });
+
+    if (!loanApp) {
+      console.error("[BLOCK] Invalid loan app slug", loanAppId);
+      return c.json({ error: "Invalid loan app" }, 400);
+    }
+
+    console.log("[OK] Loan app resolved", {
+      loanAppId: loanApp.id,
+      slug: loanApp.slug,
+    });
+
+    // -----------------------------
+    // 3. Validate repayment plan (UUID + FK)
+    // -----------------------------
+    console.log("[STEP 3] Validating repayment plan", {
+      repaymentPlanId,
+      loanAppId: loanApp.id,
+    });
+
+    const repaymentPlan = await db.query.repaymentPlans.findFirst({
+      where: and(
+        eq(repaymentPlans.id, repaymentPlanId),   // UUID
+        eq(repaymentPlans.loanAppId, loanApp.id), // UUID ✅ FIX
+      ),
+    });
+
+    if (!repaymentPlan) {
+      console.error("[BLOCK] Repayment plan mismatch", {
+        repaymentPlanId,
+        expectedLoanAppId: loanApp.id,
+      });
+      return c.json({ error: "Invalid repayment plan" }, 400);
+    }
+
+    console.log("[OK] Repayment plan validated", {
+      repaymentPlanId: repaymentPlan.id,
+    });
+
+    // -----------------------------
+    // 4. Create application
+    // -----------------------------
+    console.log("[STEP 4] Creating loan application");
+
+    const application = await db
+      .insert(loanApplications)
+      .values({
+        loanAppId: loanApp.id,
+        repaymentPlanId: repaymentPlan.id,
         borrowerId: borrower.id,
         amount: amount.toString(),
-        durationMonths: Number(durationMonths) || loanApp.defaultDurationMonths,
-        interestRate: loanApp.defaultInterestRate,
-        status: "PENDING"
-    }).returning();
+        durationMonths,
+        status: "PENDING",
+      })
+      .returning();
 
-    return c.json({ 
-        success: true, 
+    console.log("[SUCCESS] Application created", {
+      applicationId: application[0].id,
+    });
+
+    return c.json(
+      {
+        success: true,
         message: "Application submitted successfully",
-        applicationId: application[0].id 
-    }, 201);
-});
+        applicationId: application[0].id,
+      },
+      201,
+    );
+  },
+);
+
 
 export default router;

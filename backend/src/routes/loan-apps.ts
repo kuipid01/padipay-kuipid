@@ -21,7 +21,19 @@ const loanApps = new Hono();
  * Routes are thin transport layers - all logic in service.
  */
 
-// Apply auth middleware to all routes
+// Public route to get loan app details by Slug (bypasses auth middleware)
+loanApps.get("/public/:slug", async (c) => {
+  const slug = c.req.param("slug");
+  const result = await loanAppsService.getPublicBySlug(slug);
+  
+  if (!result.success) {
+    return c.json({ error: result.error.message }, result.error.code as any);
+  }
+  
+  return c.json(result.data);
+});
+
+// Apply auth middleware to all routes below this point
 loanApps.use("/*", authMiddleware);
 
 type errorcode = 400 | 404 | 500;

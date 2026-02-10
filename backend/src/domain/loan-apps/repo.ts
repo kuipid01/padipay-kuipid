@@ -22,6 +22,12 @@ export const loanAppsRepo = {
       with: { repaymentPlans: true , applications:true},
     });
   },
+  async getPublicById(id: string) {
+    return db.query.loanApps.findFirst({
+      where: eq(loanApps.id, id),
+      with: { repaymentPlans: true },
+    });
+  },
   async findById(id: string, ownerId: string) {
     return db.query.loanApps.findFirst({
       where: and(eq(loanApps.id, id), eq(loanApps.ownerId, ownerId)),
