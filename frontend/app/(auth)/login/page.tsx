@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError } from "@/components/ui/field-form";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Github, Globe, Chrome } from "lucide-react";
 import Image from "next/image";
@@ -24,6 +24,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -55,7 +56,10 @@ export default function LoginPage() {
       }
 
       toast.success("Welcome back!");
-      router.push("/dashboard");
+
+      // Redirect to the page user was trying to access, or dashboard
+      const redirect = searchParams.get("redirect") || "/dashboard";
+      router.push(redirect);
       router.refresh();
     } catch (err: any) {
       toast.error(err.message);

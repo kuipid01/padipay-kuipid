@@ -45,13 +45,10 @@ router.post("/", async (c) => {
     const user = c.get("user");
     const body = await c.req.json();
     
-    // In a real app, you'd validate body here with Zod
-    // Expecting: borrowerId, principal, interestRate, duration, validation etc.
-    
     // Simplified creation
     const newLoan = await db.insert(loans).values({
         lenderId: user.id,
-        applicationId: body.applicationId, // or create one ad-hoc
+        applicationId: body.applicationId, 
         borrowerId: body.borrowerId,
         principal: body.principal,
         interest: body.interest,

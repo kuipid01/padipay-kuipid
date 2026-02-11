@@ -35,7 +35,6 @@ router.get("/stats", async (c) => {
         outstandingBalance: outstanding.toString()
     });
 });
-
 router.get("/active-loans", async (c) => {
     // Active loans
     const activeLoans = await db.query.loans.findMany({
@@ -49,15 +48,14 @@ router.get("/active-loans", async (c) => {
 
     return c.json(activeLoans.map(loan => ({
         id: loan.id,
-        borrower: loan.borrower.fullName,
+        borrower: loan.borrower.firstName + " " + loan.borrower.lastName,
         amount: loan.principal,
         interest: loan.interest,
-        dueDate: "2026-02-12", // Placeholder, ideally calculated from repayments or application duration
+        dueDate: "2026-02-12", // Placeholder
         status: "On Track", // Placeholder logic
-        amountLeft: loan.totalPayable // Simplified, effectively total payable for now
+        amountLeft: loan.totalPayable // Simplified
     })));
 });
-
 router.get("/upcoming-payments", async (c) => {
     const upcoming = await db.query.repayments.findMany({
         where: and(eq(repayments.status, "PENDING")),
@@ -76,7 +74,7 @@ router.get("/upcoming-payments", async (c) => {
         id: p.id,
         amount: p.amount,
         dueDate: p.dueDate,
-        borrower: p.loan.borrower.fullName,
+        borrower: p.loan.borrower.firstName + " " + p.loan.borrower.lastName,
         method: "Auto-debit" // Placeholder
     })));
 });
@@ -98,12 +96,12 @@ router.get("/recent-activity", async (c) => {
 
     const activities = [
         ...recentLoans.map(l => ({
-            text: `New loan for ${l.borrower.fullName}`,
+            text: `New loan for ${l.borrower.firstName} ${l.borrower.lastName}`,
             time: l.startDate,
             type: "request"
         })),
         ...recentRepayments.map(r => ({
-            text: `${r.loan.borrower.fullName} paid`,
+            text: `${r.loan.borrower.firstName} ${r.loan.borrower.lastName} paid`,
             time: r.paidAt,
             type: "payment"
         }))

@@ -1,0 +1,312 @@
+
+import { Hono } from "hono";
+import { db } from "../db";
+import { 
+    loans, 
+    repayments, 
+    borrowers, 
+    loanApplications, 
+    bankAccounts,
+    notifications
+} from "../db/schema";
+import { eq, and, desc, sum, count, lt, inArray } from "drizzle-orm";
+import { authMiddleware } from "../middleware/auth";
+import { hashPassword, comparePassword, signToken } from "../lib/auth";
+
+const router = new Hono();
+
+// 1. Borrower Auth - Public
+router.post("/auth/login", async (c) => {
+    try {
+        const { identifier, passcode } = await c.req.json();
+
+        if (!identifier || !passcode) {
+            return c.json({ status: "error", message: "Identifier and passcode are required" }, 400);
+        }
+
+        const borrower = await db.query.borrowers.findFirst({
+            where: (borrowers, { or, eq }) => or(
+                eq(borrowers.email, identifier),
+                eq(borrowers.phone, identifier),
+            ),
+        });
+
+        if (!borrower || !borrower.passcodeHash) {
+            return c.json({ status: "error", message: "Invalid credentials" }, 401);
+        }
+
+        const isValid = await comparePassword(passcode, borrower.passcodeHash);
+        if (!isValid) {
+            return c.json({ status: "error", message: "Invalid credentials" }, 401);
+        }
+
+        // Sign token with ID (for middleware), borrowerId, email, phone, and role
+        const token = await signToken({
+            id: borrower.id,
+            borrowerId: borrower.id,
+            email: borrower.email,
+            phone: borrower.phone,
+            role: "BORROWER",
+        });
+
+        return c.json({
+            status: "success",
+            message: "Login successful",
+            token,
+            borrower: {
+                id: borrower.id,
+                firstName: borrower.firstName,
+                lastName: borrower.lastName,
+                email: borrower.email,
+                phone: borrower.phone,
+            },
+        });
+    } catch (error: any) {
+        return c.json({ status: "error", message: error.message }, 400);
+    }
+});
+
+// Apply auth middleware - ensure user is a borrower for all subsequent routes
+router.use("*", authMiddleware);
+router.use("*", async (c, next) => {
+    const user = c.get("user");
+    if (user.role !== "BORROWER") {
+        return c.json({ error: "Unauthorized. Borrower access only." }, 403);
+    }
+    await next();
+});
+
+// 2. Borrower Profile/Auth - Protected
+router.get("/auth/me", async (c) => {
+    const user = c.get("user");
+    const borrowerData = await db.query.borrowers.findFirst({
+        where: eq(borrowers.id, user.id)
+    });
+
+    if (!borrowerData) {
+        return c.json({ user: null });
+    }
+
+    const { passcodeHash: _, ...safeBorrower } = borrowerData;
+    return c.json({ user: safeBorrower });
+});
+
+router.post("/auth/change-password", async (c) => {
+    const user = c.get("user");
+    const { currentPassword, newPassword } = await c.req.json();
+
+    if (!currentPassword || !newPassword) {
+        return c.json({ error: "Current and new password are required" }, 400);
+    }
+
+    const borrowerDetails = await db.query.borrowers.findFirst({
+        where: eq(borrowers.id, user.id)
+    });
+
+    if (!borrowerDetails) {
+        return c.json({ error: "Borrower not found" }, 404);
+    }
+
+    if (borrowerDetails.passcodeHash) {
+        const isValid = await comparePassword(currentPassword, borrowerDetails.passcodeHash);
+        if (!isValid) {
+            return c.json({ error: "Invalid current passcode" }, 401);
+        }
+    }
+
+    const newHash = await hashPassword(newPassword);
+
+    await db.update(borrowers)
+        .set({ passcodeHash: newHash, updatedAt: new Date() })
+        .where(eq(borrowers.id, user.id));
+
+    return c.json({ success: true, message: "Passcode updated successfully" });
+});
+
+// 1. Dashboard Overview
+// GET /api/borrower/overview
+router.get("/overview", async (c) => {
+    const user = c.get("user");
+    const borrowerId = user.id;
+
+    // Active Loans Count
+    const activeLoansData = await db.select({ value: count() })
+        .from(loans)
+        .where(and(eq(loans.borrowerId, borrowerId), eq(loans.status, "ACTIVE")));
+    const activeLoansCount = activeLoansData[0]?.value || 0;
+
+    // Total Borrowed Amount
+    const totalBorrowedResult = await db.select({ value: sum(loans.principal) })
+        .from(loans)
+        .where(eq(loans.borrowerId, borrowerId));
+    const totalBorrowedAmount = Number(totalBorrowedResult[0]?.value || 0);
+
+    // Pending Payments Count
+    const pendingPaymentsData = await db.select({ value: count() })
+        .from(repayments)
+        .innerJoin(loans, eq(repayments.loanId, loans.id))
+        .where(and(eq(loans.borrowerId, borrowerId), eq(repayments.status, "PENDING")));
+    const pendingPaymentsCount = pendingPaymentsData[0]?.value || 0;
+
+    // Overdue Count
+    const now = new Date();
+    const overdueData = await db.select({ value: count() })
+        .from(repayments)
+        .innerJoin(loans, eq(repayments.loanId, loans.id))
+        .where(and(
+            eq(loans.borrowerId, borrowerId), 
+            eq(repayments.status, "PENDING"),
+            lt(repayments.dueDate, now)
+        ));
+    const overdueCount = overdueData[0]?.value || 0;
+
+    return c.json({
+        activeLoansCount,
+        totalBorrowedAmount,
+        pendingPaymentsCount,
+        overdueCount
+    });
+});
+
+// 2. Loan History
+// GET /api/borrower/loans
+router.get("/loans", async (c) => {
+    const user = c.get("user");
+    const borrowerId = user.id;
+
+    // Get actual loans
+    const actualLoans = await db.query.loans.findMany({
+        where: eq(loans.borrowerId, borrowerId),
+        with: {
+            repayments: true
+        },
+        orderBy: desc(loans.startDate)
+    });
+
+    // Get pending/rejected applications
+    const applications = await db.query.loanApplications.findMany({
+        where: and(
+            eq(loanApplications.borrowerId, borrowerId),
+            inArray(loanApplications.status, ["PENDING", "REJECTED"])
+        ),
+        orderBy: desc(loanApplications.createdAt)
+    });
+
+    const now = new Date();
+
+    const formattedLoans = actualLoans.map(loan => {
+        const isOverdue = loan.status === "ACTIVE" && loan.repayments.some(r => r.status === "PENDING" && new Date(r.dueDate) < now);
+        
+        const nextPendingRepayment = loan.repayments
+            .filter(r => r.status === "PENDING")
+            .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0];
+
+        return {
+            id: loan.id,
+            amount: Number(loan.principal),
+            status: isOverdue ? "overdue" : loan?.status?.toLowerCase(),
+            createdAt: loan.startDate,
+            dueDate: nextPendingRepayment?.dueDate || (loan.repayments.length > 0 ? loan.repayments[loan.repayments.length - 1].dueDate : null)
+        };
+    });
+
+    const formattedApps = applications.map(app => ({
+        id: app.id,
+        amount: Number(app.amount),
+        status: app?.status?.toLowerCase(),
+        createdAt: app.createdAt,
+        dueDate: null
+    }));
+
+    const result = [...formattedLoans, ...formattedApps].sort((a, b) => 
+        new Date(b.createdAt as Date).getTime() - new Date(a.createdAt as Date).getTime()
+    );
+
+    return c.json(result);
+});
+
+// 4. Payout Accounts (Banks)
+// GET /api/borrower/banks
+router.get("/banks", async (c) => {
+    const user = c.get("user");
+    
+    // We can fetch from bankAccounts table or borrower.bankAccounts JSON
+    const accounts = await db.query.bankAccounts.findMany({
+        where: eq(bankAccounts.borrowerId, user.id)
+    });
+
+    return c.json(accounts);
+});
+
+// POST /api/borrower/banks
+router.post("/banks", async (c) => {
+    const user = c.get("user");
+    const { bankName, accountNumber, accountName, bankCode } = await c.req.json();
+
+    if (!bankName || !accountNumber || !accountName) {
+        return c.json({ error: "Bank name, account number, and account name are required" }, 400);
+    }
+
+    const newAccount = await db.insert(bankAccounts).values({
+        borrowerId: user.id,
+        bankName,
+        accountNumberMasked: accountNumber.slice(-4).padStart(accountNumber.length, '*'),
+        accountToken: "MANUAL", // Placeholder for manual entry
+        provider: "MANUAL",
+        status: "ACTIVE"
+    }).returning();
+
+    // Also update JSON on borrower for convenience if needed
+    const borrower = await db.query.borrowers.findFirst({ where: eq(borrowers.id, user.id) });
+    if (borrower) {
+        const currentBanks = Array.isArray(borrower.bankAccounts) ? borrower.bankAccounts : [];
+        await db.update(borrowers)
+            .set({ 
+                bankAccounts: [...currentBanks, { bankName, accountNumber, accountName, bankCode, id: newAccount[0].id }] 
+            })
+            .where(eq(borrowers.id, user.id));
+    }
+
+    return c.json(newAccount[0], 201);
+});
+
+// DELETE /api/borrower/banks/:id
+router.delete("/banks/:id", async (c) => {
+    const user = c.get("user");
+    const id = c.req.param("id");
+
+    const deleted = await db.delete(bankAccounts)
+        .where(and(eq(bankAccounts.id, id), eq(bankAccounts.borrowerId, user.id)))
+        .returning();
+
+    if (deleted.length === 0) {
+        return c.json({ error: "Bank account not found" }, 404);
+    }
+
+    // Update JSON too
+    const borrower = await db.query.borrowers.findFirst({ where: eq(borrowers.id, user.id) });
+    if (borrower && Array.isArray(borrower.bankAccounts)) {
+        const updatedBanks = borrower.bankAccounts.filter((acc: any) => acc.id !== id);
+        await db.update(borrowers)
+            .set({ bankAccounts: updatedBanks })
+            .where(eq(borrowers.id, user.id));
+    }
+
+    return c.json({ success: true, message: "Bank account removed" });
+});
+
+// 5. Notifications
+// GET /api/borrower/notifications
+router.get("/notifications", async (c) => {
+    const user = c.get("user");
+    
+    const borrowerNotifications = await db.query.notifications.findMany({
+        where: eq(notifications.borrowerId, user.id),
+        orderBy: desc(notifications.sentAt),
+        limit: 20
+    });
+
+    return c.json(borrowerNotifications);
+});
+
+export default router;
