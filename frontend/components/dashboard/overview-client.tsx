@@ -72,6 +72,7 @@ export function OverviewClient() {
         queryFn: () => fetch("/api/dashboard/active-loans").then((res) => res.json()),
     });
 
+    console.log(activeLoans,"activeLoans")
     const { data: upcomingPayments } = useQuery<UpcomingPayment[]>({
         queryKey: ["upcoming-payments"],
         queryFn: () => fetch("/api/dashboard/upcoming-payments").then((res) => res.json()),

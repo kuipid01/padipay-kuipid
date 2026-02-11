@@ -1,0 +1,1 @@
+ALTER TABLE "borrowers" ADD COLUMN "email_verified" boolean DEFAULT false;

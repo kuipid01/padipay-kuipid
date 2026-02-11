@@ -27,74 +27,62 @@ const signBorrowerToken = async (borrower: any) => {
 router.post("/passcode", async (c) => {
   try {
     const { email, phone, passcode } = await c.req.json();
-    console.log("[PASSCODE] Request received", { email, phone });
 
-    // -----------------------------
-    // 1. Validate input
-    // -----------------------------
     if (!passcode) {
-      console.warn("[BLOCK] Passcode missing");
       return c.json({ status: "error", message: "Passcode is required" }, 400);
     }
     if (!email && !phone) {
-      console.warn("[BLOCK] Email or phone missing");
       return c.json(
         { status: "error", message: "Email or phone is required" },
         400,
       );
     }
 
-    // -----------------------------
-    // 2. Import DB & utilities
-    // -----------------------------
-    const { db, tempBorrowers } = await import("../db");
+    const { eq, or } = await import("drizzle-orm");
+    const { db, borrowers, tempBorrowers } = await import("../db");
     const { hashPassword } = await import("../lib/auth");
 
-    if (!db || !tempBorrowers) {
-      console.error("[BLOCK] Database or tempBorrowers table not available");
-      return c.json(
-        { status: "error", message: "Server not ready. Try again later." },
-        500,
-      );
+    const hashedPasscode = await hashPassword(passcode);
+
+    // Update in borrowers table
+    const existingBorrower = await db.query.borrowers.findFirst({
+      where: or(
+        email ? eq(borrowers.email, email) : undefined,
+        phone ? eq(borrowers.phone, phone) : undefined,
+      ),
+    });
+
+    if (existingBorrower) {
+      await db
+        .update(borrowers)
+        .set({ passcodeHash: hashedPasscode,email, emailVerified: true,  updatedAt: new Date() })
+        .where(eq(borrowers.id, existingBorrower.id));
     }
 
-    // -----------------------------
-    // 3. Hash passcode
-    // -----------------------------
-    const hashedPasscode = await hashPassword(passcode);
-    console.log("[INFO] Passcode hashed");
-
-    // -----------------------------
-    // 4. Create temp borrower
-    // -----------------------------
-    const newTempBorrower = await db
-      .insert(tempBorrowers)
-      .values({
-        phoneNumber: phone || null,
-        email: email || null,
-        passcodeHash: hashedPasscode,
-        phoneNumberVerified: !!phone,
-        emailVerified: !!email,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .returning();
-
-    console.log("[SUCCESS] Temp borrower created", {
-      tempBorrowerId: newTempBorrower[0].id,
+    // Also update in temp_borrowers
+    const existingTemp = await db.query.tempBorrowers.findFirst({
+      where: or(
+        email ? eq(tempBorrowers.email, email) : undefined,
+        phone ? eq(tempBorrowers.phoneNumber, phone) : undefined,
+      ),
     });
 
-    return c.json({
-      status: "success",
-      message: "Passcode set successfully",
-      tempBorrowerId: newTempBorrower[0].id,
-    });
+    if (existingTemp) {
+      await db
+        .update(tempBorrowers)
+        .set({ passcodeHash: hashedPasscode,email, emailVerified: true, updatedAt: new Date() })
+        .where(eq(tempBorrowers.id, existingTemp.id));
+    }
+
+    if (!existingBorrower && !existingTemp) {
+      return c.json({ status: "error", message: "Borrower not found" }, 404);
+    }
+
+    return c.json({ status: "success", message: "Passcode set successfully" });
   } catch (error: any) {
-    console.error("[ERROR] /passcode", error);
-    return c.json({ status: "error", message: error.message || "Something went wrong" }, 400);
+    return c.json({ status: "error", message: error.message }, 400);
   }
 });
-
 
 // POST /api/verify/login
 // Borrower login using email/phone and passcode
@@ -245,6 +233,8 @@ router.post("/bvn", async (c) => {
         dob: kycData.date_of_birth || kycData.dob,
         phone,
         email: existingTemp?.email || "",
+        emailVerified: existingTemp?.emailVerified || false,
+        
         bvn: bvn,
         passcodeHash: existingTemp?.passcodeHash || null,
         creditReport: creditReport,

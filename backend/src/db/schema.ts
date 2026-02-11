@@ -208,6 +208,7 @@ export const borrowers = pgTable("borrowers", {
   id: uuid("id").defaultRandom().primaryKey(),
   phone: varchar("phone", { length: 20 }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
+    emailVerified: boolean("email_verified").default(false),
   bvn: varchar("bvn", { length: 20 }),
   nin: varchar("nin", { length: 20 }),
   passcodeHash: text("passcode_hash"),
@@ -228,7 +229,7 @@ export const borrowers = pgTable("borrowers", {
   
   // Employment
   employmentType: varchar("employment_type", { length: 50 }), // e.g., "Full-time", "Part-time", "Self-employed"
-  monthlyIncome: decimal("monthly_income", { precision: 12, scale: 2 }),
+ monthlyIncome: text("monthly_income"),
   employerName: varchar("employer_name", { length: 255 }),
   
   // Credit Check

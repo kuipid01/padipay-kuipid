@@ -79,7 +79,8 @@ export function ApplicationsList({ initialApplications }: ApplicationsListProps)
 
     const filteredApps = apps.filter(app => {
         const matchesSearch =
-            app.borrower.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            app.borrower.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            app.borrower.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
             app.borrower.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
             app.id.includes(searchQuery);
 
@@ -88,7 +89,7 @@ export function ApplicationsList({ initialApplications }: ApplicationsListProps)
 
         return matchesSearch && matchesStatus && matchesRisk;
     });
-
+console.log("APPLICATIONS,", apps)
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -204,7 +205,7 @@ export function ApplicationsList({ initialApplications }: ApplicationsListProps)
                                     <TableCell className="px-8 py-5">
                                         <div className="flex items-center gap-3">
                                             <div className="size-10 rounded-full bg-lemon-primary/10 flex items-center justify-center text-main-green font-black text-xs shrink-0">
-                                                {app.borrower.fullName.charAt(0)}
+                                                {app.borrower.firstName.charAt(0)}
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="font-bold text-main-green truncate group-hover:text-primary transition-colors">{app.borrower.fullName}</p>

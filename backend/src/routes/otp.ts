@@ -232,21 +232,6 @@ otp.post("/verify", async (c) => {
             phoneNumberVerified: true,
           });
         }
-      } else if (type === "email") {
-        const existing = await db.query.tempBorrowers.findFirst({
-          where: eq(tempBorrowers.email, value),
-        });
-
-        if (existing) {
-          await db.update(tempBorrowers)
-            .set({ emailVerified: true, updatedAt: new Date() })
-            .where(eq(tempBorrowers.id, existing.id));
-        } else {
-          await db.insert(tempBorrowers).values({
-            email: value,
-            emailVerified: true,
-          });
-        }
       }
     } catch (dbError) {
       console.error("Database error while updating temp borrower:", dbError);

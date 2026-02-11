@@ -1,0 +1,1 @@
+ALTER TABLE "borrowers" ALTER COLUMN "monthly_income" SET DATA TYPE text;

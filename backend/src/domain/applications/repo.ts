@@ -1,5 +1,10 @@
 import { db } from "../../db";
-import { loanApplications, loanApps, borrowers, repaymentPlans } from "../../db/schema";
+import {
+  loanApplications,
+  loanApps,
+  borrowers,
+  repaymentPlans,
+} from "../../db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { UpdateApplicationInput } from "../../zod-schemas/applications";
 
@@ -8,10 +13,10 @@ export const applicationsRepo = {
     // 1. Get all loan app IDs owned by this user
     const userLoanApps = await db.query.loanApps.findMany({
       where: eq(loanApps.ownerId, ownerId),
-      columns: { id: true }
+      columns: { id: true },
     });
 
-    const loanAppIds = userLoanApps.map(app => app.id);
+    const loanAppIds = userLoanApps.map((app) => app.id);
 
     if (loanAppIds.length === 0) return [];
 
@@ -21,9 +26,9 @@ export const applicationsRepo = {
       with: {
         loanApp: true,
         borrower: true,
-        repaymentPlan: true
+        repaymentPlan: true,
       },
-      orderBy: (apps, { desc }) => [desc(apps.createdAt)]
+      orderBy: (apps, { desc }) => [desc(apps.createdAt)],
     });
   },
 
@@ -33,8 +38,8 @@ export const applicationsRepo = {
       with: {
         loanApp: true,
         borrower: true,
-        repaymentPlan: true
-      }
+        repaymentPlan: true,
+      },
     });
 
     if (!app || app.loanApp.ownerId !== ownerId) {
@@ -51,15 +56,16 @@ export const applicationsRepo = {
         loanApp: {
           columns: {
             name: true,
-          }
+          },
         },
         borrower: {
           columns: {
-            fullName: true,
-          }
+            firstName: true,
+            lastName: true,
+          },
         },
-        repaymentPlan: true
-      }
+        repaymentPlan: true,
+      },
     });
   },
 
@@ -70,5 +76,5 @@ export const applicationsRepo = {
       .where(eq(loanApplications.id, id))
       .returning();
     return updated;
-  }
+  },
 };

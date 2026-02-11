@@ -4,7 +4,7 @@ const DOJAH_BASE_URL = "https://api.dojah.io/api/v1";
 const DOJAH_APP_ID = process.env.DOJAH_APP_ID;
 const DOJAH_SECRET_KEY = process.env.DOJAH_SECRET_KEY;
 
-const dojahRequest = async (endpoint: string, params: Record<string, string> = {},timeout = 8000,) => {
+const dojahRequest = async (endpoint: string, params: Record<string, string> = {},timeout = 8000) => {
   try {
     const response = await axios.get(`${DOJAH_BASE_URL}${endpoint}`, {
       params,
@@ -55,6 +55,7 @@ export const resolveAccount = async (accountNumber: string, bankCode: string) =>
  * @param bvn Bank Verification Number
  */
 export const getCreditReport = async (bvn: string) => {
+  console.log("Getting credit report for BVN:", bvn);
   return dojahRequest("/credit_bureau", { bvn });
 };
 
@@ -63,6 +64,7 @@ export const getCreditReport = async (bvn: string) => {
  * @param bvn Bank Verification Number
  */
 export const getCreditScore = async (bvn: string) => {
+    console.log("Getting fico score for BVN:", bvn);
   return dojahRequest("/fico_score", { bvn });
 };
 

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -15,23 +16,22 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 const loginSchema = z.object({
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  passcode: z.string().length(6, "Passcode must be exactly 6 digits"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [showPasscode, setShowPasscode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      phone: "",
-      passcode: "",
+      email: "",
+      password: "",
     },
   });
-
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     console.log("values", values);
@@ -131,7 +131,7 @@ export default function LoginPage() {
             className="w-full space-y-4"
           >
             <Controller
-              name="phone"
+              name="email"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid} className="gap-1.5">
@@ -139,8 +139,7 @@ export default function LoginPage() {
                     <Input
                       {...field}
                       id={field.name}
-                      placeholder="Phone Number (e.g. 080...)"
-                      inputMode="numeric"
+                      placeholder="Email address"
                       aria-invalid={fieldState.invalid}
                       className="h-14 bg-[#f8fbf7] border-gray-100 rounded-2xl px-6 focus-visible:ring-main-green font-medium transition-all group-hover:border-main-green/30"
                     />
@@ -153,7 +152,7 @@ export default function LoginPage() {
             />
 
             <Controller
-              name="passcode"
+              name="password"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid} className="gap-1.5">
@@ -161,23 +160,17 @@ export default function LoginPage() {
                     <Input
                       {...field}
                       id={field.name}
-                      type={showPasscode ? "text" : "password"}
-                      inputMode="numeric"
-                      maxLength={6}
-                      placeholder="6-Digit Passcode"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
                       aria-invalid={fieldState.invalid}
-                      className="h-14 bg-[#f8fbf7] border-gray-100 rounded-2xl px-6 focus-visible:ring-main-green font-medium transition-all group-hover:border-main-green/30 tracking-widest text-center text-lg"
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 6);
-                        field.onChange(val);
-                      }}
+                      className="h-14 bg-[#f8fbf7] border-gray-100 rounded-2xl px-6 focus-visible:ring-main-green font-medium transition-all group-hover:border-main-green/30"
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPasscode(!showPasscode)}
+                      onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
                     >
-                      {showPasscode ? <EyeOff size={20} /> : <Eye size={20} />}
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   </div>
                   <div className="flex justify-end px-1 mt-1">
@@ -185,7 +178,7 @@ export default function LoginPage() {
                       href="/forgot-password"
                       className="text-xs text-gray-400 font-bold hover:text-main-green transition-colors"
                     >
-                      Forgot passcode?
+                      Forgot password?
                     </Link>
                   </div>
                   {fieldState.invalid && (
@@ -209,10 +202,32 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-4 mb-4 flex flex-col items-center w-full">
-            {/* Removed Social Login for simplified flow or keep if needed? User specifically mentioned phone/passcode. I'll keep it as "or sign in with" is usually harmless, but the user was specific. I will comment it out to be safe or keep it. Let's keep it as standard login page usually has options. Actually, I removed it in the requested block because I want to stick to what was requested "login with phone number and passcode". But standard designs usually have alternatives. I will remove the social login block to keep it clean and focused as requested "simple button... can just login". Wait, standard login pages often have social. I'll remove it to be safe and specific to the request "login with phone number and passcode". */}
+            <div className="flex items-center gap-4 w-full mb-6">
+              <div className="h-px bg-gray-100 flex-1"></div>
+              <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+                or sign in with
+              </span>
+              <div className="h-px bg-gray-100 flex-1"></div>
+            </div>
+
+            <div className="flex gap-4">
+              {[Chrome, Globe, Github].map((Icon, i) => (
+                <motion.button
+                  key={i}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="size-12 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 hover:bg-white hover:shadow-md transition-all group"
+                >
+                  <Icon
+                    size={20}
+                    className="text-gray-600 group-hover:text-main-green transition-colors"
+                  />
+                </motion.button>
+              ))}
+            </div>
           </div>
 
-          <div className="text-center mt-4">
+          <div className="text-center">
             <p className="text-xs font-bold text-gray-400 italic">
               By logging in you agree to PadiLoan's{" "}
               <Link href="/terms" className="text-main-green underline">

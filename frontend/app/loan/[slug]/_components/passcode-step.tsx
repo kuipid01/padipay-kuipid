@@ -41,6 +41,7 @@ export function PasscodeStep({ formData, update, onNext, onBack }: PasscodeStepP
         }
     };
 
+
     return (
         <div className="space-y-8">
             <button onClick={onBack} className="size-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors">
