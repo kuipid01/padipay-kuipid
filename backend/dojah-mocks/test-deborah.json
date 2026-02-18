@@ -1,0 +1,930 @@
+{
+  "entity": {
+    "bvn": "22729082561",
+    "name": "OLUWAYOMI TIMILEYIN DEBORAH",
+    "gender": "Female",
+    "dateOfBirth": "25/04/2004",
+    "address": "OTTA OGUN",
+    "phone": "07084027588",
+    "email": "",
+    "score": {
+      "totalNoOfLoans": [
+        {
+          "source": "CRC",
+          "value": 3
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": 1
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": 3
+        }
+      ],
+      "totalNoOfInstitutions": [
+        {
+          "source": "CRC",
+          "value": 2
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": 1
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": 2
+        }
+      ],
+      "totalNoOfActiveLoans": [
+        {
+          "source": "CRC",
+          "value": 3
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": 0
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": null
+        }
+      ],
+      "totalNoOfClosedLoans": [
+        {
+          "source": "CRC",
+          "value": null
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": 1
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": 3
+        }
+      ],
+      "totalNoOfDelinquentFacilities": [
+        {
+          "source": "CRC",
+          "value": 1
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": 0
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": null
+        }
+      ],
+      "totalBorrowed": [
+        {
+          "source": "CRC",
+          "value": 104600
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": 58600
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": 104600
+        }
+      ],
+      "totalOutstanding": [
+        {
+          "source": "CRC",
+          "value": 776
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": 0
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": null
+        }
+      ],
+      "highestLoanAmount": [
+        {
+          "source": "CRC",
+          "value": 58600
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": 58600
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": 58600
+        }
+      ],
+      "totalOverdue": [
+        {
+          "source": "CRC",
+          "value": 776
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": 0
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": null
+        }
+      ],
+      "maxNoOfDays": [
+        {
+          "source": "CRC",
+          "value": null
+        },
+        {
+          "source": "FIRST_CENTRAL"
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": null
+        }
+      ],
+      "totalNoOfPerformingLoans": [
+        {
+          "source": "CRC",
+          "value": 2
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": 1
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": 3
+        }
+      ],
+      "totalMonthlyInstallment": [
+        {
+          "source": "CRC",
+          "value": null
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": 0
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": null
+        }
+      ],
+      "totalNoOfOverdueAccounts": [
+        {
+          "source": "CRC",
+          "value": null
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": 0
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": null
+        }
+      ],
+      "loanPerformance": [
+        {
+          "source": "CRC",
+          "value": [
+            {
+              "loanProvider": "OPAY MICROFINANCE BANK LIMITED",
+              "loanAmount": "NGN   46,000",
+              "accountNumber": "",
+              "outstandingBalance": "0",
+              "status": "Closed",
+              "performanceStatus": "Performing",
+              "lastUpdatedAt": "",
+              "overdueAmount": "0",
+              "type": "",
+              "loanCount": 2,
+              "noOfPerformingLoans": 2,
+              "noOfNonPerformingLoans": 0
+            },
+            {
+              "loanProvider": "STANBICIBTC BANK PLC",
+              "loanAmount": "NGN   58,600",
+              "accountNumber": "",
+              "outstandingBalance": "776",
+              "status": "Open",
+              "performanceStatus": "Not Performing",
+              "lastUpdatedAt": "",
+              "overdueAmount": "776",
+              "type": "",
+              "loanCount": 1,
+              "noOfPerformingLoans": 0,
+              "noOfNonPerformingLoans": 1
+            }
+          ]
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": [
+            {
+              "accountNumber": "0072550756",
+              "loanProvider": "Stanbic IBTC Bank PLC",
+              "loanAmount": 58600,
+              "outstandingBalance": 0,
+              "overdueAmount": 0,
+              "noOfPerforming": 1,
+              "noOfNonPerforming": 0,
+              "loanCount": 1,
+              "performanceStatus": "Performing",
+              "status": "Closed"
+            }
+          ]
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": [
+            {
+              "loanProvider": "OPay Microfinance Bank Limited",
+              "accountNumber": "9993198826",
+              "loanAmount": 26000,
+              "outstandingBalance": 0,
+              "status": "Closed",
+              "performanceStatus": "Paid Off (Closed)",
+              "overdueAmount": 0,
+              "type": "Revolving Loan",
+              "loanDuration": "30",
+              "repaymentFrequency": "monthly",
+              "repaymentBehavior": "None",
+              "paymentProfile": "NNNNNN0NNNNNNNNNNNNNNNNN",
+              "dateAccountOpened": "2025-08-29T00:00:00",
+              "lastUpdatedAt": "2025-10-15T17:14:50.49",
+              "loanCount": 1,
+              "monthlyInstallmentAmt": 0
+            },
+            {
+              "loanProvider": "OPay Microfinance Bank Limited",
+              "accountNumber": "9985712284",
+              "loanAmount": 20000,
+              "outstandingBalance": 0,
+              "status": "Closed",
+              "performanceStatus": "Paid Off (Closed)",
+              "overdueAmount": 0,
+              "type": "Revolving Loan",
+              "loanDuration": "30",
+              "repaymentFrequency": "monthly",
+              "repaymentBehavior": "None",
+              "paymentProfile": "NNNNNNN0NNNNNNNNNNNNNNNN",
+              "dateAccountOpened": "2025-07-31T00:00:00",
+              "lastUpdatedAt": "2025-09-13T01:32:55.64",
+              "loanCount": 1,
+              "monthlyInstallmentAmt": 0
+            },
+            {
+              "loanProvider": "Stanbic IBTC Bank Plc",
+              "accountNumber": "0072550756",
+              "loanAmount": 58600,
+              "outstandingBalance": 0,
+              "status": "Closed",
+              "performanceStatus": "Paid Off (Closed)",
+              "overdueAmount": 0,
+              "type": "Term Loan",
+              "loanDuration": "122",
+              "repaymentFrequency": "003",
+              "repaymentBehavior": "Non-performing (sub-standard - 90 days) - 2 times",
+              "paymentProfile": "NNN44000NNNNNNNNNNNNNNNN",
+              "dateAccountOpened": "2025-07-05T00:00:00",
+              "lastUpdatedAt": "2026-01-20T01:53:20.5",
+              "loanCount": 1,
+              "monthlyInstallmentAmt": 15553
+            }
+          ]
+        }
+      ],
+      "loanHistory": [
+        {
+          "source": "CRC",
+          "value": [
+            {
+              "loanProvider": "STANBICIBTC BANK PLC",
+              "accountNumber": "0072550756",
+              "type": "Term Loan",
+              "disbursedDate": "05-Jul-2025",
+              "maturityDate": "04-Nov-2025",
+              "loanAmount": "58600",
+              "installmentAmount": "",
+              "overdueAmount": "776",
+              "amountWrittenOff": "",
+              "currency": "NGN",
+              "lastPaymentDate": "",
+              "loanDuration": "",
+              "dateReported": "30-Nov-2025",
+              "performanceStatus": "Sub Standard",
+              "rankings": "3-118",
+              "reason": "Open",
+              "outstandingBalance": "776",
+              "loanStatus": "A",
+              "numberOfOverdueDays": "118",
+              "collateral": "Unsecured",
+              "paymentHistory": {
+                "MONTH1": {
+                  "month": "Nov-25",
+                  "daysOverdue": "118"
+                },
+                "MONTH10": {
+                  "month": "Feb-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH11": {
+                  "month": "Jan-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH12": {
+                  "month": "Dec-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH13": {
+                  "month": "Nov-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH14": {
+                  "month": "Oct-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH15": {
+                  "month": "Sep-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH16": {
+                  "month": "Aug-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH17": {
+                  "month": "Jul-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH18": {
+                  "month": "Jun-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH19": {
+                  "month": "May-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH2": {
+                  "month": "Oct-25",
+                  "daysOverdue": "90"
+                },
+                "MONTH20": {
+                  "month": "Apr-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH21": {
+                  "month": "Mar-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH22": {
+                  "month": "Feb-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH23": {
+                  "month": "Jan-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH24": {
+                  "month": "Dec-23",
+                  "daysOverdue": "ND"
+                },
+                "MONTH3": {
+                  "month": "Sep-25",
+                  "daysOverdue": "58"
+                },
+                "MONTH4": {
+                  "month": "Aug-25",
+                  "daysOverdue": "29"
+                },
+                "MONTH5": {
+                  "month": "Jul-25",
+                  "daysOverdue": "OK"
+                },
+                "MONTH6": {
+                  "month": "Jun-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH7": {
+                  "month": "May-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH8": {
+                  "month": "Apr-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH9": {
+                  "month": "Mar-25",
+                  "daysOverdue": "ND"
+                }
+              }
+            },
+            {
+              "loanProvider": "OPAY MICROFINANCE BANK LIMITED",
+              "accountNumber": "9993198826",
+              "type": "Others",
+              "disbursedDate": "29-Aug-2025",
+              "maturityDate": "27-Sep-2025",
+              "loanAmount": "26000",
+              "installmentAmount": "",
+              "overdueAmount": "0",
+              "amountWrittenOff": "",
+              "currency": "NGN",
+              "lastPaymentDate": "",
+              "loanDuration": "",
+              "dateReported": "30-Sep-2025",
+              "performanceStatus": "Performing",
+              "rankings": "1-0",
+              "reason": "Open",
+              "outstandingBalance": "0",
+              "loanStatus": "A",
+              "numberOfOverdueDays": "0",
+              "collateral": "Partially Secured",
+              "paymentHistory": {
+                "MONTH1": {
+                  "month": "Sep-25",
+                  "daysOverdue": "OK"
+                },
+                "MONTH10": {
+                  "month": "Dec-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH11": {
+                  "month": "Nov-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH12": {
+                  "month": "Oct-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH13": {
+                  "month": "Sep-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH14": {
+                  "month": "Aug-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH15": {
+                  "month": "Jul-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH16": {
+                  "month": "Jun-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH17": {
+                  "month": "May-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH18": {
+                  "month": "Apr-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH19": {
+                  "month": "Mar-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH2": {
+                  "month": "Aug-25",
+                  "daysOverdue": "OK"
+                },
+                "MONTH20": {
+                  "month": "Feb-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH21": {
+                  "month": "Jan-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH22": {
+                  "month": "Dec-23",
+                  "daysOverdue": "ND"
+                },
+                "MONTH23": {
+                  "month": "Nov-23",
+                  "daysOverdue": "ND"
+                },
+                "MONTH24": {
+                  "month": "Oct-23",
+                  "daysOverdue": "ND"
+                },
+                "MONTH3": {
+                  "month": "Jul-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH4": {
+                  "month": "Jun-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH5": {
+                  "month": "May-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH6": {
+                  "month": "Apr-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH7": {
+                  "month": "Mar-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH8": {
+                  "month": "Feb-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH9": {
+                  "month": "Jan-25",
+                  "daysOverdue": "ND"
+                }
+              }
+            },
+            {
+              "loanProvider": "OPAY MICROFINANCE BANK LIMITED",
+              "accountNumber": "9985712284",
+              "type": "Others",
+              "disbursedDate": "31-Jul-2025",
+              "maturityDate": "29-Aug-2025",
+              "loanAmount": "20000",
+              "installmentAmount": "",
+              "overdueAmount": "0",
+              "amountWrittenOff": "",
+              "currency": "NGN",
+              "lastPaymentDate": "",
+              "loanDuration": "",
+              "dateReported": "31-Aug-2025",
+              "performanceStatus": "Performing",
+              "rankings": "1-0",
+              "reason": "Open",
+              "outstandingBalance": "0",
+              "loanStatus": "A",
+              "numberOfOverdueDays": "0",
+              "collateral": "Partially Secured",
+              "paymentHistory": {
+                "MONTH1": {
+                  "month": "Aug-25",
+                  "daysOverdue": "OK"
+                },
+                "MONTH10": {
+                  "month": "Nov-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH11": {
+                  "month": "Oct-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH12": {
+                  "month": "Sep-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH13": {
+                  "month": "Aug-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH14": {
+                  "month": "Jul-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH15": {
+                  "month": "Jun-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH16": {
+                  "month": "May-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH17": {
+                  "month": "Apr-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH18": {
+                  "month": "Mar-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH19": {
+                  "month": "Feb-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH2": {
+                  "month": "Jul-25",
+                  "daysOverdue": "OK"
+                },
+                "MONTH20": {
+                  "month": "Jan-24",
+                  "daysOverdue": "ND"
+                },
+                "MONTH21": {
+                  "month": "Dec-23",
+                  "daysOverdue": "ND"
+                },
+                "MONTH22": {
+                  "month": "Nov-23",
+                  "daysOverdue": "ND"
+                },
+                "MONTH23": {
+                  "month": "Oct-23",
+                  "daysOverdue": "ND"
+                },
+                "MONTH24": {
+                  "month": "Sep-23",
+                  "daysOverdue": "ND"
+                },
+                "MONTH3": {
+                  "month": "Jun-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH4": {
+                  "month": "May-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH5": {
+                  "month": "Apr-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH6": {
+                  "month": "Mar-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH7": {
+                  "month": "Feb-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH8": {
+                  "month": "Jan-25",
+                  "daysOverdue": "ND"
+                },
+                "MONTH9": {
+                  "month": "Dec-24",
+                  "daysOverdue": "ND"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": [
+            {
+              "loanProvider": "Stanbic IBTC Bank PLC",
+              "accountNumber": "0072550756",
+              "type": null,
+              "currency": "NGN",
+              "loanAmount": "58,600.00",
+              "outstandingBalance": "0.00",
+              "installmentAmount": null,
+              "repaymentFrequency": "Not Available",
+              "overdueAmount": "0.00",
+              "lastPaymentDate": null,
+              "loanDuration": "122 Day(s)",
+              "disbursedDate": "05/07/2025",
+              "expiryDate": "04/11/2025",
+              "performanceStatus": "Performing",
+              "accountStatus": "Closed",
+              "paymentHistory": {
+                "M24": "#",
+                "M23": "#",
+                "M22": "#",
+                "M21": "#",
+                "M20": "#",
+                "M19": "#",
+                "M18": "#",
+                "M17": "#",
+                "M16": "#",
+                "M15": "#",
+                "M14": "#",
+                "M13": "#",
+                "M12": "#",
+                "M11": "#",
+                "M10": "#",
+                "M09": "#",
+                "M08": "#",
+                "M07": "29",
+                "M06": "58",
+                "M05": "90",
+                "M04": "0",
+                "M03": "#",
+                "M02": "#",
+                "M01": "#"
+              },
+              "dateReported": ""
+            }
+          ]
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": [
+            {
+              "loanProvider": "OPay Microfinance Bank Limited",
+              "loanProviderAddress": "16, Billings Way Oregun Ikeja Lagos",
+              "accountNumber": "9993198826",
+              "type": "Revolving Loan",
+              "loanAmount": 26000,
+              "installmentAmount": null,
+              "overdueAmount": 0,
+              "lastPaymentDate": null,
+              "loanDuration": "30",
+              "dateReported": "2025-09-12T12:09:22.04",
+              "disbursedDate": "2025-08-29T00:00:00",
+              "maturityDate": "2025-09-30T00:00:00",
+              "performanceStatus": "Paid Off (Closed)",
+              "status": "Closed",
+              "outstandingBalance": 0,
+              "collateral": "",
+              "collateralValue": 0,
+              "guarantor": "",
+              "purpose": "NA",
+              "paymentHistory": "NNNNNN0NNNNNNNNNNNNNNNNN",
+              "lastUpdatedAt": "2025-10-15T17:14:50.49"
+            },
+            {
+              "loanProvider": "OPay Microfinance Bank Limited",
+              "loanProviderAddress": "16, Billings Way Oregun Ikeja Lagos",
+              "accountNumber": "9985712284",
+              "type": "Revolving Loan",
+              "loanAmount": 20000,
+              "installmentAmount": null,
+              "overdueAmount": 0,
+              "lastPaymentDate": null,
+              "loanDuration": "30",
+              "dateReported": "2025-08-10T22:24:28.74",
+              "disbursedDate": "2025-07-31T00:00:00",
+              "maturityDate": "2025-08-31T00:00:00",
+              "performanceStatus": "Paid Off (Closed)",
+              "status": "Closed",
+              "outstandingBalance": 0,
+              "collateral": "",
+              "collateralValue": 0,
+              "guarantor": "",
+              "purpose": "NA",
+              "paymentHistory": "NNNNNNN0NNNNNNNNNNNNNNNN",
+              "lastUpdatedAt": "2025-09-13T01:32:55.64"
+            },
+            {
+              "loanProvider": "Stanbic IBTC Bank Plc",
+              "loanProviderAddress": "IBTC Place\r\nWalter Carrington Crescent Victoria Island Lagos",
+              "accountNumber": "0072550756",
+              "type": "Term Loan",
+              "loanAmount": 58600,
+              "installmentAmount": 15553,
+              "overdueAmount": 0,
+              "lastPaymentDate": "2025-10-31T00:00:00",
+              "loanDuration": "122",
+              "dateReported": "2025-08-10T08:09:23.647",
+              "disbursedDate": "2025-07-05T00:00:00",
+              "maturityDate": "2025-12-31T00:00:00",
+              "performanceStatus": "Paid Off (Closed)",
+              "status": "Closed",
+              "outstandingBalance": 0,
+              "collateral": "",
+              "collateralValue": 0,
+              "guarantor": "",
+              "purpose": "NA",
+              "paymentHistory": "NNN44000NNNNNNNNNNNNNNNN",
+              "lastUpdatedAt": "2026-01-20T01:53:20.5"
+            }
+          ]
+        }
+      ],
+      "creditors": [
+        {
+          "source": "CRC",
+          "value": []
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": []
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": [
+            {
+              "Subscriber_ID": "737566733492974312",
+              "Name": "OPay Microfinance Bank Limited",
+              "Phone": "",
+              "Address": "16, Billings Way Oregun Ikeja Lagos"
+            },
+            {
+              "Subscriber_ID": "731669726010353080",
+              "Name": "Stanbic IBTC Bank Plc",
+              "Phone": "0126203802",
+              "Address": "IBTC Place Walter Carrington Crescent Victoria Island Lagos"
+            }
+          ]
+        }
+      ],
+      "employmentHistory": [
+        {
+          "source": "CRC",
+          "value": [
+            {
+              "employerName": null,
+              "position": null,
+              "address": null,
+              "dateReported": "30-nov-2025"
+            }
+          ]
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": [
+            {
+              "employerName": "",
+              "occupation": "",
+              "dateReported": ""
+            }
+          ]
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": []
+        }
+      ],
+      "creditEnquiries": [
+        {
+          "source": "CRC",
+          "value": [
+            {
+              "loanType": "Overdraft",
+              "date": "11-Feb-2026",
+              "institutionType": "Micro Lenders"
+            },
+            {
+              "loanType": "Overdraft",
+              "date": "01-Feb-2026",
+              "institutionType": "Micro Lenders"
+            },
+            {
+              "loanType": "Overdraft",
+              "date": "23-Dec-2025",
+              "institutionType": "Micro Lenders"
+            }
+          ]
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": []
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": [
+            {
+              "loanProvider": "Lifegate Microfinance Bank Limited",
+              "reason": "KYCCheck",
+              "date": "2026-02-11T00:00:00",
+              "contactPhone": "08129078564"
+            },
+            {
+              "loanProvider": "Stanbic IBTC Bank Plc",
+              "reason": "NanoLoan",
+              "date": "2025-07-05T00:00:00",
+              "contactPhone": "0126203802"
+            }
+          ]
+        }
+      ],
+      "creditEnquiriesSummary": [
+        {
+          "source": "CRC",
+          "value": []
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": []
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": {
+            "Last3MonthCount": "1",
+            "Last12MonthCount": "2",
+            "Last36MonthCount": "2"
+          }
+        }
+      ],
+      "bureauStatus": {
+        "crc": "success",
+        "firstCentral": "success",
+        "creditRegistry": "success"
+      },
+      "lastReportedDate": [
+        {
+          "source": "CRC",
+          "value": "11/Feb/2026"
+        },
+        {
+          "source": "FIRST_CENTRAL",
+          "value": null
+        },
+        {
+          "source": "CREDIT_REGISTRY",
+          "value": null
+        }
+      ]
+    },
+    "customer_id": "0298b455-de15-48f5-8f91-3e9102c0e369"
+  }
+}

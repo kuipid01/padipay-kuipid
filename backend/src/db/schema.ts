@@ -56,6 +56,22 @@ export const billingCycleEnum = pgEnum("billing_cycle", ["monthly", "annual"]);
 export const creditTierEnum = pgEnum("credit_tier", ["excellent", "good", "fair", "poor", "all"]);
 export const collectionStrategyEnum = pgEnum("collection_strategy", ["standard", "aggressive", "lenient"]);
 
+export const fundingStatusEnum = pgEnum("funding_status", [
+  "initiated",
+  "pending",
+  "confirmed",
+  "failed",
+]);
+
+export const fundingChannelEnum = pgEnum("funding_channel", ["paystack"]);
+
+export const walletTransactionTypeEnum = pgEnum("wallet_transaction_type", [
+  "funding_credit",
+  "loan_debit",
+  "repayment_credit",
+  "fee_debit",
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
@@ -459,6 +475,47 @@ export const subscriptionPayments = pgTable("subscription_payments", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const lenderWallets = pgTable("lender_wallets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  lenderId: uuid("lender_id")
+    .references(() => users.id)
+    .notNull(),
+  balance: integer("balance").default(0).notNull(), // available (in kobo)
+  lockedBalance: integer("locked_balance").default(0).notNull(), // committed to loans
+  currency: varchar("currency", { length: 3 }).default("NGN"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const lenderFundings = pgTable("lender_fundings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  lenderId: uuid("lender_id")
+    .references(() => users.id)
+    .notNull(),
+  reference: text("reference").unique().notNull(), // Paystack reference
+  grossAmount: integer("gross_amount").notNull(), // amount lender sent (kobo)
+  paystackFee: integer("paystack_fee"),
+  platformFee: integer("platform_fee").default(20000), // ₦200 in kobo
+  netAmount: integer("net_amount"), // credited to wallet
+  status: fundingStatusEnum("status").default("initiated").notNull(),
+  channel: fundingChannelEnum("channel").default("paystack").notNull(),
+  metadata: jsonb("metadata"), // raw Paystack payload
+  createdAt: timestamp("created_at").defaultNow(),
+  confirmedAt: timestamp("confirmed_at"),
+});
+
+export const walletTransactions = pgTable("wallet_transactions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  walletId: uuid("wallet_id")
+    .references(() => lenderWallets.id)
+    .notNull(),
+  type: walletTransactionTypeEnum("type").notNull(),
+  amount: integer("amount").notNull(), // + or -
+  reference: text("reference"),
+  balanceAfter: integer("balance_after").notNull(),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 
 
 
@@ -563,5 +620,27 @@ export const debitMandatesRelations = relations(debitMandates, ({ one }) => ({
   bankAccount: one(bankAccounts, {
     fields: [debitMandates.bankAccountId],
     references: [bankAccounts.id],
+  }),
+}));
+
+export const lenderWalletsRelations = relations(lenderWallets, ({ one, many }) => ({
+  user: one(users, {
+    fields: [lenderWallets.lenderId],
+    references: [users.id],
+  }),
+  transactions: many(walletTransactions),
+}));
+
+export const lenderFundingsRelations = relations(lenderFundings, ({ one }) => ({
+  user: one(users, {
+    fields: [lenderFundings.lenderId],
+    references: [users.id],
+  }),
+}));
+
+export const walletTransactionsRelations = relations(walletTransactions, ({ one }) => ({
+  wallet: one(lenderWallets, {
+    fields: [walletTransactions.walletId],
+    references: [lenderWallets.id],
   }),
 }));

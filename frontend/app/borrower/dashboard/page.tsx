@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { CreditCard, History, Clock, AlertCircle, Loader2 } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
+import { ApplyLoanModal } from "@/components/borrower/apply-loan-modal";
 
 interface DashboardStats {
     activeLoansCount: number;
@@ -16,6 +17,7 @@ export default function BorrowerOverview() {
     const { user } = useUser();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [showApplyModal, setShowApplyModal] = useState(false);
 
     useEffect(() => {
         async function fetchStats() {
@@ -66,53 +68,64 @@ export default function BorrowerOverview() {
     ];
 
     return (
-        <div className="space-y-8">
-            <div>
-                <h1 className="text-3xl font-black text-main-green">Welcome back, {user?.fullName || "Borrower"}!</h1>
-                <p className="text-gray-500">Here's an overview of your loan status and activities.</p>
-            </div>
+        <>
+            <div className="space-y-8">
+                <div>
+                    <h1 className="text-3xl font-black text-main-green">Welcome back, {user?.fullName || "Borrower"}!</h1>
+                    <p className="text-gray-500">Here's an overview of your loan status and activities.</p>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {statCards.map((stat, i) => (
-                    <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                        <div className={`size-12 ${stat.bg} ${stat.color} rounded-2xl flex items-center justify-center mb-4`}>
-                            <stat.icon size={24} />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {statCards.map((stat, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                        >
+                            <div className={`size-12 ${stat.bg} ${stat.color} rounded-2xl flex items-center justify-center mb-4`}>
+                                <stat.icon size={24} />
+                            </div>
+                            <p className="text-sm font-bold text-gray-500 mb-1">{stat.label}</p>
+                            {isLoading ? (
+                                <Loader2 className="animate-spin text-gray-300" size={24} />
+                            ) : (
+                                <p className="text-2xl font-black text-main-green">{stat.value}</p>
+                            )}
+                        </motion.div>
+                    ))}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
+                        <h2 className="text-xl font-black text-main-green mb-6">Recent Activity</h2>
+                        <div className="flex flex-col items-center justify-center py-12 text-gray-400 italic">
+                            <p>No recent activity found.</p>
                         </div>
-                        <p className="text-sm font-bold text-gray-500 mb-1">{stat.label}</p>
-                        {isLoading ? (
-                            <Loader2 className="animate-spin text-gray-300" size={24} />
-                        ) : (
-                            <p className="text-2xl font-black text-main-green">{stat.value}</p>
-                        )}
-                    </motion.div>
-                ))}
-            </div>
+                    </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
-                    <h2 className="text-xl font-black text-main-green mb-6">Recent Activity</h2>
-                    <div className="flex flex-col items-center justify-center py-12 text-gray-400 italic">
-                        <p>No recent activity found.</p>
+                    <div className="bg-main-green p-8 rounded-[40px] text-white overflow-hidden relative">
+                        <div className="relative z-10">
+                            <h2 className="text-2xl font-black mb-4">Need Quick Funds?</h2>
+                            <p className="text-white/80 mb-8 max-w-[300px]">Get instant access to loans with competitive interest rates and flexible repayment plans.</p>
+                            <button
+                                onClick={() => setShowApplyModal(true)}
+                                className="bg-lemon-primary text-black px-8 py-4 rounded-2xl font-black hover:scale-105 transition-transform"
+                            >
+                                Apply for a Loan
+                            </button>
+                        </div>
+                        <div className="absolute -right-10 -bottom-10 size-64 bg-white/5 rounded-full blur-3xl" />
                     </div>
                 </div>
-
-                <div className="bg-main-green p-8 rounded-[40px] text-white overflow-hidden relative">
-                    <div className="relative z-10">
-                        <h2 className="text-2xl font-black mb-4">Need Quick Funds?</h2>
-                        <p className="text-white/80 mb-8 max-w-[300px]">Get instant access to loans with competitive interest rates and flexible repayment plans.</p>
-                        <button className="bg-lemon-primary text-black px-8 py-4 rounded-2xl font-black hover:scale-105 transition-transform">
-                            Apply for a Loan
-                        </button>
-                    </div>
-                    <div className="absolute -right-10 -bottom-10 size-64 bg-white/5 rounded-full blur-3xl" />
-                </div>
             </div>
-        </div>
+
+            <ApplyLoanModal
+                open={showApplyModal}
+                onOpenChange={setShowApplyModal}
+                userPhone={user?.phone}
+            />
+        </>
     );
 }

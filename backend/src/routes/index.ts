@@ -17,4 +17,6 @@ export { default as repaymentPlansRoutes } from "./repayment-plans";
 export { default as applicationsRoutes } from "./applications";
 export { default as subscriptionRoutes } from "./subscription";
 export { default as borrowerRoutes } from "./borrower";
+export { default as lenderWalletRoutes } from "./lender-wallet";
+export { default as internalRoutes } from "./internal";
 

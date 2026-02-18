@@ -150,7 +150,7 @@ export default function PublicLoanPage() {
       const res = await fetch(`/api/otp/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "phone", value: formData.phone , loanAppSlug: app.name}),
+        body: JSON.stringify({ type: "phone", value: formData.phone, loanAppSlug: app.name }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send code");
@@ -240,11 +240,10 @@ export default function PublicLoanPage() {
   const handleVerifyBvn = async () => {
     setActionLoading(true);
     try {
-      // Simulate verification for now or use real endpoint if available
       const res = await fetch(`/api/verify/bvn`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bvn: formData.bvn, phone: formData.phone,email: formData.email }),
+        body: JSON.stringify({ bvn: formData.bvn, phone: formData.phone, email: formData.email }),
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "BVN verification failed");
@@ -267,8 +266,8 @@ export default function PublicLoanPage() {
         ? Math.ceil(activePlan.durationDays / 30)
         : undefined;
 
-        //first submit remaining details
-        await  fetch(`/api/verify/profile-details`, {
+      //first submit remaining details
+      await fetch(`/api/verify/profile-details`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -403,6 +402,7 @@ export default function PublicLoanPage() {
       case "bank":
         return (
           <BankStep
+            email={formData.email}
             summary={loanSummary}
             onConnect={(data: any) => {
               updateFormData({ ...data });

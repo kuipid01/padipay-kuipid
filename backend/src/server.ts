@@ -5,7 +5,7 @@ import "dotenv/config";
 
 
 import { errorHandler, notFoundHandler } from "./middleware";
-import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes, uploadRoutes, userRoutes, loanPreferenceRoute, repaymentPlansRoutes, applicationsRoutes, subscriptionRoutes, borrowerRoutes } from "./routes";
+import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes, uploadRoutes, userRoutes, loanPreferenceRoute, repaymentPlansRoutes, applicationsRoutes, subscriptionRoutes, borrowerRoutes, lenderWalletRoutes, internalRoutes } from "./routes";
 
 /**
  * PadiLoan Backend Server
@@ -96,6 +96,8 @@ app.route("/api/repayment-plans", repaymentPlansRoutes);
 app.route("/api/applications", applicationsRoutes);
 app.route("/api/subscription", subscriptionRoutes);
 app.route("/api/borrower", borrowerRoutes);
+app.route("/api/lender", lenderWalletRoutes);
+app.route("/api/internal", internalRoutes);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 404 Handler

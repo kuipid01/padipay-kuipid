@@ -29,11 +29,26 @@ interface PaystackVerifyResponse {
     channel: string;
     currency: string;
     ip_address: string;
-    metadata: Record<string, any>;
+    metadata: any;
     customer: {
       id: number;
       email: string;
       customer_code: string;
+    };
+    authorization?: {
+      authorization_code: string;
+      bin: string;
+      last4: string;
+      exp_month: string;
+      exp_year: string;
+      channel: string;
+      card_type: string;
+      bank: string;
+      country_code: string;
+      brand: string;
+      reusable: boolean;
+      signature: string;
+      account_name: string | null;
     };
   };
 }
@@ -46,7 +61,7 @@ export class PaystackService {
     this.secretKey = secretKey || process.env.PAYSTACK_SECRET_KEY || "";
     
     if (!this.secretKey) {
-      throw new Error("Paystack secret key is required");
+      console.warn("Paystack secret key is missing");
     }
   }
 
@@ -56,11 +71,10 @@ export class PaystackService {
   async initializeTransaction(params: {
     email: string;
     amount: number; // in kobo (smallest currency unit)
-    reference: string;
-    callbackUrl?: string;
-    metadata?: Record<string, any>;
+    reference?: string;
+    callback_url?: string;
+    metadata?: any;
   }): Promise<PaystackInitializeResponse> {
-    console.log(this.secretKey)
     const response = await fetch(`${this.baseUrl}/transaction/initialize`, {
       method: "POST",
       headers: {
@@ -71,11 +85,11 @@ export class PaystackService {
         email: params.email,
         amount: params.amount,
         reference: params.reference,
-        callback_url: params.callbackUrl,
+        callback_url: params.callback_url,
         metadata: params.metadata,
       }),
     });
-console.log(response)
+
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || "Failed to initialize payment");

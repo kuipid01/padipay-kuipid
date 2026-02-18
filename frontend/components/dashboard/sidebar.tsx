@@ -22,6 +22,7 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -49,17 +50,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 import { useUser } from "../../hooks/use-user";
-import { Plans } from "../landing/plans";
 
 interface DashboardSidebarProps {
   setUpgradeModal: Dispatch<SetStateAction<boolean>>;
@@ -68,6 +60,7 @@ interface DashboardSidebarProps {
 
 const navLinks = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
+  { href: "/dashboard/wallet", icon: Wallet, label: "Wallet" },
   { href: "/dashboard/apps", icon: CreditCard, label: "Loan Apps" },
   { href: "/dashboard/applications", icon: Users, label: "Applications" },
   { href: "/dashboard/loans", icon: HandCoins, label: "Active Loans" },

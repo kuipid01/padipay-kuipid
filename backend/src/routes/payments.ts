@@ -1,68 +1,74 @@
 
 import { Hono } from "hono";
-
 import { authMiddleware } from "../middleware/auth";
+import { paystackService } from "../utils/paystack";
 
 const router = new Hono();
 
-router.use("*", authMiddleware);
+
 
 // Initialize a payment
 router.post("/initialize", async (c) => {
-    const { email, amount, metadata } = await c.req.json();
-    
-    // Mock Paystack initialization - using variables to avoid linter errors
-    console.log(`Initializing payment for ${email} with amount ${amount}`);
-    if (metadata) console.log("Metadata:", metadata);
 
-    // In production, call Paystack API here
-    const mockResponse = {
-        authorization_url: "https://checkout.paystack.com/mock-ref-123",
-        access_code: "mock_access_code",
-        reference: `ref_${Date.now()}`
-    };
+    try {
+      
+        //for testing
+        const { email, amount, metadata } = await c.req.json();
+        console.log(email,amount,metadata)
+        const callback_url_body = metadata?.callbackUrl;
+        if (!email || !amount) {
+            return c.json({
+                status: false,
+                message: "Email and amount are required"
+            }, 400);
+        }
 
-    return c.json({
-        status: true,
-        message: "Authorization URL created",
-        data: mockResponse
-    });
+        // Use callback_url from body, or from env, or fallback to undefined (Paystack will use dashboard setting)
+        const callback_url = callback_url_body || process.env.PAYSTACK_CALLBACK_URL;
+
+        const response = await paystackService.initializeTransaction({
+            email,
+            amount: Math.round(amount * 100), // Convert to kobo
+            metadata: metadata || {},
+            callback_url,
+            reference: `ref_${Date.now()}_${Math.floor(Math.random() * 1000)}`
+        });
+
+        return c.json(response);
+    } catch (error: any) {
+        console.error("Paystack initialization error:", error);
+        return c.json({
+            status: false,
+            message: error.message || "Failed to initialize payment"
+        }, 500);
+    }
 });
+router.use("*", authMiddleware);
+
+
 
 // Verify a payment reference
 router.get("/verify/:reference", async (c) => {
-    const reference = c.req.param("reference");
-    
-    // Mock Verification Logic
-    const mockVerification = {
-        status: "success",
-        reference,
-        amount: 500000, // 5000.00
-        gateway_response: "Successful",
-        paid_at: new Date().toISOString(),
-        channel: "card",
-        currency: "NGN",
-        authorization: {
-           authorization_code: "AUTH_8dfhjjdt",
-           card_type: "visa", 
-           last4: "1381",
-           exp_month: "12",
-           exp_year: "2024",
-           bin: "408408",
-           bank: "TEST BANK",
-           channel: "card",
-           signature: "SIG_zeXOxx",
-           reusable: true,
-           country_code: "NG",
-           account_name: "BoJack Horseman"
+    try {
+        const reference = c.req.param("reference");
+        
+        if (!reference) {
+            return c.json({
+                status: false,
+                message: "Reference is required"
+            }, 400);
         }
-    };
 
-    return c.json({
-        status: true,
-        message: "Verification successful",
-        data: mockVerification
-    });
+        const response = await paystackService.verifyTransaction(reference);
+
+        return c.json(response);
+    } catch (error: any) {
+        console.error("Paystack verification error:", error);
+        return c.json({
+            status: false,
+            message: error.message || "Failed to verify payment"
+        }, 500);
+    }
 });
 
 export default router;
