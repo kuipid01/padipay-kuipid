@@ -10,8 +10,10 @@ import {
     notifications
 } from "../db/schema";
 import { eq, and, desc, sum, count, lt, inArray } from "drizzle-orm";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware, borrowerAuthMiddleware } from "../middleware/auth";
 import { hashPassword, comparePassword, signToken } from "../lib/auth";
+import { zValidator } from "@hono/zod-validator";
+import { createBankAccountSchema, bankAccountIdSchema } from "../zod-schemas/bank-accounts";
 
 const router = new Hono();
 
@@ -67,14 +69,7 @@ router.post("/auth/login", async (c) => {
 });
 
 // Apply auth middleware - ensure user is a borrower for all subsequent routes
-router.use("*", authMiddleware);
-router.use("*", async (c, next) => {
-    const user = c.get("user");
-    if (user.role !== "BORROWER") {
-        return c.json({ error: "Unauthorized. Borrower access only." }, 403);
-    }
-    await next();
-});
+router.use("*", borrowerAuthMiddleware);
 
 // 2. Borrower Profile/Auth - Protected
 router.get("/auth/me", async (c) => {
@@ -126,46 +121,79 @@ router.post("/auth/change-password", async (c) => {
 // 1. Dashboard Overview
 // GET /api/borrower/overview
 router.get("/overview", async (c) => {
-    const user = c.get("user");
-    const borrowerId = user.id;
+  console.log("[OVERVIEW] Request received");
 
-    // Active Loans Count
-    const activeLoansData = await db.select({ value: count() })
-        .from(loans)
-        .where(and(eq(loans.borrowerId, borrowerId), eq(loans.status, "ACTIVE")));
-    const activeLoansCount = activeLoansData[0]?.value || 0;
+  const user = c.get("user");
+  const borrowerId = user.id;
 
-    // Total Borrowed Amount
-    const totalBorrowedResult = await db.select({ value: sum(loans.principal) })
-        .from(loans)
-        .where(eq(loans.borrowerId, borrowerId));
-    const totalBorrowedAmount = Number(totalBorrowedResult[0]?.value || 0);
+  console.log("[OVERVIEW] Borrower ID:", borrowerId);
 
-    // Pending Payments Count
-    const pendingPaymentsData = await db.select({ value: count() })
-        .from(repayments)
-        .innerJoin(loans, eq(repayments.loanId, loans.id))
-        .where(and(eq(loans.borrowerId, borrowerId), eq(repayments.status, "PENDING")));
-    const pendingPaymentsCount = pendingPaymentsData[0]?.value || 0;
+  // Active Loans Count
+  const activeLoansData = await db
+    .select({ value: count() })
+    .from(loans)
+    .where(and(eq(loans.borrowerId, borrowerId), eq(loans.status, "ACTIVE")));
 
-    // Overdue Count
-    const now = new Date();
-    const overdueData = await db.select({ value: count() })
-        .from(repayments)
-        .innerJoin(loans, eq(repayments.loanId, loans.id))
-        .where(and(
-            eq(loans.borrowerId, borrowerId), 
-            eq(repayments.status, "PENDING"),
-            lt(repayments.dueDate, now)
-        ));
-    const overdueCount = overdueData[0]?.value || 0;
+  const activeLoansCount = activeLoansData[0]?.value || 0;
+  console.log("[OVERVIEW] Active loans raw:", activeLoansData);
+  console.log("[OVERVIEW] Active loans count:", activeLoansCount);
 
-    return c.json({
-        activeLoansCount,
-        totalBorrowedAmount,
-        pendingPaymentsCount,
-        overdueCount
-    });
+  // Total Borrowed Amount
+  const totalBorrowedResult = await db
+    .select({ value: sum(loans.principal) })
+    .from(loans)
+    .where(eq(loans.borrowerId, borrowerId));
+
+  const totalBorrowedAmount = Number(totalBorrowedResult[0]?.value || 0);
+  console.log("[OVERVIEW] Total borrowed raw:", totalBorrowedResult);
+  console.log("[OVERVIEW] Total borrowed amount:", totalBorrowedAmount);
+
+  // Pending Payments Count
+  const pendingPaymentsData = await db
+    .select({ value: count() })
+    .from(repayments)
+    .innerJoin(loans, eq(repayments.loanId, loans.id))
+    .where(
+      and(
+        eq(loans.borrowerId, borrowerId),
+        eq(repayments.status, "PENDING")
+      )
+    );
+
+  const pendingPaymentsCount = pendingPaymentsData[0]?.value || 0;
+  console.log("[OVERVIEW] Pending payments raw:", pendingPaymentsData);
+  console.log("[OVERVIEW] Pending payments count:", pendingPaymentsCount);
+
+  // Overdue Count
+  const now = new Date();
+  console.log("[OVERVIEW] Current time:", now);
+
+  const overdueData = await db
+    .select({ value: count() })
+    .from(repayments)
+    .innerJoin(loans, eq(repayments.loanId, loans.id))
+    .where(
+      and(
+        eq(loans.borrowerId, borrowerId),
+        eq(repayments.status, "PENDING"),
+        lt(repayments.dueDate, now)
+      )
+    );
+
+  const overdueCount = overdueData[0]?.value || 0;
+  console.log("[OVERVIEW] Overdue raw:", overdueData);
+  console.log("[OVERVIEW] Overdue count:", overdueCount);
+
+  const response = {
+    activeLoansCount,
+    totalBorrowedAmount,
+    pendingPaymentsCount,
+    overdueCount,
+  };
+
+  console.log("[OVERVIEW] Response payload:", response);
+
+  return c.json(response);
 });
 
 // 2. Loan History
@@ -182,47 +210,29 @@ router.get("/loans", async (c) => {
         },
         orderBy: desc(loans.startDate)
     });
-
+console.log("actual loans", actualLoans)
     // Get pending/rejected applications
+    
+ 
+
+    return c.json(actualLoans);
+});
+// 2. Loan History
+// GET /api/borrower/applications
+router.get("/applications", async (c) => {
+    const user = c.get("user");
+    const borrowerId = user.id;
+
+    // Get actual loans
     const applications = await db.query.loanApplications.findMany({
-        where: and(
-            eq(loanApplications.borrowerId, borrowerId),
-            inArray(loanApplications.status, ["PENDING", "REJECTED"])
-        ),
+        where: eq(loanApplications.borrowerId, borrowerId),
         orderBy: desc(loanApplications.createdAt)
     });
+console.log("applications", applications)
+    
+ 
 
-    const now = new Date();
-
-    const formattedLoans = actualLoans.map(loan => {
-        const isOverdue = loan.status === "ACTIVE" && loan.repayments.some(r => r.status === "PENDING" && new Date(r.dueDate) < now);
-        
-        const nextPendingRepayment = loan.repayments
-            .filter(r => r.status === "PENDING")
-            .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0];
-
-        return {
-            id: loan.id,
-            amount: Number(loan.principal),
-            status: isOverdue ? "overdue" : loan?.status?.toLowerCase(),
-            createdAt: loan.startDate,
-            dueDate: nextPendingRepayment?.dueDate || (loan.repayments.length > 0 ? loan.repayments[loan.repayments.length - 1].dueDate : null)
-        };
-    });
-
-    const formattedApps = applications.map(app => ({
-        id: app.id,
-        amount: Number(app.amount),
-        status: app?.status?.toLowerCase(),
-        createdAt: app.createdAt,
-        dueDate: null
-    }));
-
-    const result = [...formattedLoans, ...formattedApps].sort((a, b) => 
-        new Date(b.createdAt as Date).getTime() - new Date(a.createdAt as Date).getTime()
-    );
-
-    return c.json(result);
+    return c.json(applications);
 });
 
 // 4. Payout Accounts (Banks)
@@ -239,19 +249,19 @@ router.get("/banks", async (c) => {
 });
 
 // POST /api/borrower/banks
-router.post("/banks", async (c) => {
+// Replace the problematic line with proper typing
+router.post("/banks", zValidator("json", createBankAccountSchema), async (c) => {
     const user = c.get("user");
-    const { bankName, accountNumber, accountName, bankCode } = await c.req.json();
-
-    if (!bankName || !accountNumber || !accountName) {
-        return c.json({ error: "Bank name, account number, and account name are required" }, 400);
-    }
-
+    const { bankName, accountNumber, accountName, bankCode } = await c.req.json(); 
+    
     const newAccount = await db.insert(bankAccounts).values({
         borrowerId: user.id,
         bankName,
+        bankCode,
+        accountNumber,
+        accountName,
         accountNumberMasked: accountNumber.slice(-4).padStart(accountNumber.length, '*'),
-        accountToken: "MANUAL", // Placeholder for manual entry
+        accountToken: "MANUAL",
         provider: "MANUAL",
         status: "ACTIVE"
     }).returning();
@@ -262,18 +272,24 @@ router.post("/banks", async (c) => {
         const currentBanks = Array.isArray(borrower.bankAccounts) ? borrower.bankAccounts : [];
         await db.update(borrowers)
             .set({ 
-                bankAccounts: [...currentBanks, { bankName, accountNumber, accountName, bankCode, id: newAccount[0].id }] 
+                bankAccounts: [...currentBanks, { 
+                    bankName, 
+                    accountNumber, 
+                    accountName, 
+                    bankCode, 
+                    id: newAccount[0].id,
+                    status: "ACTIVE"
+                }] 
             })
             .where(eq(borrowers.id, user.id));
     }
 
     return c.json(newAccount[0], 201);
 });
-
 // DELETE /api/borrower/banks/:id
-router.delete("/banks/:id", async (c) => {
+router.delete("/banks/:id", zValidator("param", bankAccountIdSchema), async (c) => {
     const user = c.get("user");
-    const id = c.req.param("id");
+    const { id } = c.req.valid("param");
 
     const deleted = await db.delete(bankAccounts)
         .where(and(eq(bankAccounts.id, id), eq(bankAccounts.borrowerId, user.id)))

@@ -357,9 +357,12 @@ export const bankAccounts = pgTable("bank_accounts", {
     .references(() => borrowers.id)
     .notNull(),
   bankName: varchar("bank_name", { length: 255 }).notNull(),
-  accountNumberMasked: varchar("account_number_masked", { length: 50 }).notNull(),
-  provider: varchar("provider", { length: 50 }).notNull(), // Mono, Okra, Stitch
-  accountToken: text("account_token").notNull(), // Encrypted
+  bankCode: varchar("bank_code", { length: 20 }),
+  accountNumber: varchar("account_number", { length: 50 }).notNull(),
+  accountName: varchar("account_name", { length: 255 }).notNull(),
+  accountNumberMasked: varchar("account_number_masked", { length: 50 }),
+  provider: varchar("provider", { length: 50 }).notNull().default("MANUAL"), // Mono, Okra, Stitch, MANUAL
+  accountToken: text("account_token"), // Encrypted
   status: varchar("status", { length: 20 }).default("ACTIVE"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

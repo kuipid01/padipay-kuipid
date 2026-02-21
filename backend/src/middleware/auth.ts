@@ -6,6 +6,7 @@ export interface AuthUser {
   id: string;
   email: string;
   role: string;
+  borrowerId?: string;
 }
 
 // Extend Hono's context with auth user
@@ -18,10 +19,6 @@ declare module "hono" {
 /**
  * Authentication middleware that validates Bearer tokens.
  * Replaces Next.js cookie-based auth with standard Bearer token auth.
- * 
- * Usage in routes:
- * - Protected routes: Use this middleware
- * - Access user: c.get("user")
  */
 export async function authMiddleware(c: Context, next: Next) {
   const authHeader = c.req.header("Authorization");
@@ -34,7 +31,7 @@ export async function authMiddleware(c: Context, next: Next) {
     throw new HTTPException(401, { message: "Invalid authorization format. Use: Bearer <token>" });
   }
 
-  const token = authHeader.slice(7); // Remove "Bearer " prefix
+  const token = authHeader.slice(7);
 
   if (!token) {
     throw new HTTPException(401, { message: "Token is required" });
@@ -51,6 +48,61 @@ export async function authMiddleware(c: Context, next: Next) {
     id: payload.id as string,
     email: payload.email as string,
     role: payload.role as string,
+    borrowerId: payload.borrowerId as string,
+  });
+
+  await next();
+}
+
+/**
+ * Specialized auth middleware for borrower routes.
+ * Ensures the user has a BORROWER role and properly maps the borrower ID.
+ */
+export async function borrowerAuthMiddleware(c: Context, next: Next) {
+  const authHeader = c.req.header("Authorization");
+
+  if (!authHeader?.startsWith("Bearer ")) {
+    throw new HTTPException(401, { message: "Authorization required" });
+  }
+
+  const token = authHeader.slice(7);
+  const payload = await verifyToken(token);
+
+  if (!payload || payload.role !== "BORROWER") {
+    throw new HTTPException(403, { message: "Unauthorized. Borrower access only." });
+  }
+
+  let borrowerId = payload.borrowerId as string;
+
+  // If borrowerId is missing (e.g., logged in via main auth), try to resolve it by email
+  if (!borrowerId && payload.email) {
+    try {
+      const { db } = await import("../db");
+      const { borrowers } = await import("../db/schema");
+      const { eq } = await import("drizzle-orm");
+
+      const borrower = await db.query.borrowers.findFirst({
+        where: eq(borrowers.email, payload.email as string),
+      });
+
+      if (borrower) {
+        borrowerId = borrower.id;
+      }
+    } catch (error) {
+      console.error("Error resolving borrowerId:", error);
+    }
+  }
+
+  // If we still don't have a valid borrowerId that would satisfy FK constraints, 
+  // we use the payload.id but it might still fail if it's a user_id. 
+  // However, mapping it here gives it the best chance.
+  const finalId = borrowerId || (payload.id as string);
+
+  c.set("user", {
+    id: finalId,
+    email: payload.email as string,
+    role: payload.role as string,
+    borrowerId: borrowerId,
   });
 
   await next();

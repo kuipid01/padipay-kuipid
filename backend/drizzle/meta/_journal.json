@@ -127,6 +127,13 @@
       "when": 1771436315357,
       "tag": "0017_nostalgic_wiccan",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1771513129951,
+      "tag": "0018_crazy_smiling_tiger",
+      "breakpoints": true
     }
   ]
 }

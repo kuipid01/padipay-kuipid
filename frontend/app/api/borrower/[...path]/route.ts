@@ -5,8 +5,11 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 async function proxyRequest(req: Request, path: string[], method: string) {
   try {
+
+   
     const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
+    // Borrower proxy uses the borrower_token cookie (separate from admin token)
+    const token = cookieStore.get("borrower_token")?.value;
 
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -17,7 +20,8 @@ async function proxyRequest(req: Request, path: string[], method: string) {
     
     // Construct backend URL with /borrower suffix
     // Example: /api/borrower/loans -> BACKEND_URL/api/loans/borrower
-    const backendPath = `${path.join("/")}/borrower`;
+    const backendPath = `borrower/${path.join("/")}`;
+
     const url = `${BACKEND_URL}/api/${backendPath}${search}`;
 
     const headers: Record<string, string> = {
@@ -40,7 +44,7 @@ async function proxyRequest(req: Request, path: string[], method: string) {
       body: body ? JSON.stringify(body) : undefined,
       cache: "no-store",
     });
-
+   
     const data = await response.json();
 
     if (!response.ok) {

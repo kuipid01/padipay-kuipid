@@ -1,49 +1,52 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field, FieldError } from "@/components/ui/field-form";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, Phone } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
 const loginSchema = z.object({
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    phone: z
+        .string()
+        .min(10, "Enter a valid phone number")
+        .regex(/^\+?[0-9\s\-()]+$/, "Enter a valid phone number"),
+    passcode: z.string().min(4, "Passcode must be at least 4 digits"),
 });
+
+type LoginValues = z.infer<typeof loginSchema>;
 
 export default function BorrowerLoginPage() {
     const [isLoading, setIsLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
+    const [showPasscode, setShowPasscode] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const form = useForm<z.infer<typeof loginSchema>>({
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<LoginValues>({
         resolver: zodResolver(loginSchema),
-        defaultValues: {
-            email: "",
-            password: "",
-        },
+        defaultValues: { phone: "", passcode: "" },
     });
 
-    async function onSubmit(values: z.infer<typeof loginSchema>) {
+    async function onSubmit(values: LoginValues) {
         setIsLoading(true);
         try {
-            const res = await fetch("/api/auth/login", {
+            const res = await fetch("/api/borrower-auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    ...values,
-                    device: {
-                        userAgent: navigator.userAgent,
-                    },
+                    identifier: values.phone,
+                    passcode: values.passcode,
                 }),
             });
 
@@ -66,6 +69,7 @@ export default function BorrowerLoginPage() {
 
     return (
         <div className="h-screen overflow-hidden grid grid-cols-1 lg:grid-cols-2 bg-[#d7e9d1]/30">
+            {/* Left panel — illustration */}
             <div className="hidden lg:flex flex-col items-center justify-center relative overflow-hidden bg-main-green/5">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -82,7 +86,8 @@ export default function BorrowerLoginPage() {
                 </motion.div>
             </div>
 
-            <div className="flex items-center justify-center relative z-10">
+            {/* Right panel — form */}
+            <div className="flex items-center justify-center relative z-10 px-4">
                 <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -95,54 +100,67 @@ export default function BorrowerLoginPage() {
                         <span className="text-2xl font-black text-main-green">PadiLoan</span>
                     </Link>
 
-                    <h1 className="text-3xl font-black text-[#1F4941] mb-2 text-center">Borrower Login</h1>
-                    <p className="text-gray-500 mb-8 text-center">Manage your loans and repayments</p>
+                    <h1 className="text-3xl font-black text-[#1F4941] mb-2 text-center">
+                        Borrower Login
+                    </h1>
+                    <p className="text-gray-500 mb-8 text-center text-sm">
+                        Manage your loans and repayments
+                    </p>
 
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
-                        <Controller
-                            name="email"
-                            control={form.control}
-                            render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                    <Input
-                                        {...field}
-                                        placeholder="Email address"
-                                        className="h-14 bg-[#f8fbf7] rounded-2xl px-6"
-                                    />
-                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                </Field>
+                    <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-4">
+                        {/* Phone number */}
+                        <div>
+                            <div className="relative">
+                                <Phone
+                                    size={18}
+                                    className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+                                />
+                                <Input
+                                    {...register("phone")}
+                                    type="tel"
+                                    placeholder="Phone number"
+                                    className="h-14 bg-[#f8fbf7] rounded-2xl pl-12 pr-6"
+                                />
+                            </div>
+                            {errors.phone && (
+                                <p className="text-red-500 text-xs mt-1 ml-2">
+                                    {errors.phone.message}
+                                </p>
                             )}
-                        />
+                        </div>
 
-                        <Controller
-                            name="password"
-                            control={form.control}
-                            render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                    <div className="relative">
-                                        <Input
-                                            {...field}
-                                            type={showPassword ? "text" : "password"}
-                                            placeholder="Password"
-                                            className="h-14 bg-[#f8fbf7] rounded-2xl px-6"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400"
-                                        >
-                                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                        </button>
-                                    </div>
-                                    <div className="flex justify-end mt-1">
-                                        <Link href="/borrower/forgot-password" className="text-xs text-gray-400 font-bold hover:text-main-green">
-                                            Forgot password?
-                                        </Link>
-                                    </div>
-                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                </Field>
+                        {/* Passcode */}
+                        <div>
+                            <div className="relative">
+                                <Input
+                                    {...register("passcode")}
+                                    type={showPasscode ? "text" : "password"}
+                                    placeholder="Passcode"
+                                    inputMode="numeric"
+                                    className="h-14 bg-[#f8fbf7] rounded-2xl px-6"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPasscode(!showPasscode)}
+                                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400"
+                                >
+                                    {showPasscode ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
+                            <div className="flex justify-end mt-1">
+                                <Link
+                                    href="/borrower/forgot-passcode"
+                                    className="text-xs text-gray-400 font-bold hover:text-main-green transition-colors"
+                                >
+                                    Forgot passcode?
+                                </Link>
+                            </div>
+                            {errors.passcode && (
+                                <p className="text-red-500 text-xs mt-1 ml-2">
+                                    {errors.passcode.message}
+                                </p>
                             )}
-                        />
+                        </div>
 
                         <Button
                             disabled={isLoading}

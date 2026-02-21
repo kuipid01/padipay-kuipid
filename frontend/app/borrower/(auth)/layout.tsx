@@ -13,15 +13,14 @@ export default function BorrowerAuthLayout({
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const res = await fetch("/api/auth/me");
+                const res = await fetch("/api/borrower-auth/me");
                 if (res.ok) {
-                    const data = await res.json();
-                    // If the user is already authenticated as a borrower, redirect to borrower dashboard
-                    // For now, we'll just redirect to dashboard as requested
+                    // Borrower is already authenticated, redirect to dashboard
                     router.push("/borrower/dashboard");
                 }
             } catch (error) {
-                console.log("Not authenticated");
+                // Not authenticated — stay on auth page
+                console.log("Borrower not authenticated");
             }
         };
 
