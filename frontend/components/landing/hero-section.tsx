@@ -51,11 +51,11 @@ export function HeroSection() {
 
             <div className="relative mt-12 md:mt-24 px-4 overflow-visible">
                 <Image
-                    src="/dashy.jpg"
+                    src="/pay.png"
                     alt="Hero Image"
                     width={1200}
                     height={1024}
-                    className="w-full max-w-5xl mx-auto rounded-t-3xl shadow-2xl border border-gray-200 transform translate-y-10 md:translate-y-20"
+                    className="w-full max-w-5xl max-h-screen object-top object-cover mx-auto rounded-t-3xl shadow-2xl border border-gray-200 transform translate-y-10 md:translate-y-20"
                     priority
                 />
             </div>

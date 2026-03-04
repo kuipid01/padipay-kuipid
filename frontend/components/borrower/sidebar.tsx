@@ -20,7 +20,7 @@ import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, createContext, useContext } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useUser } from "@/hooks/use-user";
+import { useBorrower, useUser } from "@/hooks/use-user";
 
 const borrowerNavLinks = [
     { href: "/borrower/dashboard", icon: LayoutDashboard, label: "Overview" },
@@ -80,10 +80,11 @@ function SidebarContent({ isCollapsed }: { isCollapsed: boolean }) {
                 })}
             </div>
 
-            <div className={cn("mt-auto bg-[#FAFAFA] rounded-[32px] p-4 shadow-sm", isCollapsed && "flex justify-center")}>
+            <div className={cn("mt-auto bg-[#FAFAFA] border-red-200 hover:border-red-300 cursor-pointer border rounded-[32px] p-4 shadow-sm", isCollapsed && "flex justify-center")}>
                 <button
-                    onClick={() => router.push("/api/auth/logout")}
-                    className="flex gap-3 items-center font-bold text-sm text-red-600 hover:text-red-700 w-full px-4 py-2"
+
+                    onClick={() => router.push("/api/borrower-auth/logout")}
+                    className="flex gap-3 items-center cursor-pointer font-bold text-sm text-red-600 hover:text-red-700 w-full px-4 py-2"
                 >
                     <LogOut size={20} />
                     {!isCollapsed && "Logout"}
@@ -117,7 +118,7 @@ export function BorrowerSidebar() {
 }
 
 export function BorrowerHeader() {
-    const { user } = useUser();
+    const { borrower: user } = useBorrower();
     const { setIsMobileOpen } = useSidebar();
 
     return (
@@ -140,7 +141,7 @@ export function BorrowerHeader() {
                         <AvatarFallback><User2 /></AvatarFallback>
                     </Avatar>
                     <div className="md:flex flex-col hidden text-left">
-                        <p className="font-bold text-sm leading-none">{user?.fullName}</p>
+                        <p className="font-bold text-sm leading-none">{user?.firstName ?? ""}</p>
                         <p className="text-[10px] text-gray-400">Borrower</p>
                     </div>
                 </div>

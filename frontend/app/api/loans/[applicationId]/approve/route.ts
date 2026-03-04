@@ -1,71 +1,73 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { loanApplications, loans, repayments } from "@/db/schema";
-import { getSession } from "@/lib/session";
-import { eq } from "drizzle-orm";
-import { generateRepaymentSchedule } from "@/lib/utils/loan-math";
+import { cookies } from "next/headers";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+
+// Types for the backend response
+interface Loan {
+  id: string;
+  applicationId: string;
+  lenderId: string;
+  borrowerId: string;
+  principal: string;
+  interest: string;
+  totalPayable: string;
+  status: "ACTIVE" | "COMPLETED" | "DEFAULTED";
+  startDate: string;
+}
+
+interface Repayment {
+  id: string;
+  loanId: string;
+  amount: string;
+  dueDate: string;
+  status: "PENDING" | "PAID" | "FAILED";
+}
+
+interface ApproveResponse {
+  loan: Loan;
+  repayments: Repayment[];
+}
 
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ applicationId: string }> }
 ) {
   try {
-    const session = await getSession();
-    if (!session || !session.id) {
+    const { applicationId } = await params;
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { applicationId } = await params;
-
-    // 1. Fetch application
-    const application = await db.query.loanApplications.findFirst({
-      where: eq(loanApplications.id, applicationId),
+    // Call backend to approve the application
+    // The backend is expected to handle totals calculation, loan creation,
+    // repayment generation, and application status update.
+    const response = await fetch(`${BACKEND_URL}/api/applications/${applicationId}/approve`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     });
 
-    if (!application) {
-      return NextResponse.json({ error: "Application not found" }, { status: 404 });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.error || "Failed to approve loan" },
+        { status: response.status }
+      );
     }
 
-    if (application.status !== "PENDING") {
-      return NextResponse.json({ error: "Application already processed" }, { status: 400 });
-    }
-
-    // 2. Calculate totals
-    const principal = parseFloat(application.amount.toString());
-    const interestRate = parseFloat(application.interestRate.toString());
-    const duration = application.durationMonths;
-    const totalInterest = (principal * interestRate) / 100;
-    const totalPayable = principal + totalInterest;
-
-    // 3. Create Loan
-    const [loan] = await db.insert(loans).values({
-      applicationId: application.id,
-      lenderId: session.id as string,
-      borrowerId: application.borrowerId,
-      principal: application.amount,
-      interest: totalInterest.toString(),
-      totalPayable: totalPayable.toString(),
-      status: "ACTIVE",
-    }).returning();
-
-    // 4. Generate Repayments
-    const schedule = generateRepaymentSchedule(principal, interestRate, duration, new Date());
-    
-    for (const item of schedule) {
-      await db.insert(repayments).values({
-        loanId: loan.id,
-        amount: item.amount.toString(),
-        dueDate: item.dueDate,
-        status: "PENDING",
-      });
-    }
-
-    // 5. Update Application Status
-    await db.update(loanApplications).set({ status: "APPROVED" }).where(eq(loanApplications.id, applicationId));
-
-    return NextResponse.json({ loan, repayments: schedule });
+    return NextResponse.json(data as ApproveResponse);
   } catch (error) {
     console.error("Approve loan error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

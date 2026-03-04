@@ -72,7 +72,7 @@ export function OverviewClient() {
         queryFn: () => fetch("/api/dashboard/active-loans").then((res) => res.json()),
     });
 
-    console.log(activeLoans,"activeLoans")
+    console.log(activeLoans, "activeLoans")
     const { data: upcomingPayments } = useQuery<UpcomingPayment[]>({
         queryKey: ["upcoming-payments"],
         queryFn: () => fetch("/api/dashboard/upcoming-payments").then((res) => res.json()),
@@ -124,7 +124,7 @@ export function OverviewClient() {
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="flex-1 w-full"
+                        className="flex-1 max-h-[80vh] w-full"
                     >
                         <Card className="bg-main-green text-white border-none h-full shadow-xl relative overflow-hidden group min-h-[240px]">
                             <div className="absolute top-0 right-0 size-40 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-white/10 transition-colors" />
@@ -154,7 +154,7 @@ export function OverviewClient() {
                         </Card>
                     </motion.div>
                     {/* 3. Upcoming Payments */}
-                    <div className="w-full lg:w-[400px]">
+                    <div className="w-full max-h-[80vh] overflow-y-auto lg:w-[400px]">
                         <h2 className="text-xl font-black text-main-green tracking-tight mb-6">Upcoming Payments</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                             {upcomingPayments?.map((payment, i) => (

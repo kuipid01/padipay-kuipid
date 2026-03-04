@@ -28,7 +28,13 @@ export const loanStatusEnum = pgEnum("loan_status", [
 export const repaymentStatusEnum = pgEnum("repayment_status", [
   "PENDING",
   "PAID",
+  "PARTIAL",
   "FAILED",
+]);
+export const subRepaymentsEnum = pgEnum("sub_repayment_status", [
+  "PAID",
+  "FAILED",
+  "PENDING"
 ]);
 export const notificationTypeEnum = pgEnum("notification_type", [
   "EMAIL",
@@ -339,6 +345,15 @@ export const repayments = pgTable("repayments", {
   paidAt: timestamp("paid_at"),
   status: repaymentStatusEnum("status").default("PENDING"),
 });
+export const subRepayments = pgTable("sub_repayments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  repaymentId: uuid("repayment_id")
+    .references(() => repayments.id)
+    .notNull(),
+  amount: decimal("amount").notNull(),
+  paidAt: timestamp("paid_at"),
+  status: subRepaymentsEnum("status").default("PENDING"),
+}); 
 
 export const paymentMethods = pgTable("payment_methods", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -585,11 +600,12 @@ export const loanApplicationsRelations = relations(
   }), 
 );
 
-export const repaymentsRelations = relations(repayments, ({ one }) => ({
+export const repaymentsRelations = relations(repayments, ({ one, many }) => ({
   loan: one(loans, {
     fields: [repayments.loanId],
     references: [loans.id],
   }),
+  subRepayments: many(subRepayments),
 }));
 
 export const loansRelations = relations(loans, ({ one, many }) => ({
@@ -645,5 +661,15 @@ export const walletTransactionsRelations = relations(walletTransactions, ({ one 
   wallet: one(lenderWallets, {
     fields: [walletTransactions.walletId],
     references: [lenderWallets.id],
+  }),
+}));
+
+
+
+
+export const subRepaymentsRelations = relations(subRepayments, ({ one }) => ({
+  repayment: one(repayments, {
+    fields: [subRepayments.repaymentId],
+    references: [repayments.id],
   }),
 }));

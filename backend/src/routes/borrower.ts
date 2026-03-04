@@ -94,7 +94,9 @@ router.post("/auth/change-password", async (c) => {
         return c.json({ error: "Current and new password are required" }, 400);
     }
 
-    const borrowerDetails = await db.query.borrowers.findFirst({
+    const borrowerDetails 
+    
+    = await db.query.borrowers.findFirst({
         where: eq(borrowers.id, user.id)
     });
 
@@ -219,6 +221,42 @@ console.log("actual loans", actualLoans)
 });
 // 2. Loan History
 // GET /api/borrower/applications
+router.get("/applications/:id", async (c) => {
+    const id = c.req.param("id")
+
+    // Get actual loans
+    const application = await db.query.loanApplications.findFirst({
+        where: eq(loanApplications.id,id ),
+        with:{
+            borrower:true,
+            loanApp:true,
+            repaymentPlan:true
+        }
+    });
+    if (!application) {
+        return c.json({ error: "Application not found" }, 404);
+    }
+    
+    let loan
+    if(application?.loanApp){
+
+ 
+     loan = await db.query.loans.findFirst({
+        where: eq(loans.applicationId, application?.id),
+        with: {
+            repayments:{
+                with:{
+                    subRepayments:true
+                }
+            }
+        }
+    });
+    }
+    
+
+    return c.json({application:application,loan:loan});
+});
+// GET /api/borrower/applications/Od   get single applicaion
 router.get("/applications", async (c) => {
     const user = c.get("user");
     const borrowerId = user.id;

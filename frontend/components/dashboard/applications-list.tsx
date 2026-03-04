@@ -42,6 +42,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Application {
     id: string;
@@ -68,6 +69,7 @@ interface ApplicationsListProps {
 
 export function ApplicationsList({ initialApplications }: ApplicationsListProps) {
     const [searchQuery, setSearchQuery] = useState("");
+    const [approving, setApproving] = useState(false);
     const [statusFilter, setStatusFilter] = useState<string[]>([]);
     const [riskFilter, setRiskFilter] = useState<string[]>([]);
 
@@ -89,7 +91,29 @@ export function ApplicationsList({ initialApplications }: ApplicationsListProps)
 
         return matchesSearch && matchesStatus && matchesRisk;
     });
-console.log("APPLICATIONS,", apps)
+    //function to approve the loan 
+    const approveLoan = async (appId: string) => {
+        try {
+            if (!appId) throw new Error("Invalid application ID");
+            setApproving(true);
+            const res = await fetch(`/api/loans/${appId}/approve`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+
+            });
+            if (!res.ok) {
+                throw new Error("Failed to approve loan");
+
+            }
+            setApproving(false);
+            toast.success("Loan approved successfully");
+        } catch (err: any) {
+            toast.error(err.message);
+            setApproving(false);
+        }
+
+    }
+    console.log("APPLICATIONS,", apps)
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -260,21 +284,24 @@ console.log("APPLICATIONS,", apps)
                                                     <Eye size={16} /> Review
                                                 </Link>
                                             </Button>
-                                            <DropdownMenu>
+                                            {app.status === "PENDING" && <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button variant="ghost" size="icon" className="size-10 rounded-xl text-gray-400">
                                                         <MoreHorizontal size={18} />
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48 rounded-2xl p-2 shadow-xl border-gray-100 font-bold">
-                                                    <DropdownMenuItem className="rounded-xl px-4 py-3 text-sm focus:bg-green-50 focus:text-green-600 cursor-pointer">
-                                                        <CheckCircle2 size={16} className="mr-3" /> Approve
+                                                    <DropdownMenuItem onClick={() => {
+                                                        if (approving) return;
+                                                        approveLoan(app.id)
+                                                    }} className="rounded-xl px-4 py-3 text-sm focus:bg-green-50 focus:text-green-600 cursor-pointer">
+                                                        <CheckCircle2 size={16} className="mr-3" /> {approving ? "Approving..." : "Approve"}
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem className="rounded-xl px-4 py-3 text-sm focus:bg-red-50 focus:text-red-600 text-red-500 cursor-pointer">
                                                         <XCircle size={16} className="mr-3" /> Reject
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            </DropdownMenu>}
                                         </div>
                                     </TableCell>
                                 </TableRow>

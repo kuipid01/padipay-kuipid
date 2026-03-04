@@ -1,8 +1,7 @@
-
 import { Hono } from "hono";
 import { db } from "../db";
-import { repayments } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { repayments, subRepayments } from "../db/schema";
+import { and, eq, or } from "drizzle-orm";
 
 const router = new Hono();
 
@@ -46,34 +45,47 @@ router.post("/paystack", async (c) => {
       });
 
       // Handle specific flow types from metadata
-      if (metadata?.type === "BORROWER_ADD_CARD" || metadata?.type === "CARD_INITIALIZATION") {
+      if (
+        metadata?.type === "BORROWER_ADD_CARD" ||
+        metadata?.type === "CARD_INITIALIZATION"
+      ) {
         console.log("💳 Handling Add Card flow:", reference);
-        
-        const borrowerEmail = metadata.borrowerEmail
+
+        const borrowerEmail = metadata.borrowerEmail;
         if (!borrowerEmail) {
-          console.error("⚠️ No borrowerEmail found in metadata for Add Card flow");
+          console.error(
+            "⚠️ No borrowerEmail found in metadata for Add Card flow",
+          );
           return c.json({ error: "No borrowerEmail found in metadata" }, 400);
         }
 
         console.log(`🔍 Looking up borrower by email: ${borrowerEmail}`);
         const { paymentMethods, borrowers } = await import("../db/schema");
-        const borrower = await db.select().from(borrowers).where(eq(borrowers.email, borrowerEmail)).limit(1);
-        
+        const borrower = await db
+          .select()
+          .from(borrowers)
+          .where(eq(borrowers.email, borrowerEmail))
+          .limit(1);
+
         if (!borrower || borrower.length === 0) {
           console.error(`❌ Borrower not found for email: ${borrowerEmail}`);
           return c.json({ error: "Borrower not found" }, 404);
         }
 
-        console.log(`✅ Borrower found: ${borrower[0].id}. Saving authorization...`);
+        console.log(
+          `✅ Borrower found: ${borrower[0].id}. Saving authorization...`,
+        );
         await db.insert(paymentMethods).values({
           borrowerId: borrower[0].id,
           authorizationCode: authorization.authorization_code,
           last4: authorization.last4,
           expiry: `${authorization.exp_month}/${authorization.exp_year}`,
-          provider: "PAYSTACK"
+          provider: "PAYSTACK",
         });
 
-        console.log(`✨ Card authorization successfully saved for borrower: ${borrower[0].id}`);
+        console.log(
+          `✨ Card authorization successfully saved for borrower: ${borrower[0].id}`,
+        );
         return c.json({
           status: "acknowledged",
           message: "Card authorization saved",
@@ -83,144 +95,139 @@ router.post("/paystack", async (c) => {
       // 3. Lender Funding Flow
       if (metadata?.type === "LENDER_FUNDING") {
         console.log("💰 Processing Lender Funding:", reference);
-        const { lenderWalletService } = await import("../domain/lender-wallet/service");
-        
-        const result = await lenderWalletService.processSuccessfulFunding(reference, body.data);
-        
-        console.log(`✨ Wallet successfully credited for lender: ${metadata.lenderId}`);
+        const { lenderWalletService } =
+          await import("../domain/lender-wallet/service");
+
+        const result = await lenderWalletService.processSuccessfulFunding(
+          reference,
+          body.data,
+        );
+
+        console.log(
+          `✨ Wallet successfully credited for lender: ${metadata.lenderId}`,
+        );
         return c.json({
           status: "acknowledged",
           message: "Lender wallet credited",
-          data: result
+          data: result,
         });
       }
+     if (metadata?.type === "REPAYMENT") {
+  console.log("💰 Incoming REPAYMENT payment");
 
-      // Determine if this is a subscription or repayment payment
-      // Subscription references start with "SUB_" or type is SUBSCRIPTION
-      if (reference.startsWith("SUB_") || metadata?.type === "SUBSCRIPTION") {
-        // Handle subscription payment
-        console.log("🔃 Processing subscription payment:", reference);
+  const { loan_id } = metadata;
+  let amountToDistribute = Number(body.data.amount) / 100; // convert from kobo
+  console.log("💵 Total amount received:", amountToDistribute);
 
-        const { subscriptionService } = await import("../domain/subscription");
-        const { subscriptionPayments } = await import("../db/schema");
+  const allRepaymentsNotPaid = await db.query.repayments.findMany({
+    where: and(
+      eq(repayments.loanId, loan_id),
+      or(
+        eq(repayments.status, "PARTIAL"),
+        eq(repayments.status, "PENDING"),
+      ),
+    ),
+    orderBy: (repayments, { asc }) => [asc(repayments.dueDate)],
+  });
 
-        // Find subscription payment
-        const paymentResult = await subscriptionService.getPaymentByReference(
-          reference
-        );
+  if (allRepaymentsNotPaid.length === 0) {
+    console.log("❌ No unpaid repayments found");
+    return c.json({ error: "No repayment found" }, 404);
+  }
 
-        if (!paymentResult.success || !paymentResult.data) {
-          console.error(
-            `❌ Subscription payment not found for reference: ${reference}`
-          );
-          return c.json({ message: "Payment not found" }, 404);
-        }
+  console.log(
+    `📄 Found ${allRepaymentsNotPaid.length} unpaid repayments`,
+  );
 
-        const payment = paymentResult.data;
-        console.log(`✅ Subscription payment found for user: ${payment.userId}`);
+  for (const repayment of allRepaymentsNotPaid) {
+    if (amountToDistribute <= 0) {
+      console.log("✅ Payment fully distributed");
+      break;
+    }
 
-        // Validate metadata if present
-        if (metadata) {
-          if (metadata.userId && payment.userId !== metadata.userId) {
-            console.error("❌ Metadata userId mismatch");
-            return c.json({ error: "Metadata mismatch" }, 400);
-          }
-          if (metadata.plan && payment.plan !== metadata.plan) {
-            console.error("❌ Metadata plan mismatch");
-            return c.json({ error: "Metadata mismatch" }, 400);
-          }
-        }
+    console.log(`➡️ Processing repayment ${repayment.id}`);
 
-        // Process based on status
-        if (status === "success") {
-          console.log(`⚙️ Activating subscription for reference: ${reference}...`);
-          const result = await subscriptionService.processSuccessfulPayment({
-            reference,
-            paidAt: new Date(paid_at),
-          });
+    const unitPayments = await db.query.subRepayments.findMany({
+      where: eq(subRepayments.repaymentId, repayment.id),
+    });
 
-          if (result.success) {
-            console.log(
-              `✨ Subscription activated for user ${payment.userId} - Plan: ${payment.plan}`
-            );
-            return c.json({
-              status: "acknowledged",
-              message: "Subscription activated",
-            });
-          } else {
-            console.error("❌ Failed to process subscription payment:", result.error);
-            return c.json({ error: result.error }, 500);
-          }
-        } else {
-          // Handle failed subscription payment
-          console.log(`📉 Marking subscription payment as failed: ${reference}`);
-          const result = await subscriptionService.processFailedPayment({
-            reference,
-          });
+    const totalPaid = unitPayments
+      .filter((p) => p.status === "PAID")
+      .reduce((acc, pay) => acc + Number(pay.amount), 0);
 
-          if (result.success) {
-            console.log(`✅ Subscription payment marked as failed for reference ${reference}`);
-            return c.json({
-              status: "acknowledged",
-              message: "Payment marked as failed",
-            });
-          } else {
-            console.error("❌ Failed to update payment status:", result.error);
-            return c.json({ error: result.error }, 500);
-          }
-        }
-      } else {
-        // Handle repayment payment
-        const repaymentId = metadata?.repaymentId || reference;
-        console.log(`💸 Processing repayment payment: ${repaymentId}`);
+    const repaymentAmount = Number(repayment.amount);
+    const remainingAmount = repaymentAmount - totalPaid;
 
-        // Find repayment by reference/id and mark as paid
-        const [repayment] = await db
-          .select()
-          .from(repayments)
-          .where(eq(repayments.id, repaymentId))
-          .limit(1);
+    console.log({
+      repaymentId: repayment.id,
+      repaymentAmount,
+      totalPaid,
+      remainingAmount,
+    });
 
-        if (!repayment) {
-          console.error(`❌ Repayment not found for reference/id: ${repaymentId}`);
-          return c.json({ message: "Repayment not found" }, 404);
-        }
+    if (remainingAmount <= 0) {
+      console.log("⚠️ Repayment already fully settled, skipping");
+      continue;
+    }
 
-        console.log(`✅ Repayment record found: ${repayment.id}`);
+    const amountApplied = Math.min(remainingAmount, amountToDistribute);
 
-        if (status === "success") {
-          console.log(`⚙️ Marking repayment ${repaymentId} as PAID...`);
-          // Update repayment status
-          await db
-            .update(repayments)
-            .set({
-              status: "PAID",
-              paidAt: new Date(paid_at),
-            })
-            .where(eq(repayments.id, repaymentId));
+    console.log(
+      `💳 Applying ${amountApplied} to repayment ${repayment.id}`,
+    );
 
-          console.log(`✨ Repayment marked as paid: ${repaymentId}`);
-          return c.json({
-            status: "acknowledged",
-            message: "Repayment marked as paid",
-          });
-        } else {
-          // Update repayment status to failed
-          console.log(`📉 Marking repayment ${repaymentId} as FAILED...`);
-          await db
-            .update(repayments)
-            .set({
-              status: "FAILED",
-            })
-            .where(eq(repayments.id, repaymentId));
+    await db.insert(subRepayments).values({
+      repaymentId: repayment.id,
+      amount: String(amountApplied),
+      status: "PAID",
+      paidAt: new Date(),
+    });
 
-          console.log(`❌ Repayment marked as failed: ${repaymentId}`);
-          return c.json({
-            status: "acknowledged",
-            message: "Repayment marked as failed",
-          });
-        }
-      }
+    amountToDistribute -= amountApplied;
+
+    console.log(
+      `📉 Remaining amount to distribute: ${amountToDistribute}`,
+    );
+
+    // Update repayment status
+    if (amountApplied === remainingAmount) {
+      console.log(`✅ Repayment ${repayment.id} fully PAID`);
+
+      await db
+        .update(repayments)
+        .set({
+          status: "PAID",
+          paidAt: new Date(),
+        })
+        .where(eq(repayments.id, repayment.id));
+    } else {
+      console.log(`🟡 Repayment ${repayment.id} PARTIALLY PAID`);
+
+      await db
+        .update(repayments)
+        .set({
+          status: "PARTIAL",
+        })
+        .where(eq(repayments.id, repayment.id));
+    }
+  }
+
+  if (amountToDistribute > 0) {
+    //protect from this in the frontend
+    console.log(
+      "⚠️ Payment exceeds total outstanding repayments",
+      amountToDistribute,
+    );
+    // Optional: store as advance / wallet balance / overpayment
+  }
+
+  console.log("🎉 Repayment distribution completed successfully");
+
+  return c.json({
+    status: "acknowledged",
+    message: "Repayment processed successfully",
+  });
+}
     }
 
     // Handle other webhook events
@@ -233,7 +240,7 @@ router.post("/paystack", async (c) => {
         error:
           error instanceof Error ? error.message : "Failed to process webhook",
       },
-      500
+      500,
     );
   } finally {
     console.log("--- 🔚 Paystack Webhook Processed ---");

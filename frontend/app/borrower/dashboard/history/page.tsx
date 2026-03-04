@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -14,9 +14,31 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 import { toast } from "sonner";
+import { RepaymentModal } from "@/components/dashboard/repayment-modal";
 
 // --- Types ---
+type RepaymentStatus = "PENDING" | "PARTIAL" | "PAID";
+
+interface SubRepayment {
+    id: string;
+    repaymentId: string;
+    amount: string;
+    paidAt: string | null;
+    status: "PAID" | "UNPAID";
+}
+
+export interface Repayment {
+    id: string;
+    loanId: string;
+    amount: string;
+    dueDate: string;
+    paidAt: string | null;
+    status: RepaymentStatus;
+    subRepayments: SubRepayment[];
+}
+
 
 export type LoanAppStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type LoanStatus = "ACTIVE" | "COMPLETED" | "DEFAULTED";
@@ -44,7 +66,9 @@ export interface Loan {
     startDate: string;
     status: LoanStatus;
     loanName?: string; // Optional name for UI
+    repayments: Repayment[]
 }
+
 
 type UnifiedHistoryItem = {
     id: string;
@@ -59,12 +83,6 @@ type UnifiedHistoryItem = {
 
 // --- Utilities ---
 
-const formatCurrency = (amount: string | number) => {
-    return new Intl.NumberFormat("en-NG", {
-        style: "currency",
-        currency: "NGN",
-    }).format(Number(amount));
-};
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-NG", {
@@ -81,6 +99,8 @@ export default function LoanHistoryPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [selectedItem, setSelectedItem] = useState<UnifiedHistoryItem | null>(null);
+    const [isRepayModalOpen, setIsRepayModalOpen] = useState(false);
 
     const fetchData = useCallback(async (isManualRefresh = false) => {
         try {
@@ -150,7 +170,7 @@ export default function LoanHistoryPage() {
         }
     }, []);
 
-
+    // console.log(history, "history")
 
     useEffect(() => {
         fetchData();
@@ -365,11 +385,19 @@ export default function LoanHistoryPage() {
                                                         "md:w-72 p-10 flex md:flex-col justify-center gap-5 items-center border-t md:border-t-0 md:border-l border-gray-100",
                                                         isLoan ? "bg-emerald-50/20" : "bg-gray-50/30"
                                                     )}>
-                                                        <Button className="w-full bg-white hover:bg-gray-50 text-main-green border-gray-200 border-2 rounded-2xl font-black h-16 shadow-sm transition-all hover:scale-[1.03] active:scale-95">
-                                                            Details
+                                                        <Button className="w-full bg-white hover:bg-gray-50 text-main-green border-gray-200 border-2 rounded-2xl font-black h-16 shadow-sm transition-all hover:scale-[1.03] active:scale-95" asChild>
+                                                            <Link href={`/borrower/dashboard/history/${item.id}`}>
+                                                                Details
+                                                            </Link>
                                                         </Button>
                                                         {item.status === "ACTIVE" && (
-                                                            <Button className="w-full bg-main-green text-white hover:bg-main-green/90 rounded-2xl font-black h-16 shadow-xl shadow-main-green/20 transition-all hover:scale-[1.03] active:scale-95">
+                                                            <Button
+                                                                onClick={() => {
+                                                                    setSelectedItem(item);
+                                                                    setIsRepayModalOpen(true);
+                                                                }}
+                                                                className="w-full bg-main-green text-white hover:bg-main-green/90 rounded-2xl font-black h-16 shadow-xl shadow-main-green/20 transition-all hover:scale-[1.03] active:scale-95"
+                                                            >
                                                                 Repay Now
                                                             </Button>
                                                         )}
@@ -389,6 +417,16 @@ export default function LoanHistoryPage() {
                     </div>
                 )}
             </div>
+
+            {/* --- Modals --- */}
+            <RepaymentModal
+                isOpen={isRepayModalOpen}
+                onClose={() => {
+                    setIsRepayModalOpen(false);
+                    setSelectedItem(null);
+                }}
+                loan={selectedItem}
+            />
 
             {/* --- Error Fallback --- */}
             {error && (

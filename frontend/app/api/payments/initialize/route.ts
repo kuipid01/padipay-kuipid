@@ -5,7 +5,7 @@ export async function POST(
 
 ) {
   try {
-    const { type, callback, callbackUrl, borrowerEmail, loanAppSlug,amount } = await req.json();
+    const { type, callback, callbackUrl, borrowerEmail, loanAppSlug, amount, ...rest } = await req.json();
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3001";
 
     // Reconstruct the payload for the main backend
@@ -18,7 +18,8 @@ export async function POST(
         callbackUrl,
         borrowerEmail,
         loanAppSlug,
-      }, 
+        ...rest
+      },
     };
 
     const res = await fetch(`${backendUrl}/api/payments/initialize`, {

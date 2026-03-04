@@ -60,4 +60,18 @@ applications.patch("/:appId", zValidator("json", UpdateApplicationSchema), async
   return c.json({ application: result.data });
 });
 
+// POST /api/applications/:appId/approve
+applications.post("/:appId/approve", async (c) => {
+  const user = c.get("user");
+  const appId = c.req.param("appId");
+  
+  const result = await applicationsService.approve(appId, user.id);
+  
+  if (!result.success) {
+    return c.json({ error: result.error.message }, result.error.code as errorcode);
+  }
+  
+  return c.json(result.data);
+});
+
 export default applications;
