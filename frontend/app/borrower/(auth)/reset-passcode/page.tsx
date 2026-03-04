@@ -12,6 +12,9 @@ import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 
+import { Suspense } from "react";
+import { SuspenseLoader } from "@/components/ui/suspense-loader";
+
 const resetSchema = z
     .object({
         passcode: z
@@ -27,7 +30,8 @@ const resetSchema = z
 
 type ResetValues = z.infer<typeof resetSchema>;
 
-export default function BorrowerResetPasscodePage() {
+
+function BorrowerResetPasscodeForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [showPasscode, setShowPasscode] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -192,5 +196,13 @@ export default function BorrowerResetPasscodePage() {
                 )}
             </motion.div>
         </div>
+    );
+}
+
+export default function BorrowerResetPasscodePage() {
+    return (
+        <Suspense fallback={<SuspenseLoader />}>
+            <BorrowerResetPasscodeForm />
+        </Suspense>
     );
 }

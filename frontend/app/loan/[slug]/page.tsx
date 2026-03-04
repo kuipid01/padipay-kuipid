@@ -24,7 +24,8 @@ import { TermsStep } from "./_components/terms-step";
 import { SuccessStep } from "./_components/success-step";
 import { CreditScoreStep } from "./_components/credit-score-step";
 
-export default function PublicLoanPage() {
+
+function PublicLoanForm() {
   const { slug } = useParams();
   const router = useRouter();
 
@@ -313,43 +314,6 @@ export default function PublicLoanPage() {
     }
   };
 
-  // Render Logic
-  if (loading) return <LoadingScreen />;
-  if (!app) return <NotFoundScreen />;
-
-  return (
-    <div className="min-h-screen bg-[#FDFDFD] font-sans text-[#1F4941] selection:bg-lemon-primary/30">
-      {/* Progress Bar */}
-      <div className="fixed top-0 left-0 w-full h-1.5 bg-gray-100 z-[100]">
-        <motion.div
-          className="h-full bg-main-green"
-          initial={{ width: 0 }}
-          animate={{
-            width: `${(STEP_ORDER.indexOf(currentStep) / (STEP_ORDER.length - 1)) * 100}%`,
-          }}
-          transition={{ duration: 0.5, ease: "circOut" }}
-        />
-      </div>
-
-      <main className="max-w-[480px] mx-auto px-6 pt-12 pb-24">
-        <AnimatePresence mode="wait" custom={direction} initial={false}>
-          <motion.div
-            key={currentStep}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-            className="w-full"
-          >
-            {renderStep()}
-          </motion.div>
-        </AnimatePresence>
-      </main>
-    </div>
-  );
-
   function renderStep() {
     switch (currentStep) {
       case "landing":
@@ -466,4 +430,52 @@ export default function PublicLoanPage() {
         return null;
     }
   }
+
+  // Render Logic
+  if (loading) return <LoadingScreen />;
+  if (!app) return <NotFoundScreen />;
+
+  return (
+    <div className="min-h-screen bg-[#FDFDFD] font-sans text-[#1F4941] selection:bg-lemon-primary/30">
+      {/* Progress Bar */}
+      <div className="fixed top-0 left-0 w-full h-1.5 bg-gray-100 z-[100]">
+        <motion.div
+          className="h-full bg-main-green"
+          initial={{ width: 0 }}
+          animate={{
+            width: `${(STEP_ORDER.indexOf(currentStep) / (STEP_ORDER.length - 1)) * 100}%`,
+          }}
+          transition={{ duration: 0.5, ease: "circOut" }}
+        />
+      </div>
+
+      <main className="max-w-[480px] mx-auto px-6 pt-12 pb-24">
+        <AnimatePresence mode="wait" custom={direction} initial={false}>
+          <motion.div
+            key={currentStep}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+            className="w-full"
+          >
+            {renderStep()}
+          </motion.div>
+        </AnimatePresence>
+      </main>
+    </div>
+  );
+}
+
+import { Suspense } from "react";
+import { SuspenseLoader } from "@/components/ui/suspense-loader";
+
+export default function PublicLoanPage() {
+  return (
+    <Suspense fallback={<SuspenseLoader />}>
+      <PublicLoanForm />
+    </Suspense>
+  );
 }

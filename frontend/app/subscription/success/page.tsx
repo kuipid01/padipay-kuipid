@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2, XCircle } from "lucide-react";
 
+import { SuspenseLoader } from "@/components/ui/suspense-loader";
+
 function SubscriptionSuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -153,13 +155,10 @@ function SubscriptionSuccessContent() {
     );
 }
 
+
 export default function Page() {
     return (
-        <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-main-green to-main-green/80">
-                <Loader2 className="w-16 h-16 text-lemon-primary animate-spin" />
-            </div>
-        }>
+        <Suspense fallback={<SuspenseLoader />}>
             <SubscriptionSuccessContent />
         </Suspense>
     );

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -14,13 +14,15 @@ import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Github, Globe, Chrome } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { SuspenseLoader } from "../../../components/ui/suspense-loader";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-export default function LoginPage() {
+
+function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -259,5 +261,14 @@ export default function LoginPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<SuspenseLoader />}>
+      <LoginForm />
+    </Suspense>
   );
 }

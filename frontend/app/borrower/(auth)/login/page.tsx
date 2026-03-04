@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Phone } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { Suspense } from "react";
+import { SuspenseLoader } from "@/components/ui/suspense-loader";
 
 const loginSchema = z.object({
     phone: z
@@ -23,7 +25,8 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
-export default function BorrowerLoginPage() {
+
+function BorrowerLoginForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [showPasscode, setShowPasscode] = useState(false);
     const router = useRouter();
@@ -173,5 +176,14 @@ export default function BorrowerLoginPage() {
                 </motion.div>
             </div>
         </div>
+    );
+}
+
+
+export default function BorrowerLoginPage() {
+    return (
+        <Suspense fallback={<SuspenseLoader />}>
+            <BorrowerLoginForm />
+        </Suspense>
     );
 }
