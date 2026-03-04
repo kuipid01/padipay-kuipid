@@ -61,22 +61,31 @@ async function proxyRequest(req: Request, path: string[], method: string) {
   }
 }
 
-export async function GET(req: Request, { params }: { params: { path: string[] } }) {
+interface RouteParams {
+  params: Promise<{ path: string[] }>;
+}
+
+export async function GET(req: Request, { params }: RouteParams) {
   const { path } = await params;
   return proxyRequest(req, path, "GET");
 }
 
-export async function POST(req: Request, { params }: { params: { path: string[] } }) {
+export async function POST(req: Request, { params }: RouteParams) {
   const { path } = await params;
   return proxyRequest(req, path, "POST");
 }
 
-export async function PATCH(req: Request, { params }: { params: { path: string[] } }) {
+export async function PUT(req: Request, { params }: RouteParams) {
+  const { path } = await params;
+  return proxyRequest(req, path, "PUT");
+}
+
+export async function PATCH(req: Request, { params }: RouteParams) {
   const { path } = await params;
   return proxyRequest(req, path, "PATCH");
 }
 
-export async function DELETE(req: Request, { params }: { params: { path: string[] } }) {
+export async function DELETE(req: Request, { params }: RouteParams) {
   const { path } = await params;
   return proxyRequest(req, path, "DELETE");
 }
