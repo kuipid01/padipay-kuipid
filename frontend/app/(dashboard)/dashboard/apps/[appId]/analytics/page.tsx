@@ -44,43 +44,43 @@ export default function AppAnalyticsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const{analytics,error:analyticsError,isLoading:analyticsLoading} = useUserLoanAppAnalytics(appId)
-console.log(analytics,"analytics")
-  
+  const { analytics, error: analyticsError, isLoading: analyticsLoading } = useUserLoanAppAnalytics(appId)
+  console.log(analytics, "analytics")
+
   const performanceMetrics = useMemo(
     () =>
       metrics.length > 0
         ? metrics
         : [
-            {
-              key: "approvalRate",
-              label: "Approval Rate",
-              value: analytics?.metrics[0].value ?? "0%",
-              trend: analytics?.metrics[0].trend ?? "0%",
-              trendUp: analytics?.metrics[0].trendUp ,
-            },
-            {
-              key: "defaultRate",
-              label: "Default Rate",
-              value: analytics?.metrics[1].value ?? "0%",
-              trend: analytics?.metrics[1].value ?? "0%",
-              trendUp: analytics?.metrics[1].trendUp,
-            },
-            {
-              key: "avgDuration",
-              label: "Avg. Duration",
-              value:  analytics?.metrics[2].value ?? "",
-              trend:  analytics?.metrics[2].trend ?? "",
-              trendUp: analytics?.metrics[2].trendUp ?? false,
-            },
-            {
-              key: "avgLoanAmount",
-              label: "Avg. Loan Amount",
-              value:  analytics?.metrics[3].value ?? "",
-              trend:  analytics?.metrics[3].trend ?? "",
-              trendUp:  analytics?.metrics[3].trendUp ?? "",
-            },
-          ],
+          {
+            key: "approvalRate",
+            label: "Approval Rate",
+            value: analytics?.metrics[0].value ?? "0%",
+            trend: analytics?.metrics[0].trend ?? "0%",
+            trendUp: analytics?.metrics[0].trendUp,
+          },
+          {
+            key: "defaultRate",
+            label: "Default Rate",
+            value: analytics?.metrics[1].value ?? "0%",
+            trend: analytics?.metrics[1].value ?? "0%",
+            trendUp: analytics?.metrics[1].trendUp,
+          },
+          {
+            key: "avgDuration",
+            label: "Avg. Duration",
+            value: analytics?.metrics[2].value ?? "",
+            trend: analytics?.metrics[2].trend ?? "",
+            trendUp: analytics?.metrics[2].trendUp ?? false,
+          },
+          {
+            key: "avgLoanAmount",
+            label: "Avg. Loan Amount",
+            value: analytics?.metrics[3].value ?? "",
+            trend: analytics?.metrics[3].trend ?? "",
+            trendUp: analytics?.metrics[3].trendUp ?? "",
+          },
+        ],
     [metrics],
   );
 
@@ -229,7 +229,7 @@ console.log(analytics,"analytics")
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
-       
+
 
         {/* Mock Chart Area 2 */}
         <Card className="border-none shadow-sm rounded-[32px]">

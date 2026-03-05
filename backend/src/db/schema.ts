@@ -71,6 +71,22 @@ export const fundingStatusEnum = pgEnum("funding_status", [
 
 export const fundingChannelEnum = pgEnum("funding_channel", ["paystack"]);
 
+export const documentTypeEnum = pgEnum("document_type", [
+  "GOVERNMENT_ID",
+  "PROOF_OF_ADDRESS",
+  "BANK_STATEMENT",
+  "UTILITY_BILL",
+  "EMPLOYMENT_LETTER",
+  "OTHER",
+]);
+
+export const documentStatusEnum = pgEnum("document_status", [
+  "PENDING",
+  "VERIFIED",
+  "REJECTED",
+]);
+
+
 export const walletTransactionTypeEnum = pgEnum("wallet_transaction_type", [
   "funding_credit",
   "loan_debit",
@@ -432,6 +448,22 @@ export const newsletters = pgTable("newsletters", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const borrowerDocuments = pgTable("borrower_documents", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  borrowerId: uuid("borrower_id")
+    .references(() => borrowers.id, { onDelete: "cascade" })
+    .notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: documentTypeEnum("type").notNull(),
+  url: text("url").notNull(),
+  status: documentStatusEnum("status").default("PENDING").notNull(),
+  rejectionReason: text("rejection_reason"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+
 export const loanPreferences = pgTable("loan_preferences", {
   id: uuid("id").primaryKey().defaultRandom(),
 
@@ -640,7 +672,16 @@ export const borrowersRelations = relations(borrowers, ({ many }) => ({
   bankAccounts: many(bankAccounts),
   debitMandates: many(debitMandates),
   notificationLogs: many(notificationLogs),
+  documents: many(borrowerDocuments),
 }));
+
+export const borrowerDocumentsRelations = relations(borrowerDocuments, ({ one }) => ({
+  borrower: one(borrowers, {
+    fields: [borrowerDocuments.borrowerId],
+    references: [borrowers.id],
+  }),
+}));
+
 
 export const bankAccountsRelations = relations(bankAccounts, ({ one, many }) => ({
   borrower: one(borrowers, {

@@ -25,7 +25,11 @@ export const applicationsRepo = {
       where: inArray(loanApplications.loanAppId, loanAppIds),
       with: {
         loanApp: true,
-        borrower: true,
+        borrower: {
+          with: {
+            documents: true,
+          }
+        },
         repaymentPlan: true,
       },
       orderBy: (apps, { desc }) => [desc(apps.createdAt)],
@@ -37,7 +41,11 @@ export const applicationsRepo = {
       where: eq(loanApplications.id, id),
       with: {
         loanApp: true,
-        borrower: true,
+        borrower: {
+          with: {
+            documents: true,
+          }
+        },
         repaymentPlan: true,
       },
     });

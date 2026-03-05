@@ -93,6 +93,7 @@ async update(id:string,data:UpdateLoanAppInput){
 
     const repaymentsRecords = await db.query.repayments.findMany({
       where: sql`loan_id IN (SELECT id FROM ${loans} WHERE application_id IN ${loanIdsQuery})`,
+      with: { subRepayments: true }
     });
     
     return {

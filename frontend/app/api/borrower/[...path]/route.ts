@@ -29,19 +29,28 @@ async function proxyRequest(req: Request, path: string[], method: string) {
       "Content-Type": "application/json",
     };
 
-    let body = undefined;
+    const contentType = req.headers.get("content-type");
+    let body: any = undefined;
+
     if (["POST", "PUT", "PATCH"].includes(method)) {
-      try {
-        body = await req.json();
-      } catch (e) {
-        // Body might be empty
+      if (contentType?.includes("application/json")) {
+        try {
+          const jsonBody = await req.json();
+          body = JSON.stringify(jsonBody);
+        } catch (e) {
+          // Body might be empty
+        }
+      } else if (contentType?.includes("multipart/form-data")) {
+        body = await req.formData();
+        // Remove Content-Type header so fetch can set it correctly with the boundary
+        delete headers["Content-Type"];
       }
     }
 
     const response = await fetch(url, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body,
       cache: "no-store",
     });
    

@@ -5,7 +5,7 @@ import "dotenv/config";
 
 
 import { errorHandler, notFoundHandler } from "./middleware";
-import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes, uploadRoutes, userRoutes, loanPreferenceRoute, repaymentPlansRoutes, applicationsRoutes, subscriptionRoutes, borrowerRoutes, lenderWalletRoutes, internalRoutes, notificationRoutes } from "./routes";
+import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes, uploadRoutes, userRoutes, loanPreferenceRoute, repaymentPlansRoutes, applicationsRoutes, subscriptionRoutes, borrowerRoutes, lenderWalletRoutes, internalRoutes, notificationRoutes,borrowerUploadsRoutes } from "./routes";
 import { startCronJobs } from "./jobs/cron";
 import "./jobs/worker"; // Initialize BullMQ Worker
 
@@ -92,6 +92,7 @@ app.route("/api/settings", settingsRoutes);
 app.route("/api/newsletter", newsletterRoutes);
 app.route("/api/public", publicRoutes);
 app.route("/api/upload", uploadRoutes);
+app.route("/api/borrower-upload", borrowerUploadsRoutes);
 app.route("/api/user", userRoutes);
 app.route("/api/loan-preference", loanPreferenceRoute);
 app.route("/api/repayment-plans", repaymentPlansRoutes);

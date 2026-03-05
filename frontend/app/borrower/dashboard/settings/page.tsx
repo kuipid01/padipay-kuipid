@@ -9,11 +9,12 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function BorrowerSettingsPage() {
-    const [activeTab, setActiveTab] = useState<"security" | "banking">("security");
+    const [activeTab, setActiveTab] = useState<"security" | "banking" | "documents">("security");
 
     const tabs = [
         { id: "security", label: "Security", icon: Lock },
         { id: "banking", label: "Banking", icon: Landmark },
+        { id: "documents", label: "Documents", icon: Plus },
     ] as const;
 
     return (
@@ -61,7 +62,7 @@ export default function BorrowerSettingsPage() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
                 >
-                    {activeTab === "security" ? <SecurityTab /> : <BankingTab />}
+                    {activeTab === "security" ? <SecurityTab /> : activeTab === "banking" ? <BankingTab /> : <DocumentsTab />}
                 </motion.div>
             </AnimatePresence>
         </div>
@@ -665,6 +666,278 @@ function AddBankModal({ open, onClose, onSuccess }: AddBankModalProps) {
                                 </div>
                             )}
 
+                        </div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
+    );
+}
+
+// ─── Documents Tab ────────────────────────────────────────────────────────
+function DocumentsTab() {
+    const [documents, setDocuments] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+    async function fetchDocuments() {
+        setIsLoading(true);
+        try {
+            const res = await fetch("/api/borrower/documents");
+            const data = await res.json();
+            if (res.ok) setDocuments(data || []);
+        } catch {
+            toast.error("Failed to fetch documents");
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => { fetchDocuments(); }, []);
+
+    return (
+        <div className="space-y-6">
+            <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-xl font-black text-main-green mb-2">My Documents</h3>
+                        <p className="text-gray-500 text-sm">Upload and manage your verification documents.</p>
+                    </div>
+                    <Button
+                        onClick={() => setIsUploadModalOpen(true)}
+                        className="bg-main-green text-white hover:bg-main-green/90 rounded-2xl px-6 h-12 font-bold shadow-lg shadow-main-green/20"
+                    >
+                        <Plus className="mr-2 h-4 w-4" /> Upload Document
+                    </Button>
+                </div>
+
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <Loader2 className="animate-spin text-main-green" size={32} />
+                    </div>
+                ) : documents.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-gray-100 rounded-[32px] text-gray-400 italic">
+                        <Plus size={48} className="mb-4 opacity-20" />
+                        <p>No documents uploaded yet.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {documents.map((doc) => (
+                            <div key={doc.id} className="p-5 rounded-[24px] border border-gray-100 bg-gray-50 flex flex-col gap-4">
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="size-12 rounded-2xl bg-lemon-primary/20 flex items-center justify-center text-main-green shrink-0">
+                                        <Plus size={22} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-black text-sm text-gray-800 truncate">{doc.name}</p>
+                                        <p className="text-xs text-gray-500 font-bold mt-0.5">{doc.type.replace(/_/g, " ")}</p>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <span className={cn(
+                                                "text-[10px] font-black px-2 py-0.5 rounded-full",
+                                                doc.status === "VERIFIED" ? "bg-green-100 text-green-700" :
+                                                    doc.status === "REJECTED" ? "bg-red-100 text-red-700" :
+                                                        "bg-amber-100 text-amber-700"
+                                            )}>
+                                                {doc.status}
+                                            </span>
+                                            <p className="text-[10px] text-gray-400">Uploaded {new Date(doc.createdAt).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
+                                    <a
+                                        href={doc.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="size-9 rounded-xl flex items-center justify-center text-main-green hover:bg-main-green/5 transition-colors"
+                                    >
+                                        <ChevronDown size={18} className="-rotate-90" />
+                                    </a>
+                                </div>
+                                {doc.rejectionReason && (
+                                    <div className="bg-red-50 p-3 rounded-xl border border-red-100">
+                                        <p className="text-[10px] font-bold text-red-700">Rejection Reason:</p>
+                                        <p className="text-[11px] text-red-600 mt-0.5 font-medium">{doc.rejectionReason}</p>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <UploadDocumentModal
+                open={isUploadModalOpen}
+                onClose={() => setIsUploadModalOpen(false)}
+                onSuccess={() => {
+                    setIsUploadModalOpen(false);
+                    fetchDocuments();
+                }}
+            />
+        </div>
+    );
+}
+
+// ─── Document Upload Modal ──────────────────────────────────────────────────
+interface UploadDocumentModalProps {
+    open: boolean;
+    onClose: () => void;
+    onSuccess: () => void;
+}
+
+function UploadDocumentModal({ open, onClose, onSuccess }: UploadDocumentModalProps) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [file, setFile] = useState<File | null>(null);
+    const [name, setName] = useState("");
+    const [type, setType] = useState<string>("");
+
+    const documentTypes = [
+        { value: "GOVERNMENT_ID", label: "Government ID" },
+        { value: "PROOF_OF_ADDRESS", label: "Proof of Address" },
+        { value: "BANK_STATEMENT", label: "Bank Statement" },
+        { value: "UTILITY_BILL", label: "Utility Bill" },
+        { value: "EMPLOYMENT_LETTER", label: "Employment Letter" },
+        { value: "OTHER", label: "Other Document" },
+    ];
+
+    async function handleUpload() {
+        if (!file || !name || !type) {
+            toast.error("Please fill all required fields");
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("name", name);
+            formData.append("type", type);
+
+            const res = await fetch("/api/borrower/upload/document", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || "Upload failed");
+            }
+
+            toast.success("Document uploaded successfully!");
+            onSuccess();
+            resetModal();
+        } catch (err: any) {
+            toast.error(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    function resetModal() {
+        setFile(null);
+        setName("");
+        setType("");
+    }
+
+    if (!open) return null;
+
+    return (
+        <AnimatePresence>
+            {open && (
+                <>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+                    />
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    >
+                        <div className="bg-white rounded-[40px] shadow-2xl w-full max-w-md p-8 space-y-6 relative" onClick={(e) => e.stopPropagation()}>
+                            <div className="text-center space-y-1">
+                                <div className="size-14 bg-lemon-primary/20 text-main-green rounded-[20px] flex items-center justify-center mx-auto mb-4">
+                                    <Plus size={28} />
+                                </div>
+                                <h3 className="text-2xl font-black text-main-green">Upload Document</h3>
+                                <p className="text-gray-400 text-sm">Please provide the document for verification.</p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700 ml-1">Document Name</label>
+                                    <Input
+                                        placeholder="e.g. My National ID"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="h-14 bg-[#f8fbf7] border-gray-100 rounded-2xl px-6"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700 ml-1">Document Type</label>
+                                    <select
+                                        value={type}
+                                        onChange={(e) => setType(e.target.value)}
+                                        className="w-full h-14 bg-[#f8fbf7] border border-gray-100 rounded-2xl px-6 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-lemon-primary/50"
+                                    >
+                                        <option value="" disabled>Select Type</option>
+                                        {documentTypes.map((t) => (
+                                            <option key={t.value} value={t.value}>{t.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700 ml-1">File</label>
+                                    <div className="relative group">
+                                        <input
+                                            type="file"
+                                            onChange={(e) => setFile(e.target.files?.[0] || null)}
+                                            className="hidden"
+                                            id="file-upload"
+                                        />
+                                        <label
+                                            htmlFor="file-upload"
+                                            className={cn(
+                                                "flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-[28px] cursor-pointer transition-all",
+                                                file
+                                                    ? "border-green-200 bg-green-50/30"
+                                                    : "border-gray-100 bg-[#f8fbf7] group-hover:bg-gray-50 group-hover:border-gray-200"
+                                            )}
+                                        >
+                                            {file ? (
+                                                <div className="text-center">
+                                                    <CheckCircle className="mx-auto h-8 w-8 text-green-500 mb-2" />
+                                                    <p className="text-sm font-bold text-gray-800 px-4 line-clamp-1">{file.name}</p>
+                                                    <p className="text-[10px] text-gray-400">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center">
+                                                    <Plus className="mx-auto h-8 w-8 text-gray-300 mb-2" />
+                                                    <p className="text-sm font-bold text-gray-500">Tap to select a file</p>
+                                                    <p className="text-[10px] text-gray-400 mt-1">PDF, JPG, PNG up to 10MB</p>
+                                                </div>
+                                            )}
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <Button
+                                    onClick={handleUpload}
+                                    disabled={isLoading || !file || !name || !type}
+                                    className="w-full h-14 bg-main-green text-white hover:bg-main-green/90 rounded-2xl text-base font-black shadow-lg shadow-main-green/20 disabled:opacity-50"
+                                >
+                                    {isLoading ? (
+                                        <span className="flex items-center gap-2"><Loader2 className="animate-spin" size={18} /> Uploading…</span>
+                                    ) : "Upload Document"}
+                                </Button>
+                                <Button variant="ghost" onClick={onClose} className="w-full text-gray-400 font-bold">
+                                    Cancel
+                                </Button>
+                            </div>
                         </div>
                     </motion.div>
                 </>

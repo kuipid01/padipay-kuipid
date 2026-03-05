@@ -118,26 +118,76 @@ export const loanAppsService = {
 
     const { apps, loans, repayments } = await loanAppsRepo.getAnalyticsData(id);
 
-    const totalApps = apps.length;
+    // Date helpers for Trend Calculation (This Month vs Last Month)
+    const now = new Date();
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    const isInMonth = (date: Date | null, start: Date, end: Date) => {
+        if (!date) return false;
+        const d = new Date(date);
+        return d >= start && d <= end;
+    };
+
+    const isThisMonth = (d: Date | null) => isInMonth(d, startOfThisMonth, now);
+    const isLastMonth = (d: Date | null) => isInMonth(d, startOfLastMonth, endOfLastMonth);
+
+    const calculateTrend = (current: number, previous: number) => {
+        if (previous === 0) return current > 0 ? "+100%" : "0.0%";
+        const percent = ((current - previous) / previous) * 100;
+        return `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`;
+    };
+
+    // 1. Approval Rate calculations
     const approvedApps = apps.filter(a => a.status === 'APPROVED');
+    const totalApps = apps.length;
     const approvalRate = totalApps > 0 ? (approvedApps.length / totalApps) * 100 : 0;
 
+    const thisMonthApps = apps.filter(a => isThisMonth(a.createdAt));
+    const lastMonthApps = apps.filter(a => isLastMonth(a.createdAt));
+    const thisMonthApprovalRate = thisMonthApps.length > 0 ? (thisMonthApps.filter(a => a.status === 'APPROVED').length / thisMonthApps.length) * 100 : 0;
+    const lastMonthApprovalRate = lastMonthApps.length > 0 ? (lastMonthApps.filter(a => a.status === 'APPROVED').length / lastMonthApps.length) * 100 : 0;
+    const approvalTrend = calculateTrend(thisMonthApprovalRate, lastMonthApprovalRate);
+
+    // 2. Default Rate calculations
     const totalLoansDisbursed = loans.length;
     const defaultedLoans = loans.filter(l => l.status === 'DEFAULTED');
     const defaultRate = totalLoansDisbursed > 0 ? (defaultedLoans.length / totalLoansDisbursed) * 100 : 0;
 
+    const thisMonthLoans = loans.filter(l => isThisMonth(l.startDate));
+    const lastMonthLoans = loans.filter(l => isLastMonth(l.startDate));
+    const thisMonthDefaultRate = thisMonthLoans.length > 0 ? (thisMonthLoans.filter(l => l.status === 'DEFAULTED').length / thisMonthLoans.length) * 100 : 0;
+    const lastMonthDefaultRate = lastMonthLoans.length > 0 ? (lastMonthLoans.filter(l => l.status === 'DEFAULTED').length / lastMonthLoans.length) * 100 : 0;
+    const defaultTrend = calculateTrend(thisMonthDefaultRate, lastMonthDefaultRate);
+
+    // 3. Avg Duration calculations
     const avgDuration = approvedApps.length > 0 
         ? approvedApps.reduce((acc, app) => acc + app.durationMonths, 0) / approvedApps.length 
         : 0;
 
+    const thisMonthApprovedApps = thisMonthApps.filter(a => a.status === 'APPROVED');
+    const lastMonthApprovedApps = lastMonthApps.filter(a => a.status === 'APPROVED');
+    const thisMonthAvgDuration = thisMonthApprovedApps.length > 0 ? thisMonthApprovedApps.reduce((acc, a) => acc + a.durationMonths, 0) / thisMonthApprovedApps.length : 0;
+    const lastMonthAvgDuration = lastMonthApprovedApps.length > 0 ? lastMonthApprovedApps.reduce((acc, a) => acc + a.durationMonths, 0) / lastMonthApprovedApps.length : 0;
+    const durationTrend = calculateTrend(thisMonthAvgDuration, lastMonthAvgDuration);
+
+    // 4. Avg Loan Amount calculations
     const totalAmountValue = approvedApps.reduce((acc, app) => acc + Number(app.amount), 0);
     const avgAmount = approvedApps.length > 0 ? totalAmountValue / approvedApps.length : 0;
 
-    // Cash Flow Calculations
+    const thisMonthAvgAmount = thisMonthApprovedApps.length > 0 ? thisMonthApprovedApps.reduce((acc, a) => acc + Number(a.amount), 0) / thisMonthApprovedApps.length : 0;
+    const lastMonthAvgAmount = lastMonthApprovedApps.length > 0 ? lastMonthApprovedApps.reduce((acc, a) => acc + Number(a.amount), 0) / lastMonthApprovedApps.length : 0;
+    const amountTrend = calculateTrend(thisMonthAvgAmount, lastMonthAvgAmount);
+
+    // Cash Flow Calculations (using subRepayments)
     const totalDisbursed = loans.reduce((acc, l) => acc + Number(l.principal), 0);
-    const totalRepaidAmount = repayments
-        .filter(r => r.status === 'PAID')
-        .reduce((acc, r) => acc + Number(r.amount), 0);
+    const totalRepaidAmount = (repayments as any[]).reduce((acc, r) => {
+        const subTotal = (r.subRepayments || [])
+            .filter((sr: any) => sr.status === 'PAID')
+            .reduce((sAcc: number, sr: any) => sAcc + Number(sr.amount), 0);
+        return acc + subTotal;
+    }, 0);
     
     const netFlow = totalDisbursed > 0 
         ? ((totalRepaidAmount - totalDisbursed) / totalDisbursed) * 100 
@@ -154,29 +204,29 @@ export const loanAppsService = {
         key: "approvalRate", 
         label: "Approval Rate", 
         value: `${approvalRate.toFixed(1)}%`, 
-        trend: "0.0%", 
-        trendUp: true 
+        trend: approvalTrend, 
+        trendUp: parseFloat(approvalTrend) >= 0 
       },
       { 
         key: "defaultRate", 
         label: "Default Rate", 
         value: `${defaultRate.toFixed(1)}%`, 
-        trend: "0.0%", 
-        trendUp: false 
+        trend: defaultTrend, 
+        trendUp: parseFloat(defaultTrend) <= 0 
       },
       { 
         key: "avgDuration", 
         label: "Avg. Duration", 
         value: `${avgDuration.toFixed(1)} mo`, 
-        trend: "0.0", 
-        trendUp: true 
+        trend: durationTrend, 
+        trendUp: parseFloat(durationTrend) >= 0 
       },
       { 
         key: "avgLoanAmount", 
         label: "Avg. Loan Amount", 
         value: formatCurrency(avgAmount), 
-        trend: "₦0", 
-        trendUp: true 
+        trend: amountTrend, 
+        trendUp: parseFloat(amountTrend) >= 0 
       },
     ];
 

@@ -7,13 +7,16 @@ import {
     borrowers, 
     loanApplications, 
     bankAccounts,
-    notifications
+    notifications,
+    borrowerDocuments
 } from "../db/schema";
 import { eq, and, desc, sum, count, lt, inArray } from "drizzle-orm";
 import { authMiddleware, borrowerAuthMiddleware } from "../middleware/auth";
 import { hashPassword, comparePassword, signToken } from "../lib/auth";
 import { zValidator } from "@hono/zod-validator";
 import { createBankAccountSchema, bankAccountIdSchema } from "../zod-schemas/bank-accounts";
+import { addDocumentSchema } from "../zod-schemas/borrower-documents";
+import { uploadToCloudinary } from "../utils/upload";
 
 const router = new Hono();
 
@@ -75,7 +78,10 @@ router.use("*", borrowerAuthMiddleware);
 router.get("/auth/me", async (c) => {
     const user = c.get("user");
     const borrowerData = await db.query.borrowers.findFirst({
-        where: eq(borrowers.id, user.id)
+        where: eq(borrowers.id, user.id),
+        with: {
+            documents: true
+        }
     });
 
     if (!borrowerData) {
@@ -228,7 +234,11 @@ router.get("/applications/:id", async (c) => {
     const application = await db.query.loanApplications.findFirst({
         where: eq(loanApplications.id,id ),
         with:{
-            borrower:true,
+            borrower:{
+                with: {
+                    documents: true
+                }
+            },
             loanApp:true,
             repaymentPlan:true
         }
@@ -362,5 +372,66 @@ router.get("/notifications", async (c) => {
 
     return c.json(borrowerNotifications);
 });
+
+// 6. Documents
+// GET /api/borrower/documents
+router.get("/documents", async (c) => {
+    const user = c.get("user");
+    
+    const docs = await db.query.borrowerDocuments.findMany({
+        where: eq(borrowerDocuments.borrowerId, user.id),
+        orderBy: desc(borrowerDocuments.createdAt)
+    });
+
+    return c.json(docs);
+});
+
+// POST /api/borrower/documents
+// Handles multipart/form-data with actual file upload
+router.post("/documents", async (c) => {
+  try {
+    const user = c.get("user");
+
+    const body = await c.req.json();
+
+    const {
+      documentType,
+      url,
+      publicId,
+      name,
+      metadata = {},
+    } = body;
+
+    if (!documentType || !url) {
+      return c.json(
+        { error: "documentType and url are required" },
+        400
+      );
+    }
+
+    const [newDoc] = await db
+      .insert(borrowerDocuments)
+      .values({
+        borrowerId: user.id,
+        name: name || "document",
+        type: documentType,
+        url,
+        metadata,
+        status: "PENDING",
+
+      })
+      .returning();
+
+    return c.json(newDoc, 201);
+  } catch (err: any) {
+    console.error("Document save error:", err);
+
+    return c.json(
+      { error: err.message || "Failed to save document" },
+      500
+    );
+  }
+});
+
 
 export default router;

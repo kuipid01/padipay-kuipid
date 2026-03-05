@@ -1,26 +1,58 @@
 import cloudinary from "./cloudinary";
+import crypto from "crypto";
 
 export const uploadToCloudinary = async (
-  file: File,
+  buffer: Buffer,
   folder = "hubsell_uploads"
 ): Promise<string> => {
-  const buffer = Buffer.from(await file.arrayBuffer());
 
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload_stream(
+
+    const stream = cloudinary.uploader.upload_stream(
       {
         folder,
         resource_type: "auto",
-        unique_filename: true,
-        overwrite: false,
       },
       (error, result) => {
-        if (error) return reject(error);
+
+        if (error) {
+          console.error("Cloudinary error:", error);
+          return reject(error);
+        }
+
         if (!result?.secure_url) {
           return reject(new Error("Cloudinary upload failed"));
         }
+
         resolve(result.secure_url);
       }
-    ).end(buffer);
+    );
+
+    stream.end(buffer);
+
   });
 };
+
+
+
+export async function generateUploadSignature(userId: string) {
+  const timestamp = Math.floor(Date.now() / 1000);
+
+  const params = {
+    folder: `padi-loan/borrower-documents/${userId}`,
+    timestamp,
+  };
+
+  const signature = cloudinary.utils.api_sign_request(
+    params,
+    process.env.CLOUDINARY_API_SECRET!
+  );
+
+  return {
+    timestamp,
+    signature,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    folder: params.folder,
+  };
+}
