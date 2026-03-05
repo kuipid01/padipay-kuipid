@@ -6,8 +6,8 @@
 
 const BREVO_BASE_URL = "https://api.brevo.com/v3";
 const BREVO_API_KEY = process.env.BREVO_API_KEY || "";
-const DEFAULT_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || "noreply@padiloan.com";
-const DEFAULT_SENDER_NAME = process.env.BREVO_SENDER_NAME || "PadiLoan";
+const DEFAULT_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || "padiloan@kuipid.com";
+const DEFAULT_SENDER_NAME = process.env.BREVO_SENDER_NAME || "padiloan";
 
 interface EmailRecipient {
     email: string;

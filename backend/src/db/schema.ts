@@ -409,6 +409,23 @@ export const notifications = pgTable("notifications", {
   sentAt: timestamp("sent_at").defaultNow(),
 });
 
+export const notificationLogs = pgTable("notification_logs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  borrowerId: uuid("borrower_id")
+    .references(() => borrowers.id)
+    .notNull(),
+  repaymentId: uuid("repayment_id")
+    .references(() => repayments.id),
+  category: varchar("category", { length: 50 }).notNull(), // 'PRE_DUE_3_DAYS', 'PAYMENT_CONFIRMATION', etc.
+  channel: varchar("channel", { length: 20 }).notNull(),  // 'EMAIL', 'SMS'
+  status: varchar("status", { length: 20 }).notNull(),   // 'PENDING', 'SENT', 'FAILED', 'DELIVERED'
+  providerMessageId: varchar("provider_message_id", { length: 255 }),
+  errorMessage: text("error_message"),
+  idempotencyKey: varchar("idempotency_key", { length: 255 }).unique(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const newsletters = pgTable("newsletters", {
   id: uuid("id").defaultRandom().primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
@@ -606,6 +623,7 @@ export const repaymentsRelations = relations(repayments, ({ one, many }) => ({
     references: [loans.id],
   }),
   subRepayments: many(subRepayments),
+  notificationLogs: many(notificationLogs),
 }));
 
 export const loansRelations = relations(loans, ({ one, many }) => ({
@@ -621,6 +639,7 @@ export const borrowersRelations = relations(borrowers, ({ many }) => ({
   loans: many(loans),
   bankAccounts: many(bankAccounts),
   debitMandates: many(debitMandates),
+  notificationLogs: many(notificationLogs),
 }));
 
 export const bankAccountsRelations = relations(bankAccounts, ({ one, many }) => ({
@@ -670,6 +689,17 @@ export const walletTransactionsRelations = relations(walletTransactions, ({ one 
 export const subRepaymentsRelations = relations(subRepayments, ({ one }) => ({
   repayment: one(repayments, {
     fields: [subRepayments.repaymentId],
+    references: [repayments.id],
+  }),
+}));
+
+export const notificationLogsRelations = relations(notificationLogs, ({ one }) => ({
+  borrower: one(borrowers, {
+    fields: [notificationLogs.borrowerId],
+    references: [borrowers.id],
+  }),
+  repayment: one(repayments, {
+    fields: [notificationLogs.repaymentId],
     references: [repayments.id],
   }),
 }));

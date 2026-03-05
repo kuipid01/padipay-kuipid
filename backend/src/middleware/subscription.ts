@@ -55,7 +55,7 @@ const PLAN_LIMITS = {
  */
 export function hasFeatureAccess(plan: PlanName, feature: string): boolean {
   const planLimits = PLAN_LIMITS[plan];
-  return planLimits.features.includes(feature);
+  return (planLimits.features as readonly string[]).includes(feature);
 }
 
 /**
@@ -105,7 +105,7 @@ export async function requireActiveSubscription(c: Context, next: Next) {
   }
 
   // Attach plan info to context for use in route handlers
-  c.set("userPlan", userRecord.plan);
+  c.set("userPlan", (userRecord.plan as PlanName) || "Basic");
 
   await next();
 }

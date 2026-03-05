@@ -5,7 +5,9 @@ import "dotenv/config";
 
 
 import { errorHandler, notFoundHandler } from "./middleware";
-import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes, uploadRoutes, userRoutes, loanPreferenceRoute, repaymentPlansRoutes, applicationsRoutes, subscriptionRoutes, borrowerRoutes, lenderWalletRoutes, internalRoutes } from "./routes";
+import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes, uploadRoutes, userRoutes, loanPreferenceRoute, repaymentPlansRoutes, applicationsRoutes, subscriptionRoutes, borrowerRoutes, lenderWalletRoutes, internalRoutes, notificationRoutes } from "./routes";
+import { startCronJobs } from "./jobs/cron";
+import "./jobs/worker"; // Initialize BullMQ Worker
 
 /**
  * PadiLoan Backend Server
@@ -98,6 +100,7 @@ app.route("/api/subscription", subscriptionRoutes);
 app.route("/api/borrower", borrowerRoutes);
 app.route("/api/lender", lenderWalletRoutes);
 app.route("/api/internal", internalRoutes);
+app.route("/api/notifications", notificationRoutes);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 404 Handler
@@ -110,6 +113,9 @@ app.notFound(notFoundHandler);
 // ─────────────────────────────────────────────────────────────────────────────
 
 const port = Number.parseInt(process.env.PORT || "3001", 10);
+
+// Initialize Jobs
+startCronJobs();
 
 console.log(`
 ╔════════════════════════════════════════════════════════════════╗

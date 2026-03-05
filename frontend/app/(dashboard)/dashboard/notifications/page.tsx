@@ -1,31 +1,20 @@
-import { db } from "@/db";
-import { notifications } from "@/db/schema";
-import { getSession } from "@/lib/session";
-import { eq, desc } from "drizzle-orm";
 import { NotificationsList } from "@/components/dashboard/notifications-list";
 
-export default async function NotificationsPage() {
-    const session = await getSession();
-    const userId = session?.id as string;
-
-    const userNotifications = await db.query.notifications.findMany({
-        where: eq(notifications.userId, userId),
-        orderBy: [desc(notifications.sentAt)],
-    });
-
-    const notificationsData = userNotifications.map(notif => ({
-        ...notif,
-        sentAt: notif.sentAt?.toISOString() || new Date().toISOString(),
-    }));
-
+export default function NotificationsPage() {
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-4xl font-black text-main-green tracking-tight">Notifications</h1>
-                <p className="text-gray-500 font-medium">View all automated messages sent to you and your borrowers.</p>
+        <div className="space-y-12 max-w-[1400px] mx-auto pb-20">
+            <div className="flex flex-col gap-4">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-main-green/5 text-main-green text-[10px] font-black uppercase tracking-widest w-fit">
+                    Activity Logs
+                </div>
+                <h1 className="text-5xl font-black text-main-green tracking-tight">Notification History</h1>
+                <p className="text-gray-500 font-medium text-lg max-w-2xl">
+                    Track all automated messages sent to your borrowers via EMAIL and SMS channels including payment reminders and confirmation alerts.
+                </p>
             </div>
 
-            <NotificationsList initialNotifications={notificationsData} />
+            <NotificationsList />
         </div>
     );
 }
+

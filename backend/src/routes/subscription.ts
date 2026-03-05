@@ -93,7 +93,7 @@ subscription.post(
         email: userRecord.email,
         amount: body.amount * 100, // Convert to kobo
         reference,
-        callbackUrl: body.callbackUrl,
+        callback_url: body.callbackUrl,
         metadata: {
           userId: user.id,
           plan: body.plan,
