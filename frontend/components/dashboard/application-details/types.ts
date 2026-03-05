@@ -8,6 +8,7 @@ export interface Application {
   status: string;
   createdAt: string;
   borrower: {
+    id: string;
     firstName: string;
     lastName: string;
     email: string;

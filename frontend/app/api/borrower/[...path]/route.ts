@@ -6,7 +6,7 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 async function proxyRequest(req: Request, path: string[], method: string) {
   try {
 
-   
+   console.log("GOT HERE PROXY")
     const cookieStore = await cookies();
     // Borrower proxy uses the borrower_token cookie (separate from admin token)
     const token = cookieStore.get("borrower_token")?.value;
@@ -21,8 +21,11 @@ async function proxyRequest(req: Request, path: string[], method: string) {
     // Construct backend URL with /borrower suffix
     // Example: /api/borrower/loans -> BACKEND_URL/api/loans/borrower
     const backendPath = `borrower/${path.join("/")}`;
-
-    const url = `${BACKEND_URL}/api/${backendPath}${search}`;
+    let url
+if(backendPath.includes("documents")){
+  url=`${BACKEND_URL}/api/lender/${backendPath}${search}`;
+}
+    else{url = `${BACKEND_URL}/api/${backendPath}${search}`};
 
     const headers: Record<string, string> = {
       Authorization: `Bearer ${token}`,

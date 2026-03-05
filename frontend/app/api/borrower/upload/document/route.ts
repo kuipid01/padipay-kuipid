@@ -32,14 +32,14 @@ export async function POST(req: NextRequest) {
                 Authorization: `Bearer ${token}` 
             }
         });
-console.log(signRes,"res")
+
         if (!signRes.ok) {
             const errorData = await signRes.json().catch(() => ({}));
             throw new Error(errorData.error || "Failed to get upload signature from backend");
         }
 
         const signData = await signRes.json();
-
+console.log(signData,"res")
         // 2. Upload the file directly to Cloudinary
         const cloudinaryFormData = new FormData();
         cloudinaryFormData.append("file", file);

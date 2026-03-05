@@ -133,41 +133,75 @@ export function DocumentCard({
     title,
     type,
     status,
+    url,
 }: {
     title: string;
     type: string;
     status: string;
+    url?: string;
 }) {
+    const isUploaded = status !== "Not Uploaded";
+
     return (
-        <Card className="border-none shadow-sm rounded-[32px] overflow-hidden group hover:shadow-md transition-all">
-            <div className="h-24 bg-gray-50 flex items-center justify-center relative group-hover:bg-lemon-primary/5 transition-colors">
+        <Card className={cn(
+            "border-none shadow-sm rounded-[32px] overflow-hidden group hover:shadow-md transition-all",
+            !isUploaded && "opacity-70 bg-gray-50/50"
+        )}>
+            <div className={cn(
+                "h-24 flex items-center justify-center relative transition-colors",
+                isUploaded ? "bg-gray-50 group-hover:bg-lemon-primary/5" : "bg-gray-100/30"
+            )}>
                 <FileText
                     size={40}
-                    className="text-gray-200 group-hover:text-lemon-primary transition-colors"
+                    className={cn(
+                        "transition-colors",
+                        isUploaded ? "text-gray-200 group-hover:text-lemon-primary" : "text-gray-100"
+                    )}
                 />
-                <Badge className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm text-[9px] font-black uppercase text-main-green border-none">
+                <Badge className={cn(
+                    "absolute top-3 right-3 text-[9px] font-black uppercase tracking-widest border-none px-2.5 py-1 whitespace-nowrap",
+                    status === "Verified" ? "bg-green-50 text-green-600" :
+                        status === "Pending" ? "bg-orange-50 text-orange-600" :
+                            status === "Not Uploaded" ? "bg-gray-100 text-gray-400" : "bg-red-50 text-red-600"
+                )}>
                     {status}
                 </Badge>
             </div>
             <CardContent className="p-6">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 truncate">
                     {title}
                 </p>
-                <p className="text-sm font-bold text-main-green mb-4">{type}</p>
+                <p className="text-sm font-bold text-main-green mb-4 truncate">{type}</p>
                 <div className="flex gap-2">
                     <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 rounded-xl font-bold h-9"
+                        className="flex-1 rounded-xl font-black h-9 text-[10px] uppercase tracking-wider"
+                        disabled={!isUploaded || !url}
+                        asChild={isUploaded && !!url}
                     >
-                        View
+                        {isUploaded && url ? (
+                            <a href={url} target="_blank" rel="noopener noreferrer">
+                                View
+                            </a>
+                        ) : (
+                            <span>View</span>
+                        )}
                     </Button>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 bg-gray-50 rounded-xl text-gray-400"
+                        className="h-9 w-9 bg-gray-50 rounded-xl text-gray-400 hover:text-main-green transition-colors"
+                        disabled={!isUploaded || !url}
+                        asChild={isUploaded && !!url}
                     >
-                        <Download size={16} />
+                        {isUploaded && url ? (
+                            <a href={url} download>
+                                <Download size={14} />
+                            </a>
+                        ) : (
+                            <Download size={14} />
+                        )}
                     </Button>
                 </div>
             </CardContent>

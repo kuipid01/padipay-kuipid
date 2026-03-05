@@ -145,7 +145,7 @@ export function ApplicationDetails({ application }: ApplicationDetailsProps) {
               totalMonthlyInstallment={totalMonthlyInstallment}
             />
 
-            <DocumentsTab />
+            <DocumentsTab borrowerId={application.borrower.id} />
 
             <RepaymentTab application={application} />
 

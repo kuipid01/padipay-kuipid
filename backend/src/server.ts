@@ -5,7 +5,7 @@ import "dotenv/config";
 
 
 import { errorHandler, notFoundHandler } from "./middleware";
-import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes, uploadRoutes, userRoutes, loanPreferenceRoute, repaymentPlansRoutes, applicationsRoutes, subscriptionRoutes, borrowerRoutes, lenderWalletRoutes, internalRoutes, notificationRoutes,borrowerUploadsRoutes } from "./routes";
+import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes, uploadRoutes, userRoutes, loanPreferenceRoute, repaymentPlansRoutes, applicationsRoutes, subscriptionRoutes, borrowerRoutes, lenderRoutes, internalRoutes, notificationRoutes,borrowerUploadsRoutes } from "./routes";
 import { startCronJobs } from "./jobs/cron";
 import "./jobs/worker"; // Initialize BullMQ Worker
 
@@ -99,7 +99,7 @@ app.route("/api/repayment-plans", repaymentPlansRoutes);
 app.route("/api/applications", applicationsRoutes);
 app.route("/api/subscription", subscriptionRoutes);
 app.route("/api/borrower", borrowerRoutes);
-app.route("/api/lender", lenderWalletRoutes);
+app.route("/api/lender", lenderRoutes);
 app.route("/api/internal", internalRoutes);
 app.route("/api/notifications", notificationRoutes);
 
