@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
@@ -7,7 +7,7 @@ interface RouteParams {
   params: Promise<{ appId: string }>;
 }
 
-export async function GET(req: Request, { params }: RouteParams) {
+export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
     const { appId } = await params;
     const cookieStore = await cookies();
@@ -40,7 +40,7 @@ export async function GET(req: Request, { params }: RouteParams) {
   }
 }
 
-export async function PATCH(req: Request, { params }: RouteParams) {
+export async function PATCH(req: NextRequest, { params }: RouteParams) {
   try {
     const { appId } = await params;
     const cookieStore = await cookies();
@@ -77,7 +77,7 @@ export async function PATCH(req: Request, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(req: Request, { params }: RouteParams) {
+export async function DELETE(req: NextRequest, { params }: RouteParams) {
   try {
     const { appId } = await params;
     const cookieStore = await cookies();

@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { repayments, loans, paymentMethods, borrowers } from "@/db/schema";
 import { chargeRecurring } from "@/lib/paystack";
 import { eq } from "drizzle-orm";
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

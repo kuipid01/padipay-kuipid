@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
@@ -77,27 +77,27 @@ interface RouteParams {
   params: Promise<{ path: string[] }>;
 }
 
-export async function GET(req: Request, { params }: RouteParams) {
+export async function GET(req: NextRequest, { params }: RouteParams) {
   const { path } = await params;
   return proxyRequest(req, path, "GET");
 }
 
-export async function POST(req: Request, { params }: RouteParams) {
+export async function POST(req: NextRequest, { params }: RouteParams) {
   const { path } = await params;
   return proxyRequest(req, path, "POST");
 }
 
-export async function PUT(req: Request, { params }: RouteParams) {
+export async function PUT(req: NextRequest, { params }: RouteParams) {
   const { path } = await params;
   return proxyRequest(req, path, "PUT");
 }
 
-export async function PATCH(req: Request, { params }: RouteParams) {
+export async function PATCH(req: NextRequest, { params }: RouteParams) {
   const { path } = await params;
   return proxyRequest(req, path, "PATCH");
 }
 
-export async function DELETE(req: Request, { params }: RouteParams) {
+export async function DELETE(req: NextRequest, { params }: RouteParams) {
   const { path } = await params;
   return proxyRequest(req, path, "DELETE");
 }
