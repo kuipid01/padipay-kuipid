@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, ShieldCheck, CreditCard, Lock, RefreshCw, Zap, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,8 @@ export function BankStep({ email, onConnect, onSkip, onBack, summary }: BankStep
     const [subStep, setSubStep] = useState<BankSubStep>('explanation');
     const { slug } = useParams();
     const searchParams = useSearchParams();
-
+    const router = useRouter();
+    const pathname = usePathname();
     useEffect(() => {
         const status = searchParams.get('status');
         const step = searchParams.get('step');
@@ -29,6 +30,8 @@ export function BankStep({ email, onConnect, onSkip, onBack, summary }: BankStep
             setSubStep('success');
             setTimeout(() => {
                 onConnect({ bankConnected: true });
+                // clear query params
+                router.replace(pathname);
             }, 3000);
         }
     }, [searchParams, onConnect]);

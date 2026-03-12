@@ -153,11 +153,11 @@ const navItems: NavItem[] = [
     icon: <Shield size={18} />,
     badge: "Recommended",
   },
-  {
-    id: "payments",
-    label: "Payments & Payouts",
-    icon: <CreditCard size={18} />,
-  },
+  // {
+  //   id: "payments",
+  //   label: "Payments & Payouts",
+  //   icon: <CreditCard size={18} />,
+  // },
   { id: "loans", label: "Loan Preferences", icon: <FileText size={18} /> },
   // { id: "integrations", label: "Integrations", icon: <Zap size={18} /> },
   { id: "notifications", label: "Notifications", icon: <Bell size={18} /> },

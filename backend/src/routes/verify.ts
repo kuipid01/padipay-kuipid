@@ -9,6 +9,7 @@ import {
 } from "../utils/dojah";
 import { NewApplicationSchema } from "../zod-schemas/applications";
 import { zValidator } from "@hono/zod-validator";
+import { verifyAuthenticity } from "../utils/user-verify-via-bvn";
 
 const router = new Hono();
 
@@ -139,11 +140,19 @@ router.post("/login", async (c) => {
 // Verify BVN + Fetch Credit Data
 router.post("/bvn", async (c) => {
   try {
-    const { bvn, phone, email } = await c.req.json();
+    const { bvn, phone, email, slug } = await c.req.json();
 
     if (!bvn) {
       return c.json({ status: "error", message: "BVN is required" }, 400);
     }
+    console.log("WE ARE HERE,")
+    // const {valid,reason} = await verifyAuthenticity({bvn,phone,email,slug})
+    const valid = true
+    const reason = ""
+     console.log("WE ARE HERE again,", valid, reason)
+    // if(!valid){
+    //     return c.json({ status: "error", message: reason }, 400);
+    // }
 
     // 1. Verify BVN
     const result = await verifyBVN(bvn);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { calculateRepayment } from "@/lib/utils/loan-math";
@@ -28,7 +28,7 @@ import { CreditScoreStep } from "./_components/credit-score-step";
 function PublicLoanForm() {
   const { slug } = useParams();
   const router = useRouter();
-
+  const searchParams = useSearchParams();
   // Core State
   const [app, setApp] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -83,10 +83,17 @@ function PublicLoanForm() {
         if (!res.ok) throw new Error(data.error);
 
         setApp(data);
+
+        // Recover persisted data if state was lost
+        const savedEmail = localStorage.getItem(`padi_loan_email_${slug}`);
+        const savedPhone = localStorage.getItem(`padi_loan_phone_${slug}`);
+
         // Set default amount and plan from JSON data
         if (data.minLoanAmount) {
           setFormData((prev) => ({
             ...prev,
+            email: savedEmail || prev.email,
+            phone: savedPhone || prev.phone,
             amount: data.minLoanAmount,
             planId:
               data.repaymentPlans?.find((p: any) => p.isDefault)?.id ||
@@ -101,7 +108,15 @@ function PublicLoanForm() {
     }
     fetchApp();
   }, [slug]);
+  useEffect(() => {
+    const status = searchParams.get('status');
+    const step = searchParams.get('step');
 
+    if (step === 'bank') {
+      setCurrentStep("bank");
+
+    }
+  }, [searchParams, formData,]);
   // OTP Countdown
   useEffect(() => {
     if (otpCountdown > 0) {
@@ -244,15 +259,23 @@ function PublicLoanForm() {
       const res = await fetch(`/api/verify/bvn`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bvn: formData.bvn, phone: formData.phone, email: formData.email }),
+        body: JSON.stringify({ bvn: formData.bvn, phone: formData.phone, email: formData.email, slug: slug }),
       });
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "BVN verification failed");
+      if (!res.ok) throw new Error(result.error || result.message || "BVN verification failed");
+      console.log(result, "reult")
+
+      // Persist identified user details
+      localStorage.setItem(`padi_loan_email_${slug}`, formData.email);
+      localStorage.setItem(`padi_loan_phone_${slug}`, formData.phone);
 
       setStatus((prev) => ({ ...prev, bvnVerified: true }));
       toast.success("Identity verified!");
       setTimeout(nextStep, 500);
     } catch (err: any) {
+      if (err.message === "BVN already used on this loan app with different identity details") {
+        router.push("/borrower/login")
+      }
       toast.error(err.message);
     } finally {
       setActionLoading(false);

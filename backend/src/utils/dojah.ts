@@ -4,7 +4,7 @@ const DOJAH_BASE_URL = "https://api.dojah.io/api/v1";
 const DOJAH_APP_ID = process.env.DOJAH_APP_ID;
 const DOJAH_SECRET_KEY = process.env.DOJAH_SECRET_KEY;
 
-const dojahRequest = async (endpoint: string, params: Record<string, string> = {},timeout = 10000) => {
+const dojahRequest = async (endpoint: string, params: Record<string, string> = {},timeout = 500000) => {
   try {
     const response = await axios.get(`${DOJAH_BASE_URL}${endpoint}`, {
       params,

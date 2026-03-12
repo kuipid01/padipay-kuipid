@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: data.error || "Failed to verify BVN" },
+        { error: data.error || data.message || "Failed to verify BVN" },
         { status: response?.status },
       );
     }

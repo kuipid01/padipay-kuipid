@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "./section-header";
 import { toast } from "sonner";
 
@@ -101,7 +102,7 @@ export const LoanPreferenceSection = () => {
       </Card>
 
       {/* ================= Documents ================= */}
-      <ToggleCard
+      {/* <ToggleCard
         title="Documents Required"
         icon={<ClipboardCheck size={18} />}
         items={[
@@ -113,7 +114,7 @@ export const LoanPreferenceSection = () => {
         ]}
         preferences={preferences}
         onToggle={updatePreference}
-      />
+      /> */}
 
       {/* ================= Verifications ================= */}
       <ToggleCard
@@ -130,20 +131,29 @@ export const LoanPreferenceSection = () => {
       />
 
       {/* ================= Auto Approve ================= */}
-      <Card className="border-none shadow-sm rounded-[32px] bg-gray-50/50">
+      <Card className="border-none shadow-sm rounded-[32px] bg-gray-50/50 relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-1 w-full bg-orange-400/20" />
         <CardHeader className="p-8 flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-black text-main-green">
-              Auto-Approve Engine
-            </CardTitle>
+            <div className="flex items-center gap-3 mb-1">
+              <CardTitle className="text-lg font-black text-main-green">
+                Auto-Approve Engine
+              </CardTitle>
+              <Badge variant="secondary" className="bg-orange-50 text-orange-600 text-[10px] font-black border-none uppercase tracking-widest">
+                Coming Soon
+              </Badge>
+            </div>
             <CardDescription className="text-gray-500 max-w-md">
               Automatically approve applications that meet all requirements.
+              <span className="block mt-2 font-bold text-orange-600/80 text-xs italic">
+                Currently unavailable. Only manual payment/disbursement is supported.
+              </span>
             </CardDescription>
           </div>
           <Switch
-            checked={preferences.autoApproveEnabled}
-            onCheckedChange={(v) => updatePreference({ autoApproveEnabled: v })}
-            className="data-[state=checked]:bg-main-green"
+            disabled
+            checked={false}
+            className="data-[state=checked]:bg-main-green opacity-50 cursor-not-allowed"
           />
         </CardHeader>
       </Card>

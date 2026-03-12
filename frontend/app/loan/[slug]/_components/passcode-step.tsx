@@ -16,7 +16,7 @@ interface PasscodeStepProps {
 export function PasscodeStep({ formData, update, onNext, onBack }: PasscodeStepProps) {
     const [confirmPasscode, setConfirmPasscode] = useState("");
     const [error, setError] = useState("");
-
+    const [pending, setPending] = useState(false)
     const handleContinue = async () => {
         if (formData.passcode.length < 6) {
             setError("Passcode must be 6 digits");
@@ -26,6 +26,8 @@ export function PasscodeStep({ formData, update, onNext, onBack }: PasscodeStepP
             setError("Passcodes do not match");
             return;
         }
+        setPending(true)
+
         const res = await fetch("/api/auth/passcode", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -33,10 +35,13 @@ export function PasscodeStep({ formData, update, onNext, onBack }: PasscodeStepP
                 passcode: formData.passcode, email: formData.email, phone: formData.phone
             }),
         });
+        setPending(false)
         if (res.ok) {
+            setPending(false)
             onNext();
         }
         else {
+            setPending(false)
             toast.error("Failed to set passcode , please try again later ")
         }
     };
@@ -99,10 +104,10 @@ export function PasscodeStep({ formData, update, onNext, onBack }: PasscodeStepP
 
                 <Button
                     onClick={handleContinue}
-                    disabled={formData.passcode.length < 6 || confirmPasscode.length < 6}
+                    disabled={formData.passcode.length < 6 || confirmPasscode.length < 6 || pending}
                     className="w-full h-16 rounded-[24px] bg-main-green text-white text-lg font-black"
                 >
-                    Set Passcode <ArrowRight className="ml-2" />
+                    {pending ? "Setting Passcode..." : "Set Passcode"} <ArrowRight className="ml-2" />
                 </Button>
             </div>
 

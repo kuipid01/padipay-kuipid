@@ -28,7 +28,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DashboardStats {
     totalMoneyLent: string;
@@ -62,32 +63,47 @@ interface Activity {
 }
 
 export function OverviewClient() {
-    const { data: stats } = useQuery<DashboardStats>({
+    const { data: stats, isLoading: isLoadingStats } = useQuery<DashboardStats>({
         queryKey: ["dashboard-stats"],
         queryFn: () => fetch("/api/dashboard/stats").then((res) => res.json()),
     });
 
-    const { data: activeLoans } = useQuery<ActiveLoan[]>({
+    const { data: activeLoans, isLoading: isLoadingLoans } = useQuery<ActiveLoan[]>({
         queryKey: ["active-loans"],
         queryFn: () => fetch("/api/dashboard/active-loans").then((res) => res.json()),
     });
 
-    console.log(activeLoans, "activeLoans")
-    const { data: upcomingPayments } = useQuery<UpcomingPayment[]>({
+    const { data: upcomingPayments, isLoading: isLoadingPayments } = useQuery<UpcomingPayment[]>({
         queryKey: ["upcoming-payments"],
         queryFn: () => fetch("/api/dashboard/upcoming-payments").then((res) => res.json()),
     });
 
-    const { data: recentActivity } = useQuery<Activity[]>({
+    const { data: recentActivity, isLoading: isLoadingActivity } = useQuery<Activity[]>({
         queryKey: ["recent-activity"],
         queryFn: () => fetch("/api/dashboard/recent-activity").then((res) => res.json()),
     });
 
+    const safeFormatDate = (dateStr: string | undefined, formatStr: string) => {
+        if (!dateStr) return "N/A";
+        try {
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return "N/A";
+            return format(date, formatStr);
+        } catch (e) {
+            return "N/A";
+        }
+    };
+
+    const formatCurrency = (amount: string | number | undefined) => {
+        const val = Number(amount || 0);
+        return `₦${val.toLocaleString()}`;
+    };
+
     const topStats = [
-        { label: "Total Money Lent", value: `₦${Number(stats?.totalMoneyLent || 0).toLocaleString()}`, icon: <CreditCard className="text-blue-500" />, trend: "+12.5%", color: "bg-blue-50" },
-        { label: "Expected Repayment", value: `₦${Number(stats?.expectedRepayment || 0).toLocaleString()}`, icon: <TrendingUp className="text-violet-500" />, trend: "+15.0%", color: "bg-violet-50" },
-        { label: "Amount Repaid", value: `₦${Number(stats?.amountRepaid || 0).toLocaleString()}`, icon: <ArrowDownLeft className="text-green-500" />, trend: "60% success", color: "bg-green-50" },
-        { label: "Outstanding Balance", value: `₦${Number(stats?.outstandingBalance || 0).toLocaleString()}`, icon: <Clock className="text-orange-500" />, trend: "40% left", color: "bg-orange-50" },
+        { label: "Total Money Lent", value: formatCurrency(stats?.totalMoneyLent), icon: <CreditCard className="text-blue-500" />, trend: "+12.5%", color: "bg-blue-50" },
+        { label: "Expected Repayment", value: formatCurrency(stats?.expectedRepayment), icon: <TrendingUp className="text-violet-500" />, trend: "+15.0%", color: "bg-violet-50" },
+        { label: "Amount Repaid", value: formatCurrency(stats?.amountRepaid), icon: <ArrowDownLeft className="text-green-500" />, trend: "60% success", color: "bg-green-50" },
+        { label: "Outstanding Balance", value: formatCurrency(stats?.outstandingBalance), icon: <Clock className="text-orange-500" />, trend: "40% left", color: "bg-orange-50" },
     ];
 
     return (
@@ -95,30 +111,42 @@ export function OverviewClient() {
             {/* 1. Top Summary (Money Snapshot) & 7. Wallet */}
             <div className="flex flex-col gap-6">
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                    {topStats.map((stat, i) => (
-                        <motion.div
-                            key={stat.label}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                        >
-                            <Card className="border-main-green/20 shadow-sm hover:shadow-md transition-shadow group overflow-hidden">
-                                <CardContent className="p-6 flex flex-col justify-between relative">
-                                    <div className={cn("absolute top-0 right-0 m-4 w-fit h-fit opacity-20 group-hover:scale-110 transition-transform duration-500 group-hover:opacity-50", stat.color)}>
-                                        {stat.icon}
-                                    </div>
-                                    <p className="text-xs font-black text-gray-700 uppercase tracking-widest mb-1">{stat.label}</p>
-                                    <h3 className="text-2xl font-black text-main-green">{stat.value}</h3>
-                                    <div className="mt-4 flex items-center gap-2">
-                                        <Badge variant="secondary" className="bg-green-50 text-green-600 text-[10px] font-black border-none">
-                                            {stat.trend}
-                                        </Badge>
-                                        <span className="text-[10px] font-bold text-gray-400">vs last month</span>
-                                    </div>
+                    {isLoadingStats ? (
+                        Array.from({ length: 4 }).map((_, i) => (
+                            <Card key={i} className="border-main-green/20 shadow-sm overflow-hidden">
+                                <CardContent className="p-6">
+                                    <Skeleton className="h-3 w-24 mb-2" />
+                                    <Skeleton className="h-8 w-32 mb-4" />
+                                    <Skeleton className="h-4 w-16" />
                                 </CardContent>
                             </Card>
-                        </motion.div>
-                    ))}
+                        ))
+                    ) : (
+                        topStats.map((stat, i) => (
+                            <motion.div
+                                key={stat.label}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                            >
+                                <Card className="border-main-green/20 shadow-sm hover:shadow-md transition-shadow group overflow-hidden">
+                                    <CardContent className="p-6 flex flex-col justify-between relative">
+                                        <div className={cn("absolute top-0 right-0 m-4 w-fit h-fit opacity-20 group-hover:scale-110 transition-transform duration-500 group-hover:opacity-50", stat.color)}>
+                                            {stat.icon}
+                                        </div>
+                                        <p className="text-xs font-black text-gray-700 uppercase tracking-widest mb-1">{stat.label}</p>
+                                        <h3 className="text-2xl font-black text-main-green">{stat.value}</h3>
+                                        <div className="mt-4 flex items-center gap-2">
+                                            <Badge variant="secondary" className="bg-green-50 text-green-600 text-[10px] font-black border-none">
+                                                {stat.trend}
+                                            </Badge>
+                                            <span className="text-[10px] font-bold text-gray-400">vs last month</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        ))
+                    )}
                 </div>
                 <div className="flex flex-col lg:flex-row w-full justify-between gap-6 lg:gap-10">
                     <motion.div
@@ -157,31 +185,47 @@ export function OverviewClient() {
                     <div className="w-full max-h-[80vh] overflow-y-auto lg:w-[400px]">
                         <h2 className="text-xl font-black text-main-green tracking-tight mb-6">Upcoming Payments</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                            {upcomingPayments?.map((payment, i) => (
-                                <motion.div
-                                    key={payment.id}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: i * 0.1 }}
-                                    className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex gap-4 relative overflow-hidden group"
-                                >
-                                    <div className="absolute top-0 right-0 h-full w-1.5 bg-lemon-primary" />
-                                    <div className="size-12 rounded-2xl bg-gray-50 flex flex-col items-center justify-center border border-gray-100 text-main-green shrink-0">
-                                        <span className="text-[10px] font-black uppercase text-gray-400 leading-none mb-1">{format(new Date(payment.dueDate), "MMM")}</span>
-                                        <span className="text-lg font-black leading-none">{format(new Date(payment.dueDate), "dd")}</span>
-                                    </div>
-                                    <div className="min-w-0">
-                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                            <h4 className="font-bold text-main-green truncate">₦{Number(payment.amount).toLocaleString()}</h4>
-                                            <Badge variant="outline" className="text-[9px] font-black uppercase border-gray-100">{payment.method}</Badge>
+                            {isLoadingPayments ? (
+                                Array.from({ length: 3 }).map((_, i) => (
+                                    <div key={i} className="p-5 bg-white rounded-3xl border border-gray-100 flex gap-4">
+                                        <Skeleton className="size-12 rounded-2xl shrink-0" />
+                                        <div className="flex-1 space-y-2">
+                                            <Skeleton className="h-4 w-full" />
+                                            <Skeleton className="h-3 w-1/2" />
                                         </div>
-                                        <p className="text-sm text-gray-500 font-medium truncate">{payment.borrower}</p>
-                                        <p className="text-[10px] text-gray-400 font-bold mt-2 flex items-center gap-1">
-                                            <Clock size={10} /> Due {format(new Date(payment.dueDate), "h:mm a")}
-                                        </p>
                                     </div>
-                                </motion.div>
-                            ))}
+                                ))
+                            ) : upcomingPayments && upcomingPayments.length > 0 ? (
+                                upcomingPayments.map((payment, i) => (
+                                    <motion.div
+                                        key={payment.id}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: i * 0.1 }}
+                                        className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex gap-4 relative overflow-hidden group"
+                                    >
+                                        <div className="absolute top-0 right-0 h-full w-1.5 bg-lemon-primary" />
+                                        <div className="size-12 rounded-2xl bg-gray-50 flex flex-col items-center justify-center border border-gray-100 text-main-green shrink-0">
+                                            <span className="text-[10px] font-black uppercase text-gray-400 leading-none mb-1">{safeFormatDate(payment.dueDate, "MMM")}</span>
+                                            <span className="text-lg font-black leading-none">{safeFormatDate(payment.dueDate, "dd")}</span>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                <h4 className="font-bold text-main-green truncate">{formatCurrency(payment.amount)}</h4>
+                                                <Badge variant="outline" className="text-[9px] font-black uppercase border-gray-100">{payment.method || "N/A"}</Badge>
+                                            </div>
+                                            <p className="text-sm text-gray-500 font-medium truncate">{payment.borrower || "Unknown Borrower"}</p>
+                                            <p className="text-[10px] text-gray-400 font-bold mt-2 flex items-center gap-1">
+                                                <Clock size={10} /> Due {safeFormatDate(payment.dueDate, "h:mm a")}
+                                            </p>
+                                        </div>
+                                    </motion.div>
+                                ))
+                            ) : (
+                                <div className="p-10 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                                    <p className="text-sm text-gray-400 font-medium">No upcoming payments</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -212,37 +256,55 @@ export function OverviewClient() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {activeLoans?.map((loan) => (
-                                        <TableRow key={loan.id} className="hover:bg-gray-50/50 transition-colors border-gray-100 group">
-                                            <TableCell className="px-6 py-4">
-                                                <p className="font-bold text-main-green group-hover:text-primary transition-colors whitespace-nowrap">{loan.borrower}</p>
-                                            </TableCell>
-                                            <TableCell className="py-4">
-                                                <p className="font-bold whitespace-nowrap">₦{Number(loan.amount).toLocaleString()}</p>
-                                                <p className="text-[10px] text-gray-400 font-medium">at {loan.interest}% interest</p>
-                                            </TableCell>
-                                            <TableCell className="py-4">
-                                                <Badge
-                                                    className={cn(
-                                                        "font-bold text-[10px] border-none whitespace-nowrap",
-                                                        loan.status === "On Track" && "bg-green-50 text-green-600",
-                                                        loan.status === "Due Soon" && "bg-orange-50 text-orange-600",
-                                                        loan.status === "Overdue" && "bg-red-50 text-red-600"
-                                                    )}
-                                                >
-                                                    {loan.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="py-4 text-gray-500 font-medium text-sm whitespace-nowrap">
-                                                {format(new Date(loan.dueDate), "yyyy-MM-dd")}
-                                            </TableCell>
-                                            <TableCell className="px-6 py-4 text-right">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400">
-                                                    <MoreHorizontal size={18} />
-                                                </Button>
+                                    {isLoadingLoans ? (
+                                        Array.from({ length: 5 }).map((_, i) => (
+                                            <TableRow key={i} className="border-gray-100">
+                                                <TableCell className="px-6 py-4"><Skeleton className="h-5 w-32" /></TableCell>
+                                                <TableCell className="py-4"><Skeleton className="h-5 w-24" /></TableCell>
+                                                <TableCell className="py-4"><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                                                <TableCell className="py-4"><Skeleton className="h-5 w-28" /></TableCell>
+                                                <TableCell className="px-6 py-4 text-right"><Skeleton className="h-8 w-8 rounded-md inline-block" /></TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : activeLoans && activeLoans.length > 0 ? (
+                                        activeLoans.map((loan) => (
+                                            <TableRow key={loan.id} className="hover:bg-gray-50/50 transition-colors border-gray-100 group">
+                                                <TableCell className="px-6 py-4">
+                                                    <p className="font-bold text-main-green group-hover:text-primary transition-colors whitespace-nowrap">{loan.borrower || "Unknown Borrower"}</p>
+                                                </TableCell>
+                                                <TableCell className="py-4">
+                                                    <p className="font-bold whitespace-nowrap">{formatCurrency(loan.amount)}</p>
+                                                    <p className="text-[10px] text-gray-400 font-medium">at {loan.interest || 0}% interest</p>
+                                                </TableCell>
+                                                <TableCell className="py-4">
+                                                    <Badge
+                                                        className={cn(
+                                                            "font-bold text-[10px] border-none whitespace-nowrap",
+                                                            (loan.status === "On Track" || !loan.status) && "bg-green-50 text-green-600",
+                                                            loan.status === "Due Soon" && "bg-orange-50 text-orange-600",
+                                                            loan.status === "Overdue" && "bg-red-50 text-red-600"
+                                                        )}
+                                                    >
+                                                        {loan.status || "On Track"}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="py-4 text-gray-500 font-medium text-sm whitespace-nowrap">
+                                                    {safeFormatDate(loan.dueDate, "yyyy-MM-dd")}
+                                                </TableCell>
+                                                <TableCell className="px-6 py-4 text-right">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400">
+                                                        <MoreHorizontal size={18} />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="h-32 text-center">
+                                                <p className="text-sm text-gray-400 font-medium">No active loans found</p>
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                    )}
                                 </TableBody>
                             </Table>
                         </div>
@@ -317,17 +379,30 @@ export function OverviewClient() {
                     <div>
                         <h2 className="text-xl font-black text-main-green tracking-tight mb-6">Recent Activity</h2>
                         <div className="relative pl-6 space-y-6 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
-                            {recentActivity?.map((activity, i) => (
-                                <div key={i} className="relative group">
-                                    <div className="absolute -left-6 top-1.5 size-3 rounded-full border-2 border-white bg-lemon-primary ring-4 ring-lemon-primary/20 z-10" />
-                                    <div>
-                                        <p className="text-sm font-bold text-gray-700 leading-snug group-hover:text-main-green transition-colors">{activity.text}</p>
-                                        <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">
-                                            {format(new Date(activity.time), "MMM d, h:mm a")}
-                                        </p>
+                            {isLoadingActivity ? (
+                                Array.from({ length: 4 }).map((_, i) => (
+                                    <div key={i} className="relative pl-2">
+                                        <Skeleton className="h-4 w-full mb-1" />
+                                        <Skeleton className="h-3 w-24" />
                                     </div>
+                                ))
+                            ) : recentActivity && recentActivity.length > 0 ? (
+                                recentActivity.map((activity, i) => (
+                                    <div key={i} className="relative group">
+                                        <div className="absolute -left-6 top-1.5 size-3 rounded-full border-2 border-white bg-lemon-primary ring-4 ring-lemon-primary/20 z-10" />
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-700 leading-snug group-hover:text-main-green transition-colors">{activity.text || "No activity text"}</p>
+                                            <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-wider">
+                                                {safeFormatDate(activity.time, "MMM d, h:mm a")}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="p-6 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">No recent activity</p>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 </div>
