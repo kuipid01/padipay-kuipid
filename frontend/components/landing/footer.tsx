@@ -16,7 +16,7 @@ export function LandingFooter() {
                             <div className="size-8 bg-main-green rounded-lg flex items-center justify-center">
                                 <span className="text-lemon-primary font-black text-xl">P</span>
                             </div>
-                            <span className="text-2xl font-black text-main-green tracking-tight">Padi-Loan</span>
+                            <span className="text-2xl font-black text-main-green tracking-tight">MyCashNG</span>
                         </Link>
 
                         <p className="text-gray-500 text-md font-medium leading-relaxed max-w-md">
@@ -97,7 +97,7 @@ export function LandingFooter() {
                 {/* Bottom Bar */}
                 <div className="pt-10 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
                     <p className="text-gray-400 text-sm font-bold">
-                        2026 Padi-Loan. All rights reserved.
+                        2026 MyCashNG. All rights reserved.
                     </p>
 
                     <div className="flex gap-4">

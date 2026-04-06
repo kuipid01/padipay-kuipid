@@ -6,7 +6,7 @@ export function Testimonials() {
         {
             name: "Chinwendu Okafor",
             role: "CEO, Winspread Capital",
-            text: "PadiLoan has completely transformed our lending operations. The automated card authorization and repayment system have reduced our default rates by over 60%. We can now focus on scaling our portfolio while the system handles the heavy lifting of collections.",
+            text: "MyCashNG has completely transformed our lending operations. The automated card authorization and repayment system have reduced our default rates by over 60%. We can now focus on scaling our portfolio while the system handles the heavy lifting of collections.",
             avatar: "CO",
             image: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80&w=200&h=200",
             brand: "Winspread"
@@ -34,7 +34,7 @@ export function Testimonials() {
                         Empowering Lenders Across Nigeria
                     </h2>
                     <p className="text-gray-500 max-w-2xl mx-auto font-medium text-lg">
-                        Join the growing network of lenders who trust PadiLoan to automate their operations, manage risk, and scale their business effortlessly.
+                        Join the growing network of lenders who trust MyCashNG to automate their operations, manage risk, and scale their business effortlessly.
                     </p>
                 </div>
 

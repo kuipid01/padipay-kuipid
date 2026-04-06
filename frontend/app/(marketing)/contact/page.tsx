@@ -58,13 +58,13 @@ export default function ContactPage() {
                                     <ContactCard
                                         icon={<Mail className="text-main-green" size={20} />}
                                         title="Email us"
-                                        detail="support@padiloan.com"
+                                        detail="support@MyCashNG.com"
                                         subDetail="Expect a response within 24 hours"
                                     />
                                     <ContactCard
                                         icon={<Phone className="text-main-green" size={20} />}
                                         title="Call us"
-                                        detail="+234 (0) 800-PADI-LOAN"
+                                        detail="+234 (0) 800-MyCashNG"
                                         subDetail="Mon-Fri from 8am to 5pm"
                                     />
                                     <ContactCard

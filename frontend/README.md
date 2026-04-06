@@ -1,14 +1,14 @@
-# PadiLoan 🚀
+# MyCashNG 🚀
 **Your Peer-to-Peer Loan Infrastructure, Simplified.**
 
-PadiLoan is a professional lending infrastructure platform built for modern lenders. Whether you are a micro-finance institution or an informal lender, PadiLoan provides the tools to manage applications, automate collections, and track repayments with zero operational headaches.
+MyCashNG is a professional lending infrastructure platform built for modern lenders. Whether you are a micro-finance institution or an informal lender, MyCashNG provides the tools to manage applications, automate collections, and track repayments with zero operational headaches.
 
 ---
 
 ## ✨ Key Features
 
 ### 🏦 For Lenders
-- **Custom Loan Landing Pages**: Create your own public loan application links (e.g., `padiloan.com/your-slug`) in seconds.
+- **Custom Loan Landing Pages**: Create your own public loan application links (e.g., `MyCashNG.com/your-slug`) in seconds.
 - **Automated Collections**: Integration with **Paystack** for secure, automated recurring charges.
 - **Verification Engine**: Built-in verification steps to ensure borrower credibility.
 - **Rich Dashboard**: Track every app, individual application, and repayment schedule with real-time analytics.
@@ -40,7 +40,7 @@ PadiLoan is a professional lending infrastructure platform built for modern lend
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/kuipid01/padipay-kuipid.git
-cd padi-loan
+cd MyCashNG
 ```
 
 ### 2. Install dependencies

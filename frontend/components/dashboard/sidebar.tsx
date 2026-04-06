@@ -52,6 +52,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useUser } from "../../hooks/use-user";
+import { logoutUser } from "../../lib/logout";
 
 interface DashboardSidebarProps {
   setUpgradeModal: Dispatch<SetStateAction<boolean>>;
@@ -298,6 +299,7 @@ export function DashboardHeader() {
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  console.log(user, "USER")
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -447,13 +449,13 @@ export function DashboardHeader() {
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="rounded-xl font-bold text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer"
-              onClick={() => router.push("/login")}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </DropdownMenuItem>
+            <form action={logoutUser}>
+              <DropdownMenuItem asChild>
+                <button type="submit" className="w-full text-red-700 font-bold text-left">
+                  <LogOut className="mr-2 h-4 w-4 text-red-500" />   Logout
+                </button>
+              </DropdownMenuItem>
+            </form>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

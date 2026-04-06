@@ -1,26 +1,30 @@
 import { db, lenderWallets, lenderFundings, walletTransactions, users } from "../../db";
 import { eq, sql } from "drizzle-orm";
 import { paystackService } from "../../utils/paystack";
+import { logger } from "hono/logger";
 
 export class LenderWalletService {
   /**
    * Get or create a wallet for a lender
    */
-  async getOrCreateWallet(lenderId: string, tx: any = db) {
-    let [wallet] = await tx
-      .select()
-      .from(lenderWallets)
-      .where(eq(lenderWallets.lenderId, lenderId))
-      .limit(1);
+async getOrCreateWallet(lenderId: string, tx: any = db) {
+  const [wallet] = await tx
+    .insert(lenderWallets)
+    .values({ lenderId })
+    .onConflictDoNothing()
+    .returning();
 
-    if (!wallet) {
-      [wallet] = await tx
-        .insert(lenderWallets)
-        .values({ lenderId })
-        .returning();
-    }
-    return wallet;
-  }
+  if (wallet) return wallet;
+
+  // If insert failed due to conflict, fetch existing
+  const [existingWallet] = await tx
+    .select()
+    .from(lenderWallets)
+    .where(eq(lenderWallets.lenderId, lenderId))
+    .limit(1);
+
+  return existingWallet;
+}
 
   /**
    * Initiate a funding transaction
@@ -58,65 +62,88 @@ export class LenderWalletService {
     };
   }
 
-  /**
+
+/**
    * Process a successful funding via Paystack webhook
    * This is the "Source of Truth" moment where funds enter the wallet
    */
   async processSuccessfulFunding(reference: string, payload: any) {
-    return await db.transaction(async (tx) => {
-      // 1. Find the funding record
-      const [funding] = await tx
-        .select()
-        .from(lenderFundings)
-        .where(eq(lenderFundings.reference, reference))
-        .for("update") // Lock the row for safety
-        .limit(1);
+    console.log(`[Funding] Starting process for ref: ${reference}`);
 
-      if (!funding) throw new Error("Funding record not found");
-      if (funding.status === "confirmed") return funding;
+    try {
+      return await db.transaction(async (tx) => {
+        // 1. Find the funding record
+        const [funding] = await tx
+          .select()
+          .from(lenderFundings)
+          .where(eq(lenderFundings.reference, reference))
+          .for("update") 
+          .limit(1);
 
-      const paystackFee = payload.fees || 0;
-      
-      // Platform fee: 2% of gross amount, capped at ₦1000 (100,000 kobo)
-      const calculatedFee = Math.round(funding.grossAmount * 0.02);
-      const platformFee = Math.min(calculatedFee, 100000); 
+        if (!funding) {
+          console.error(`[Funding] Error: Record not found for ref: ${reference}`);
+          throw new Error("Funding record not found");
+        }
 
-      const netAmount = funding.grossAmount - paystackFee - platformFee;
+        if (funding.status === "confirmed") {
+          console.warn(`[Funding] Skip: Ref ${reference} is already confirmed.`);
+          return funding;
+        }
 
-      // 2. Update funding status
-      await tx
-        .update(lenderFundings)
-        .set({
-          status: "confirmed",
-          paystackFee,
-          platformFee,
-          netAmount,
-          metadata: payload,
-          confirmedAt: new Date(),
-        })
-        .where(eq(lenderFundings.id, funding.id));
+        const paystackFee = payload.fees || 0;
+        
+        // Platform fee: 2% of gross amount, capped at ₦2000 (200,000 kobo)
+        const calculatedFee = Math.round(funding.grossAmount * 0.02);
+        const platformFee = Math.min(calculatedFee, 200000); 
 
-      // 3. Credit wallet balance (the "available" balance column)
-      const wallet = await this.getOrCreateWallet(funding.lenderId, tx);
-      const newBalance = wallet.balance + netAmount;
+        const netAmount = funding.grossAmount - paystackFee - platformFee;
 
-      await tx
-        .update(lenderWallets)
-        .set({ balance: newBalance })
-        .where(eq(lenderWallets.id, wallet.id));
+        console.log(`[Funding] Calculation for ${reference}: Gross: ${funding.grossAmount}, PaystackFee: ${paystackFee}, PlatformFee: ${platformFee}, Net: ${netAmount}`);
 
-      // 4. Record ledger entry
-      await tx.insert(walletTransactions).values({
-        walletId: wallet.id,
-        type: "funding_credit",
-        amount: netAmount,
-        reference: funding.reference,
-        balanceAfter: newBalance,
-        metadata: { fundingId: funding.id, paystackPayload: payload },
+        // 2. Update funding status
+        await tx
+          .update(lenderFundings)
+          .set({
+            status: "confirmed",
+            paystackFee,
+            platformFee,
+            netAmount,
+            metadata: payload,
+            confirmedAt: new Date(),
+          })
+          .where(eq(lenderFundings.id, funding.id));
+
+        // 3. Credit wallet balance
+        const wallet = await this.getOrCreateWallet(funding.lenderId, tx);
+
+        console.log(funding.lenderId, " WE ARE TRYING TO FIGURE OUTLENDER")
+        console.log(wallet, " WE ARE TRYING TO FIGURE wallet")
+        const oldBalance = wallet.balance;
+        const newBalance = oldBalance + netAmount;
+
+        await tx
+          .update(lenderWallets)
+          .set({ balance: newBalance })
+          .where(eq(lenderWallets.id, wallet.id));
+
+        // 4. Record ledger entry
+        await tx.insert(walletTransactions).values({
+          walletId: wallet.id,
+          type: "funding_credit",
+          amount: netAmount,
+          reference: funding.reference,
+          balanceAfter: newBalance,
+          metadata: { fundingId: funding.id, paystackPayload: payload },
+        });
+
+        console.log(`[Funding] Success: Wallet ${wallet.id} updated. Balance: ${oldBalance} -> ${newBalance}`);
+
+        return { ...funding, status: "confirmed", netAmount };
       });
-
-      return { ...funding, status: "confirmed", netAmount };
-    });
+    } catch (error) {
+      console.error(`[Funding] Transaction Failed for ref: ${reference}`, error);
+      throw error;
+    }
   }
 
   /**

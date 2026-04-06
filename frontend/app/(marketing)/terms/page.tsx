@@ -7,7 +7,7 @@ export default function TermsPage() {
 
                 <section>
                     <h2 className="text-2xl font-bold text-main-green">1. Acceptance of Terms</h2>
-                    <p>By accessing or using Padi-Loan, you agree to be bound by these Terms of Service.</p>
+                    <p>By accessing or using MyCashNG, you agree to be bound by these Terms of Service.</p>
                 </section>
 
                 <section>

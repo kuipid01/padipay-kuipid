@@ -15,11 +15,11 @@ export function Faq() {
         },
         {
             q: "Is my money safe?",
-            a: "PadiLoan is an infrastructure provider. We don't hold your lending capital. Payments go directly to your linked Paystack account, ensuring you have full control over your funds."
+            a: "MyCashNG is an infrastructure provider. We don't hold your lending capital. Payments go directly to your linked Paystack account, ensuring you have full control over your funds."
         },
         {
             q: "Can I use it for informal lending?",
-            a: "Absolutely! PadiLoan is designed for both formal micro-finance institutions and informal lenders who want a professional way to manage loans to friends, family, or employees."
+            a: "Absolutely! MyCashNG is designed for both formal micro-finance institutions and informal lenders who want a professional way to manage loans to friends, family, or employees."
         },
         {
             q: "What happen if a payment fails?",

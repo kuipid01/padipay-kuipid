@@ -71,29 +71,32 @@ function LoginForm() {
   }
 
   return (
-    <div className="h-screen overflow-hidden grid grid-cols-1 lg:grid-cols-2 bg-[#d7e9d1]/30">
+    <div className="h-screen font-libreBaskerville overflow-hidden bg-white grid grid-cols-1 lg:grid-cols-2 ">
       {/* Left Side: Illustration */}
-      <div className="hidden lg:flex flex-col items-center justify-center relative overflow-hidden bg-main-green/5">
+      <div className="hidden lg:flex flex-col items-center justify-center relative overflow-hidden ">
         <motion.div
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative w-full h-full"
+          className="relative w-full h-full p-3"
         >
-          <Image
-            src="/login-illustration.png"
-            alt="Workspace Illustration"
-            fill
-            className="object-cover"
-            priority
-          />
+          <div className=" relative w-full h-full">
+            <Image
+              src="/login-illustration.png"
+              alt="Workspace Illustration"
+              fill
+              className="object-cover  w-full h-full rounded-[20px]"
+              priority
+            />
+          </div>
+
         </motion.div>
 
         {/* Decorative floating elements */}
         <motion.div
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 right-[20%] size-12 bg-lemon-primary/20 rounded-full blur-xl"
+          className="absolute top-1/4 right-[20%] size-12 rounded-full blur-xl"
         />
         <motion.div
           animate={{ y: [0, 15, 0] }}
@@ -113,25 +116,15 @@ function LoginForm() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="w-full max-w-[500px] h-[90vh] overflow-y-auto scrollbar-hide bg-white rounded-[40px] p-8 lg:p-16 shadow-2xl flex flex-col items-center border border-white/50 backdrop-blur-sm"
+          className="w-full max-w-[600px] h-[90vh] overflow-y-auto scrollbar-hide bg-white rounded-[40px] p-8 lg:p-16  flex flex-col items-center"
         >
           {/* Logo */}
-          <Link
-            href="/"
-            className="mb-10 flex items-center gap-2 group transition-transform hover:scale-105"
-          >
-            <div className="size-8 bg-main-green rounded-lg flex items-center justify-center shadow-lg shadow-main-green/20">
-              <span className="text-lemon-primary font-black text-xl">P</span>
-            </div>
-            <span className="text-2xl font-black text-main-green tracking-tight">
-              PadiLoan
-            </span>
-          </Link>
 
-          <h1 className="text-4xl font-black text-[#1F4941] mb-8 text-center leading-tight">
+
+          <h1 className="text-4xl font-libreBaskerville font-black mb-3 text-center leading-tight">
             Welcome Back
           </h1>
-
+          <p className="text-gray-500 mb-8 text-center">Enter your email and password to access your account</p>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="w-full space-y-4"
@@ -182,7 +175,7 @@ function LoginForm() {
                   <div className="flex justify-end px-1 mt-1">
                     <Link
                       href="/forgot-password"
-                      className="text-xs text-gray-400 font-bold hover:text-main-green transition-colors"
+                      className="text-xs text-gray-600 font-bold hover:text-main-green transition-colors"
                     >
                       Forgot password?
                     </Link>
@@ -202,7 +195,7 @@ function LoginForm() {
               {isLoading ? (
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               ) : (
-                "Log in"
+                "Sign in"
               )}
             </Button>
           </form>
@@ -216,26 +209,14 @@ function LoginForm() {
               <div className="h-px bg-gray-100 flex-1"></div>
             </div>
 
-            <div className="flex gap-4">
-              {[Chrome, Globe, Github].map((Icon, i) => (
-                <motion.button
-                  key={i}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="size-12 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 hover:bg-white hover:shadow-md transition-all group"
-                >
-                  <Icon
-                    size={20}
-                    className="text-gray-600 group-hover:text-main-green transition-colors"
-                  />
-                </motion.button>
-              ))}
+            <div className="flex gap-3 border justify-center items-center border-gray-200 w-full  p-3 rounded-lg">
+              <img height={20} width={20} src="/google.png" className="object-contain" alt="" />  Sign in with Google
             </div>
           </div>
 
           <div className="text-center">
             <p className="text-xs font-bold text-gray-400 italic">
-              By logging in you agree to PadiLoan's{" "}
+              By logging in you agree to MyCashNG's{" "}
               <Link href="/terms" className="text-main-green underline">
                 Terms of Services
               </Link>{" "}

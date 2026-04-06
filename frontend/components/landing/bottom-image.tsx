@@ -25,7 +25,7 @@ export function BottomImage() {
                                 Ready To Take Charge <br /> Of Your Finances?
                             </h2>
                             <p className="text-white/70 text-lg md:text-xl font-medium max-w-lg">
-                                Join thousands of users managing smarter with Padi-Loan.
+                                Join thousands of users managing smarter with MyCashNG.
                             </p>
                             <div className="pt-4">
                                 <Button size="lg" className="h-14 px-10 text-lg font-black bg-lemon-primary text-main-green hover:bg-lemon-primary/90 rounded-2xl shadow-xl shadow-black/10 transition-transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer">

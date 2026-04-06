@@ -82,7 +82,7 @@ export function AppsList({ initialApps }: AppsListProps) {
 
     const activeApps = initialApps.filter(app => app.isActive).length;
     //TODO:USE LIVE DATA
-    const totalApplications = 100
+    const totalApplications = initialApps.length
 
     const copyLink = (slug: string) => {
         const url = `${window.location.origin}/loan/${slug}`;
@@ -142,7 +142,7 @@ export function AppsList({ initialApps }: AppsListProps) {
                     trend="Across all apps"
                     color="bg-violet-50"
                 />
-             
+
             </div>
 
             {/* Search & Filters */}
@@ -334,7 +334,7 @@ function AppCard({ app, onCopyLink, onDelete }: { app: LoanApp; onCopyLink: (slu
                 </div>
 
                 {/* Stats Row */}
-            
+
 
                 {/* Action Buttons */}
                 <div className="flex gap-2 pt-2">

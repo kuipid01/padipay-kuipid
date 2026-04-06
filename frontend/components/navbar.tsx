@@ -60,7 +60,7 @@ export function NavBar() {
                     href="/"
                     className="text-xl md:text-2xl font-bold bg-linear-to-r from-primary to-violet-600 bg-clip-text text-transparent"
                 >
-                    PadiLoan
+                    MyCashNG
                 </Link>
 
                 {/* Desktop Navigation */}

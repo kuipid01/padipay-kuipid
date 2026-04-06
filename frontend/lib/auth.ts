@@ -1,3 +1,4 @@
+"use server"
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
@@ -44,3 +45,5 @@ export async function getCurrentUser() {
     return null;
   }
 }
+
+

@@ -23,7 +23,15 @@ export async function POST(req: Request) {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    // ✅ read ONCE
+    const raw = await response.text();
+
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      data = { error: raw };
+    }
 
     if (!response.ok) {
       return NextResponse.json(
@@ -35,10 +43,12 @@ export async function POST(req: Request) {
     return NextResponse.json(data);
   } catch (error) {
     console.error("Create loan app proxy error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
-
 export async function GET() {
   try {
     const cookieStore = await cookies();

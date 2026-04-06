@@ -1,6 +1,8 @@
 import { usersRepo } from "./repo";
 import { hashPassword, comparePassword, signToken } from "../../lib/auth";
 import { InsertUserSession } from "../../zod-schemas/user";
+import { brevo } from "../../lib/brevo";
+import { randomBytes } from "crypto";
 
 export interface ServiceError {
   code: number;
@@ -134,6 +136,42 @@ async saveSessions(data: InsertUserSession): Promise<void> {
 
     const passwordHash = await hashPassword(newPassword);
     await usersRepo.updatePassword(userId, passwordHash);
+
+    return { success: true, data: { success: true } };
+  },
+
+  async forgotPassword(email: string): Promise<ServiceResult<{ success: true }>> {
+    const user = await usersRepo.findByEmail(email);
+    
+    // Always return success to prevent email enumeration
+    if (!user) {
+      console.log(`Password reset requested for non-existent email: ${email}`);
+      return { success: true, data: { success: true } };
+    }
+
+    const token = randomBytes(32).toString("hex");
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 1); // 1 hour expiry
+
+    await usersRepo.updateResetToken(email, token, expires);
+
+    await brevo.sendPasswordResetEmail(email, token, user.fullName || undefined);
+
+    return { success: true, data: { success: true } };
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<ServiceResult<{ success: true }>> {
+    const user = await usersRepo.findByResetToken(token);
+    
+    if (!user || !user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
+      return {
+        success: false,
+        error: { code: 400, message: "Invalid or expired reset token" },
+      };
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+    await usersRepo.updatePassword(user.id, passwordHash);
 
     return { success: true, data: { success: true } };
   },

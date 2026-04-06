@@ -171,7 +171,42 @@ auth.post("/change-password", authMiddleware, async (c) => {
     );
   }
 
+
   return c.json({ success: true, message: "Password changed successfully" });
+});
+
+// POST /api/auth/forgot-password
+auth.post("/forgot-password", async (c) => {
+  const body = await c.req.json();
+  
+  if (!body.email) {
+    return c.json({ error: "Email is required" }, 400);
+  }
+
+  const result = await authService.forgotPassword(body.email);
+
+  // Still return 200/success even if email doesn't exist (handled by service)
+  return c.json({ success: true, message: "If an account with that email exists, a reset link has been sent." });
+});
+
+// POST /api/auth/reset-password
+auth.post("/reset-password", async (c) => {
+  const body = await c.req.json();
+
+  if (!body.token || !body.password) {
+    return c.json({ error: "Token and password are required" }, 400);
+  }
+
+  const result = await authService.resetPassword(body.token, body.password);
+
+  if (!result.success) {
+    return c.json(
+      { error: result.error.message },
+      result.error.code as 400 | 401 | 404
+    );
+  }
+
+  return c.json({ success: true, message: "Password has been successfully reset" });
 });
 
 export default auth;

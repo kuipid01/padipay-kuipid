@@ -7,7 +7,7 @@
 const BREVO_BASE_URL = "https://api.brevo.com/v3";
 const BREVO_API_KEY = process.env.BREVO_API_KEY || "";
 const DEFAULT_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || "padiloan@kuipid.com";
-const DEFAULT_SENDER_NAME = process.env.BREVO_SENDER_NAME || "padiloan";
+const DEFAULT_SENDER_NAME = process.env.BREVO_SENDER_NAME || "mycashng";
 
 interface EmailRecipient {
     email: string;
@@ -108,6 +108,62 @@ class BrevoService {
         }
     }
 
+
+    async sendPasswordResetEmail(email: string, token: string, name?: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+                    <div style="background: linear-gradient(135deg, #1F4941 0%, #2a6156 100%); padding: 50px 40px; border-radius: 24px 24px 0 0; text-align: center;">
+                        <h1 style="color: #BDF49D; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -1px;">mycashng</h1>
+                        <p style="color: rgba(189, 244, 157, 0.8); margin: 10px 0 0 0; font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 2px;">Secure Finance Access</p>
+                    </div>
+                    <div style="background: white; padding: 40px; border-radius: 0 0 24px 24px; box-shadow: 0 10px 25px -5px rgba(31, 73, 65, 0.1);">
+                        <h2 style="color: #1F4941; margin: 0 0 20px 0; font-size: 24px; font-weight: 700;">Reset Your Password</h2>
+                        <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+                            Hi ${name || 'there'},<br><br>
+                            We received a request to reset your password for your <strong>mycashng</strong> account. No worries, it happens! Click the button below to choose a new password:
+                        </p>
+                        <div style="text-align: center; margin-bottom: 35px;">
+                            <a href="${resetLink}" style="background-color: #1F4941; color: #BDF49D; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(31, 73, 65, 0.2);">
+                                Reset Password
+                            </a>
+                        </div>
+                        <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
+                            This link will expire in <strong>1 hour</strong>. If you didn't request a password reset, you can safely ignore this email — your password will remain the same.
+                        </p>
+                        <div style="border-top: 1px solid #f1f5f9; padding-top: 25px; margin-top: 25px;">
+                            <p style="color: #94a3b8; font-size: 12px; line-height: 1.6; margin: 0;">
+                                If you're having trouble clicking the button, copy and paste this URL into your web browser:
+                                <br>
+                                <span style="word-break: break-all; color: #1F4941; text-decoration: underline;">${resetLink}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div style="text-align: center; padding: 30px 20px;">
+                        <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+                            © ${new Date().getFullYear()} mycashng. Smart solutions for your financial growth.
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+
+        return this.sendEmail({
+            to: [{ email, name }],
+            subject: "Reset your mycashng password",
+            htmlContent,
+            tags: ["auth", "forgot-password"],
+        });
+    }
+
     async sendOTPEmail(email: string, otp: string, name?: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
         const htmlContent = `
             <!DOCTYPE html>
@@ -118,18 +174,18 @@ class BrevoService {
             </head>
             <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
                 <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-                    <div style="background: linear-gradient(135deg, #194d1c 0%, #2d7a32 100%); padding: 40px; border-radius: 20px 20px 0 0; text-align: center;">
-                        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">PadiLoan</h1>
-                        <p style="color: rgba(255,255,255,0.8); margin: 10px 0 0 0; font-size: 14px;">Your Trusted Lending Partner</p>
+                    <div style="background: linear-gradient(135deg, #1F4941 0%, #2a6156 100%); padding: 40px; border-radius: 20px 20px 0 0; text-align: center;">
+                        <h1 style="color: #BDF49D; margin: 0; font-size: 28px; font-weight: bold;">mycashng</h1>
+                        <p style="color: rgba(189, 244, 157, 0.8); margin: 10px 0 0 0; font-size: 14px;">Your Trusted Lending Partner</p>
                     </div>
                     <div style="background: white; padding: 40px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-                        <h2 style="color: #194d1c; margin: 0 0 20px 0; font-size: 24px;">Verification Code</h2>
+                        <h2 style="color: #1F4941; margin: 0 0 20px 0; font-size: 24px;">Verification Code</h2>
                         <p style="color: #666; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
                             Hi${name ? ` ${name}` : ''},<br><br>
                             Your verification code is:
                         </p>
-                        <div style="background: #f0f9f1; border: 2px dashed #194d1c; border-radius: 12px; padding: 25px; text-align: center; margin-bottom: 30px;">
-                            <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #194d1c;">${otp}</span>
+                        <div style="background: #f0f9f1; border: 2px dashed #1F4941; border-radius: 12px; padding: 25px; text-align: center; margin-bottom: 30px;">
+                            <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #1F4941;">${otp}</span>
                         </div>
                         <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
                             This code will expire in <strong>10 minutes</strong>. Do not share this code with anyone.
@@ -140,7 +196,7 @@ class BrevoService {
                     </div>
                     <div style="text-align: center; padding: 20px;">
                         <p style="color: #999; font-size: 12px; margin: 0;">
-                            © ${new Date().getFullYear()} PadiLoan. All rights reserved.
+                            © ${new Date().getFullYear()} mycashng. All rights reserved.
                         </p>
                     </div>
                 </div>
@@ -150,7 +206,7 @@ class BrevoService {
 
         return this.sendEmail({
             to: [{ email, name }],
-            subject: `${otp} is your PadiLoan verification code`,
+            subject: `${otp} is your mycashng verification code`,
             htmlContent,
             tags: ["otp", "verification"],
         });
@@ -172,16 +228,16 @@ class BrevoService {
             </head>
             <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
                 <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-                    <div style="background: linear-gradient(135deg, #194d1c 0%, #2d7a32 100%); padding: 40px; border-radius: 20px 20px 0 0; text-align: center;">
-                        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">PadiLoan</h1>
+                    <div style="background: linear-gradient(135deg, #1F4941 0%, #2a6156 100%); padding: 40px; border-radius: 20px 20px 0 0; text-align: center;">
+                        <h1 style="color: #BDF49D; margin: 0; font-size: 28px; font-weight: bold;">mycashng</h1>
                     </div>
                     <div style="background: white; padding: 40px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
                         <div style="text-align: center; margin-bottom: 30px;">
                             <div style="width: 60px; height: 60px; background: #e8f5e9; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">
-                                <span style="font-size: 30px;">✓</span>
+                                <span style="font-size: 30px; color: #1F4941;">✓</span>
                             </div>
                         </div>
-                        <h2 style="color: #194d1c; margin: 0 0 20px 0; font-size: 24px; text-align: center;">Application Received!</h2>
+                        <h2 style="color: #1F4941; margin: 0 0 20px 0; font-size: 24px; text-align: center;">Application Received!</h2>
                         <p style="color: #666; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
                             Hi ${name},<br><br>
                             We've received your loan application and it's now being reviewed.
@@ -190,15 +246,15 @@ class BrevoService {
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr>
                                     <td style="padding: 10px 0; color: #666; font-size: 14px;">Application ID</td>
-                                    <td style="padding: 10px 0; color: #194d1c; font-weight: bold; text-align: right;">#${applicationId.slice(0, 8).toUpperCase()}</td>
+                                    <td style="padding: 10px 0; color: #1F4941; font-weight: bold; text-align: right;">#${applicationId.slice(0, 8).toUpperCase()}</td>
                                 </tr>
                                 <tr>
                                     <td style="padding: 10px 0; color: #666; font-size: 14px; border-top: 1px solid #eee;">Loan Amount</td>
-                                    <td style="padding: 10px 0; color: #194d1c; font-weight: bold; text-align: right; border-top: 1px solid #eee;">₦${loanAmount.toLocaleString()}</td>
+                                    <td style="padding: 10px 0; color: #1F4941; font-weight: bold; text-align: right; border-top: 1px solid #eee;">₦${loanAmount.toLocaleString()}</td>
                                 </tr>
                                 <tr>
                                     <td style="padding: 10px 0; color: #666; font-size: 14px; border-top: 1px solid #eee;">Duration</td>
-                                    <td style="padding: 10px 0; color: #194d1c; font-weight: bold; text-align: right; border-top: 1px solid #eee;">${duration} months</td>
+                                    <td style="padding: 10px 0; color: #1F4941; font-weight: bold; text-align: right; border-top: 1px solid #eee;">${duration} months</td>
                                 </tr>
                             </table>
                         </div>
@@ -232,28 +288,28 @@ class BrevoService {
             </head>
             <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
                 <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-                    <div style="background: linear-gradient(135deg, #194d1c 0%, #2d7a32 100%); padding: 40px; border-radius: 20px 20px 0 0; text-align: center;">
-                        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">🎉 Congratulations!</h1>
+                    <div style="background: linear-gradient(135deg, #1F4941 0%, #2a6156 100%); padding: 40px; border-radius: 20px 20px 0 0; text-align: center;">
+                        <h1 style="color: #BDF49D; margin: 0; font-size: 28px; font-weight: bold;">🎉 Congratulations!</h1>
                     </div>
                     <div style="background: white; padding: 40px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-                        <h2 style="color: #194d1c; margin: 0 0 20px 0; font-size: 24px; text-align: center;">Your Loan is Approved!</h2>
+                        <h2 style="color: #1F4941; margin: 0 0 20px 0; font-size: 24px; text-align: center;">Your Loan is Approved!</h2>
                         <p style="color: #666; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
                             Hi ${name},<br><br>
-                            Great news! Your loan application has been approved.
+                            Great news! Your loan application has been approved by <strong>mycashng</strong>.
                         </p>
                         <div style="background: #e8f5e9; border-radius: 12px; padding: 25px; text-align: center; margin-bottom: 30px;">
                             <p style="color: #666; font-size: 14px; margin: 0 0 5px 0;">Approved Amount</p>
-                            <p style="color: #194d1c; font-size: 36px; font-weight: bold; margin: 0;">₦${loanAmount.toLocaleString()}</p>
+                            <p style="color: #1F4941; font-size: 36px; font-weight: bold; margin: 0;">₦${loanAmount.toLocaleString()}</p>
                         </div>
                         <div style="background: #f8f9fa; border-radius: 12px; padding: 20px;">
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr>
                                     <td style="padding: 10px 0; color: #666; font-size: 14px;">Monthly Payment</td>
-                                    <td style="padding: 10px 0; color: #194d1c; font-weight: bold; text-align: right;">₦${monthlyPayment.toLocaleString()}</td>
+                                    <td style="padding: 10px 0; color: #1F4941; font-weight: bold; text-align: right;">₦${monthlyPayment.toLocaleString()}</td>
                                 </tr>
                                 <tr>
                                     <td style="padding: 10px 0; color: #666; font-size: 14px; border-top: 1px solid #eee;">First Payment Date</td>
-                                    <td style="padding: 10px 0; color: #194d1c; font-weight: bold; text-align: right; border-top: 1px solid #eee;">${startDate}</td>
+                                    <td style="padding: 10px 0; color: #1F4941; font-weight: bold; text-align: right; border-top: 1px solid #eee;">${startDate}</td>
                                 </tr>
                             </table>
                         </div>
@@ -286,13 +342,13 @@ class BrevoService {
             </head>
             <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
                 <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-                    <div style="background: linear-gradient(135deg, #194d1c 0%, #2d7a32 100%); padding: 40px; border-radius: 20px 20px 0 0; text-align: center;">
-                        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">Payment Reminder</h1>
+                    <div style="background: linear-gradient(135deg, #1F4941 0%, #2a6156 100%); padding: 40px; border-radius: 20px 20px 0 0; text-align: center;">
+                        <h1 style="color: #BDF49D; margin: 0; font-size: 28px; font-weight: bold;">Payment Reminder</h1>
                     </div>
                     <div style="background: white; padding: 40px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
                         <p style="color: #666; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
                             Hi ${name},<br><br>
-                            This is a friendly reminder that your loan repayment is coming up.
+                            This is a friendly reminder from <strong>mycashng</strong> that your loan repayment is coming up.
                         </p>
                         <div style="background: #fff3cd; border-radius: 12px; padding: 25px; text-align: center; margin-bottom: 30px;">
                             <p style="color: #856404; font-size: 14px; margin: 0 0 10px 0;">Amount Due</p>

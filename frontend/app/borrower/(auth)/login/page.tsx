@@ -100,7 +100,7 @@ function BorrowerLoginForm() {
                         <div className="size-8 bg-main-green rounded-lg flex items-center justify-center">
                             <span className="text-lemon-primary font-black text-xl">P</span>
                         </div>
-                        <span className="text-2xl font-black text-main-green">PadiLoan</span>
+                        <span className="text-2xl font-black text-main-green">MyCashNG</span>
                     </Link>
 
                     <h1 className="text-3xl font-black text-[#1F4941] mb-2 text-center">

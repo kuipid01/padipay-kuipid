@@ -7,17 +7,16 @@ import { useFetch } from "../../../../hooks/general";
 
 
 
-type LoansResponse = {
-    loans: any[];
-};
+type LoansResponse = any[];
 
 
-export default  function LoansPage() {
-      const { data, isLoading, error } = useFetch<LoansResponse>("/api/loans", {
-          key: "loans",
-      });
-      const loans = data?.loans ?? [];
-  
+export default function LoansPage() {
+    const { data, isLoading, error } = useFetch<LoansResponse>("/api/loans", {
+        key: "loans",
+    });
+    const loans = data ?? [];
+
+    console.log(data, loans)
 
     return (
         <div className="space-y-8">

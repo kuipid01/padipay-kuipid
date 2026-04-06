@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useContext } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -23,9 +23,16 @@ import { KycStep } from "./_components/kyc-step";
 import { TermsStep } from "./_components/terms-step";
 import { SuccessStep } from "./_components/success-step";
 import { CreditScoreStep } from "./_components/credit-score-step";
+import DynamicUiForLoans from "./_components/dynamic-ui-for-loans";
 
+import { Suspense } from "react";
+import { SuspenseLoader } from "@/components/ui/suspense-loader";
+import { BorrowerDataContext } from "../../../lib/borrower-context";
+import { useConsent } from "@/lib/consent-context";
 
 function PublicLoanForm() {
+  const data = useContext(BorrowerDataContext);
+  const { consented, skipConsent } = useConsent();
   const { slug } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -36,6 +43,8 @@ function PublicLoanForm() {
   const [direction, setDirection] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
+  // console.log("DATA FROM CONTEXT,", data)
   // Form Data
   const [formData, setFormData] = useState<FormData>({
     phone: "",
@@ -108,6 +117,38 @@ function PublicLoanForm() {
     }
     fetchApp();
   }, [slug]);
+
+  // Handle Logged-in Borrower Data (Pre-fill & Auto-skip)
+  useEffect(() => {
+    if (data?.borrower && !skipConsent) {
+      const b = data.borrower;
+      const c = data.completion;
+
+      setFormData((prev) => ({
+        ...prev,
+        phone: b.phone || prev.phone,
+        email: b.email || prev.email,
+        fullName: `${b.firstName} ${b.lastName}`.trim(),
+        dob: b.dob || prev.dob,
+        bvn: b.bvn || prev.bvn,
+        address: b.address || prev.address,
+        city: b.city || prev.city,
+        state: b.state || prev.state,
+        employmentType: b.employmentType || prev.employmentType,
+        wagesRange: b.monthlyIncome || prev.wagesRange,
+      }));
+
+      setStatus((prev) => ({
+        ...prev,
+        phoneVerified: !!b.phone,
+        emailVerified: !!b.email,
+        bvnVerified: c.bvnVerified,
+        bankConnected: c.bankDetailsProvided,
+      }));
+    }
+  }, [data]);
+
+
   useEffect(() => {
     const status = searchParams.get('status');
     const step = searchParams.get('step');
@@ -125,6 +166,8 @@ function PublicLoanForm() {
     }
   }, [otpCountdown]);
 
+
+  console.log(currentStep, " WE ARE ON THIS SEP")
   // Helpers
   const nextStep = () => {
     const currentIndex = STEP_ORDER.indexOf(currentStep);
@@ -337,8 +380,8 @@ function PublicLoanForm() {
     }
   };
 
-  function renderStep() {
-    switch (currentStep) {
+  function renderStep(step: StepId) {
+    switch (step) {
       case "landing":
         return <LandingStep app={app} onNext={nextStep} />;
       case "phone":
@@ -460,40 +503,56 @@ function PublicLoanForm() {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] font-sans text-[#1F4941] selection:bg-lemon-primary/30">
-      {/* Progress Bar */}
-      <div className="fixed top-0 left-0 w-full h-1.5 bg-gray-100 z-[100]">
-        <motion.div
-          className="h-full bg-main-green"
-          initial={{ width: 0 }}
-          animate={{
-            width: `${(STEP_ORDER.indexOf(currentStep) / (STEP_ORDER.length - 1)) * 100}%`,
-          }}
-          transition={{ duration: 0.5, ease: "circOut" }}
-        />
-      </div>
+      <DynamicUiForLoans
+        completionStatus={data?.completion || {}}
+        status={status}
+        formData={formData}
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        onStepChange={(step, dir) => {
+          setDirection(dir);
+          setCurrentStep(step);
+        }}
+        consented={consented}
+        skipConsent={skipConsent}
+      >
+        {(resolvedStep) => (
+          <>
+            {/* Progress Bar */}
+            <div className="fixed top-0 left-0 w-full h-1.5 bg-gray-100 z-[100]">
+              <motion.div
+                className="h-full bg-main-green"
+                initial={{ width: 0 }}
+                animate={{
+                  width: `${(STEP_ORDER.indexOf(resolvedStep) / (STEP_ORDER.length - 1)) * 100}%`,
+                }}
+                transition={{ duration: 0.5, ease: "circOut" }}
+              />
+            </div>
 
-      <main className="max-w-[480px] mx-auto px-6 pt-12 pb-24">
-        <AnimatePresence mode="wait" custom={direction} initial={false}>
-          <motion.div
-            key={currentStep}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-            className="w-full"
-          >
-            {renderStep()}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+            <main className="max-w-[480px] mx-auto px-6 pt-12 pb-24">
+              <AnimatePresence mode="wait" custom={direction} initial={false}>
+                <motion.div
+                  key={resolvedStep}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                  className="w-full"
+                >
+                  {renderStep(resolvedStep)}
+                </motion.div>
+              </AnimatePresence>
+            </main>
+          </>
+        )}
+      </DynamicUiForLoans>
     </div>
   );
 }
 
-import { Suspense } from "react";
-import { SuspenseLoader } from "@/components/ui/suspense-loader";
 
 export default function PublicLoanPage() {
   return (

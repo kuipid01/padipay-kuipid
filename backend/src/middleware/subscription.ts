@@ -1,7 +1,7 @@
 import type { Context, Next } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { db } from "../db";
-import { users } from "../db/schema";
+import { loanApps, users } from "../db/schema";
 import { eq } from "drizzle-orm";
 import type { PlanName } from "../lib/plans";
 
@@ -163,7 +163,7 @@ export async function checkLoanAppLimit(c: Context, next: Next) {
     throw new HTTPException(401, { message: "Authentication required" });
   }
 
-  // Fetch user's plan and current loan app count
+  // Fetch user's plan and subscription status
   const [userRecord] = await db
     .select({
       plan: users.plan,
@@ -177,29 +177,28 @@ export async function checkLoanAppLimit(c: Context, next: Next) {
     throw new HTTPException(404, { message: "User not found" });
   }
 
-  // Check if subscription is active
-  if (userRecord.subscriptionStatus !== "active") {
+  // Count all existing loan apps for this user
+  const userApps = await db
+    .select()
+    .from(loanApps)
+    .where(eq(loanApps.ownerId, user.id));
+
+  // Inactive users get exactly 1 free loan app — block if they already have one
+  if (userRecord.subscriptionStatus === "inactive" && userApps.length >= 1) {
     throw new HTTPException(403, {
-      message: "Active subscription required to create loan apps.",
+      message: "You've used your free loan app. Subscribe to create more.",
     });
   }
 
   const maxApps = getMaxLoanApps(userRecord.plan as PlanName);
 
-  // If unlimited, skip the count check
+  // If unlimited (Pro / Enterprise with active sub), skip the count check
   if (maxApps === Infinity) {
     await next();
     return;
   }
 
-  // Count user's existing loan apps
-  const { loanApps } = await import("../db/schema");
-  const userLoanApps = await db
-    .select()
-    .from(loanApps)
-    .where(eq(loanApps.ownerId, user.id));
-
-  if (userLoanApps.length >= maxApps) {
+  if (userApps.length >= maxApps) {
     throw new HTTPException(403, {
       message: `You have reached the maximum number of loan apps (${maxApps}) for your ${userRecord.plan} plan. Please upgrade to create more.`,
     });

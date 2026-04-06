@@ -1,29 +1,13 @@
-"use client";
+import { redirect } from 'next/navigation';
+import { getServerAuth } from '@/lib/server-auth';
+import BorrowerClientLayout from './borrowe-layou-wrapper';
 
-import {
-    BorrowerSidebar,
-    BorrowerHeader,
-    SidebarProvider,
-} from "@/components/borrower/sidebar";
+export default async function Layout({ children }: any) {
+    const auth = await getServerAuth();
 
-export default function BorrowerDashboardLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
-    return (
-        <SidebarProvider>
-            <div className="flex relative min-h-screen bg-white">
-                <BorrowerSidebar />
-                <main className="flex-1 flex flex-col min-w-0">
-                    <BorrowerHeader />
-                    <div className="md:px-8 px-4 md:pb-8 pb-4">
-                        <div className="bg-white min-h-[calc(100vh-140px)]">
-                            {children}
-                        </div>
-                    </div>
-                </main>
-            </div>
-        </SidebarProvider>
-    );
+    if (!auth || auth.role !== 'borrower') {
+        redirect('/borrower/login');
+    }
+
+    return <BorrowerClientLayout>{children}</BorrowerClientLayout>;
 }

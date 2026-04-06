@@ -546,7 +546,7 @@ export const lenderWallets = pgTable("lender_wallets", {
   id: uuid("id").primaryKey().defaultRandom(),
   lenderId: uuid("lender_id")
     .references(() => users.id)
-    .notNull(),
+    .notNull().unique(),
   balance: integer("balance").default(0).notNull(), // available (in kobo)
   lockedBalance: integer("locked_balance").default(0).notNull(), // committed to loans
   currency: varchar("currency", { length: 3 }).default("NGN"),

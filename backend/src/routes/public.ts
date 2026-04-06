@@ -5,6 +5,7 @@ import { loanApps, loanApplications, borrowers, repaymentPlans } from "../db/sch
 import { and, eq, or } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import { CreateLoanApplicationSchema } from "../zod-schemas/applications";
+import { getCreditReport, getCreditScore } from "../utils/dojah";
 
 const router = new Hono();
 
@@ -158,6 +159,12 @@ router.post(
     // -----------------------------
     console.log("[STEP 4] Creating loan application");
 
+    const existingApp = await preventReapplicationForSameBorrower(borrower.id);
+    if (existingApp) {
+      return c.json({ error: "Borrower has an existing application" }, 400);
+    }
+
+    refreshCreditScoreAndRecord(borrower.bvn!, borrower.id);
     const application = await db
       .insert(loanApplications)
       .values({
@@ -187,3 +194,60 @@ router.post(
 
 
 export default router;
+
+
+const refreshCreditScoreAndRecord = async (bvn: string, id: string) => {
+  if (!bvn || bvn.length !== 11) {
+    throw new Error("Invalid BVN");
+  }
+
+  const withTimeout = (promise: Promise<any>, ms = 8000) =>
+    Promise.race([
+      promise,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout")), ms)
+      ),
+    ]);
+
+  try {
+    const [reportResult, scoreResult] = await Promise.allSettled([
+      withTimeout(getCreditReport(bvn)),
+      withTimeout(getCreditScore(bvn)),
+    ]);
+
+    const creditReport =
+      reportResult.status === "fulfilled" ? reportResult.value : null;
+
+    const creditScore =
+      scoreResult.status === "fulfilled" ? scoreResult.value : null;
+
+    const updateData: Record<string, any> = {};
+
+    if (creditReport) updateData.creditReport = creditReport;
+    if (creditScore) updateData.creditScore = creditScore;
+console.log(creditScore,creditReport ,"creditReport")
+    // 🚫 Avoid empty update
+    if (Object.keys(updateData).length === 0) return;
+
+    const { eq } = await import("drizzle-orm");
+    const { db, borrowers } = await import("../db");
+
+    await db
+      .update(borrowers)
+      .set(updateData)
+      .where(eq(borrowers.id, id));
+  } catch (error) {
+    console.error("[CREDIT CHECK FAILED]", error);
+  }
+};
+
+
+async function preventReapplicationForSameBorrower(id: string) {
+  const { db, loanApplications } = await import("../db");
+  const { eq } = await import("drizzle-orm");
+  const existingApplication = await db.query.loanApplications.findFirst({
+    where: eq(loanApplications.borrowerId, id),
+  });
+
+  return existingApplication;
+}

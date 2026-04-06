@@ -33,7 +33,7 @@ export function OurValue() {
                         </div>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-extrabold text-main-green font-robotoSlab max-w-3xl mx-auto leading-tight">
-                        What Sets PadiLoan Apart
+                        What Sets MyCashNG Apart
                     </h2>
                     <p className="text-muted-foreground max-w-2xl mx-auto font-medium">
                         We don't just help you manage money — we empower you with clarity, control, and confidence every step of the way.

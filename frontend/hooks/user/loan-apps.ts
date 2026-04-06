@@ -34,6 +34,7 @@ export const RepaymentPlanSchema = z.object({
 
 export const LoanAppSchema = z.object({
   id: z.string(),
+  ownerId: z.string(),
   name: z.string().min(2, "App name must be at least 2 characters"),
   slug: z
     .string()

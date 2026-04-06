@@ -6,8 +6,8 @@
 
 const BREVO_BASE_URL = "https://api.brevo.com/v3";
 const BREVO_API_KEY = process.env.BREVO_API_KEY || "";
-const DEFAULT_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || "noreply@padiloan.com";
-const DEFAULT_SENDER_NAME = process.env.BREVO_SENDER_NAME || "PadiLoan";
+const DEFAULT_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || "noreply@MyCashNG.com";
+const DEFAULT_SENDER_NAME = process.env.BREVO_SENDER_NAME || "MyCashNG";
 
 interface EmailRecipient {
     email: string;
@@ -137,7 +137,7 @@ class BrevoService {
             <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
                 <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
                     <div style="background: linear-gradient(135deg, #194d1c 0%, #2d7a32 100%); padding: 40px; border-radius: 20px 20px 0 0; text-align: center;">
-                        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">PadiLoan</h1>
+                        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">MyCashNG</h1>
                         <p style="color: rgba(255,255,255,0.8); margin: 10px 0 0 0; font-size: 14px;">Your Trusted Lending Partner</p>
                     </div>
                     <div style="background: white; padding: 40px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
@@ -158,7 +158,7 @@ class BrevoService {
                     </div>
                     <div style="text-align: center; padding: 20px;">
                         <p style="color: #999; font-size: 12px; margin: 0;">
-                            © ${new Date().getFullYear()} PadiLoan. All rights reserved.
+                            © ${new Date().getFullYear()} MyCashNG. All rights reserved.
                         </p>
                     </div>
                 </div>
@@ -168,7 +168,7 @@ class BrevoService {
 
         return this.sendEmail({
             to: [{ email, name }],
-            subject: `${otp} is your PadiLoan verification code`,
+            subject: `${otp} is your MyCashNG verification code`,
             htmlContent,
             tags: ["otp", "verification"],
         });
@@ -194,7 +194,7 @@ class BrevoService {
             <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
                 <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
                     <div style="background: linear-gradient(135deg, #194d1c 0%, #2d7a32 100%); padding: 40px; border-radius: 20px 20px 0 0; text-align: center;">
-                        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">PadiLoan</h1>
+                        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">MyCashNG</h1>
                     </div>
                     <div style="background: white; padding: 40px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
                         <div style="text-align: center; margin-bottom: 30px;">
@@ -235,7 +235,7 @@ class BrevoService {
                     </div>
                     <div style="text-align: center; padding: 20px;">
                         <p style="color: #999; font-size: 12px; margin: 0;">
-                            © ${new Date().getFullYear()} PadiLoan. All rights reserved.
+                            © ${new Date().getFullYear()} MyCashNG. All rights reserved.
                         </p>
                     </div>
                 </div>
@@ -301,7 +301,7 @@ class BrevoService {
                     </div>
                     <div style="text-align: center; padding: 20px;">
                         <p style="color: #999; font-size: 12px; margin: 0;">
-                            © ${new Date().getFullYear()} PadiLoan. All rights reserved.
+                            © ${new Date().getFullYear()} MyCashNG. All rights reserved.
                         </p>
                     </div>
                 </div>
@@ -354,7 +354,7 @@ class BrevoService {
                     </div>
                     <div style="text-align: center; padding: 20px;">
                         <p style="color: #999; font-size: 12px; margin: 0;">
-                            © ${new Date().getFullYear()} PadiLoan. All rights reserved.
+                            © ${new Date().getFullYear()} MyCashNG. All rights reserved.
                         </p>
                     </div>
                 </div>

@@ -23,23 +23,37 @@ interface User {
   subscriptionEndsAt?: string;
 }
 
-interface Borrower {
- user :{
+export interface Borrower {
   id: string;
+  phone: string;
+  email: string;
+  emailVerified: boolean;
+  bvn: string;
+  nin: string | null;
+  createdAt: string;
   firstName: string;
   lastName: string;
   middleName: string;
-  email: string;
-  phone: string;
-  avatarUrl?: string;
-  }
+  gender: string;
+  dob: string;
+  image: string | null;
+  kycVerified: boolean;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  country: string;
+  employmentType: string | null;
+  monthlyIncome: string | null;
+  employerName: string | null;
+  bankAccounts?: any[];
+  documents?: any[];
 }
 export function useUser() {
   const query = useQuery<User>({
     queryKey: ["user"],
     queryFn: async () => {
       const res = await fetch("/api/settings");
-      
+          console.log("RES", res)
       if (!res.ok) {
         if (res.status === 401) {
           throw new Error("Unauthorized");
@@ -73,8 +87,8 @@ export function useBorrower() {
         }
         throw new Error("Failed to fetch borrower");
       }
-      
-      return res.json();
+      const data = await res.json();
+      return data?.user || data; 
     },
     retry: (failureCount, error) => {
       if (error.message === "Unauthorized") return false;
@@ -84,7 +98,7 @@ export function useBorrower() {
   });
 
   return {
-    borrower: query?.data?.user,
+    borrower: query.data,
     ...query
   };
 }

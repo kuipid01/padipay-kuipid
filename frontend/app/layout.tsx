@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Nunito, Roboto_Slab } from "next/font/google";
+import { Geist, Libre_Baskerville, Nunito, Roboto_Slab } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,11 +15,15 @@ const robotoSlab = Roboto_Slab({
   variable: "--font-robotoSlab",
   subsets: ["latin"],
 });
+const libreBaskerville = Libre_Baskerville({
+  variable: "--font-libreBaskerville",
+  subsets: ["latin"],
+});
 
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "Padi Loan | Peer-to-Peer Lending Infrastructure",
+  title: "MyCashNG | Peer-to-Peer Lending Infrastructure",
   description: "Peer-to-peer lending infrastructure for lenders and borrowers in Nigeria.",
 };
 
@@ -31,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${nunito.variable} ${robotoSlab.variable} font-nunito`}
+        className={`${geistSans.variable} ${nunito.variable} ${robotoSlab.variable} ${libreBaskerville.variable} font-nunito`}
       >
         <Providers>
           {children}

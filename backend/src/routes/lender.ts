@@ -77,7 +77,7 @@ router.get("/wallet/transactions", async (c) => {
     const user = c.get("user");
     const limit = Number(c.req.query("limit")) || 50;
     const offset = Number(c.req.query("offset")) || 0;
-
+    console.log(user.id,"USER IN QUERY")
     const transactions = await lenderWalletService.getWalletTransactions(user.id, limit, offset);
 
     return c.json({

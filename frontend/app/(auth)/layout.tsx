@@ -1,32 +1,21 @@
-"use client";
+import { redirect } from 'next/navigation';
+import { getServerAuth } from '@/lib/server-auth';
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-
-export default function AuthLayout({
+export default async function AuthLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const router = useRouter();
+    const auth = await getServerAuth();
+    console.log("AUTH RGHT NOW", auth)
+    if (auth?.role === 'admin') {
+        // console.log("we are here")
+        redirect('/dashboard');
+    }
 
-    useEffect(() => {
-        // Check if user is already authenticated
-        const checkAuth = async () => {
-            try {
-                const res = await fetch("/api/auth/me");
-                if (res.ok) {
-                    // User is authenticated, redirect to dashboard
-                    router.push("/dashboard");
-                }
-            } catch (error) {
-                // User is not authenticated, stay on auth page
-                console.log("Not authenticated");
-            }
-        };
-
-        checkAuth();
-    }, [router]);
+    if (auth?.role === 'borrower') {
+        redirect('/borrower/dashboard');
+    }
 
     return <>{children}</>;
 }

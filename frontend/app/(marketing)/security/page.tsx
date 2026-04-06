@@ -3,7 +3,7 @@ import { ShieldCheck, Lock, EyeOff, Server } from "lucide-react";
 export default function SecurityPage() {
     return (
         <div className="container mx-auto px-4 max-w-4xl">
-            <h1 className="text-4xl md:text-5xl font-black text-main-green mb-8">Security at Padi-Loan</h1>
+            <h1 className="text-4xl md:text-5xl font-black text-main-green mb-8">Security at MyCashNG</h1>
             <p className="text-xl text-gray-500 mb-12">
                 Your data security and privacy are our top priorities. We use industry-leading practices to keep your information safe.
             </p>

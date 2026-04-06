@@ -51,13 +51,14 @@ interface LoansListProps {
 }
 
 export function LoansList({ initialLoans }: LoansListProps) {
-    console.log(initialLoans,"initialLoans")
+    console.log(initialLoans, "initialLoans")
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string[]>([]);
 
     const filteredLoans = initialLoans.filter(loan => {
         const matchesSearch =
-            loan.borrower.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            loan.borrower.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            loan.borrower.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
             loan.borrower.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
             loan.id.includes(searchQuery);
 
@@ -204,7 +205,7 @@ export function LoansList({ initialLoans }: LoansListProps) {
                                             <TableCell className="px-8 py-5">
                                                 <div className="flex items-center gap-3">
                                                     <div className="size-10 rounded-full bg-lemon-primary/10 flex items-center justify-center text-main-green font-black text-xs shrink-0">
-                                                        {loan.borrower.fullName.charAt(0)}
+                                                        {loan.borrower.firstName.charAt(0)}
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="font-bold text-main-green truncate group-hover:text-primary transition-colors">{loan.borrower.fullName}</p>

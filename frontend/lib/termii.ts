@@ -6,7 +6,7 @@
 
 const TERMII_BASE_URL = "https://v3.api.termii.com/api";
 const TERMII_API_KEY = process.env.TERMII_API_KEY || "";
-const TERMII_SENDER_ID = process.env.TERMII_SENDER_ID || "PadiLoan";
+const TERMII_SENDER_ID = process.env.TERMII_SENDER_ID || "MyCashNG";
 
 interface TermiiResponse {
     code?: string;
@@ -124,7 +124,7 @@ class TermiiService {
                     pin_time_to_live: options.pinTimeToLive || 10,
                     pin_length: options.pinLength || 6,
                     pin_placeholder: "< 1234 >",
-                    message_text: `Your PadiLoan verification code is < 1234 >. Valid for ${options.pinTimeToLive || 10} minutes. Do not share this code with anyone.`,
+                    message_text: `Your MyCashNG verification code is < 1234 >. Valid for ${options.pinTimeToLive || 10} minutes. Do not share this code with anyone.`,
                 }),
             });
 console.log(response,"RESPONSE ROM CALLING TERMII")

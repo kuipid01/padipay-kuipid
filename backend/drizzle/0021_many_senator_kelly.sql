@@ -1,0 +1,1 @@
+ALTER TABLE "lender_wallets" ADD CONSTRAINT "lender_wallets_lender_id_unique" UNIQUE("lender_id");
