@@ -127,7 +127,7 @@ function LoginForm() {
 
       {/* Right Side: Form */}
       <div className="flex-1 flex flex-col relative overflow-y-auto">
-        <div className="absolute top-8 right-8 z-20">
+        <div className="absolute top-15 right-8 z-20">
           <p className="text-sm font-medium text-gray-500">
             Don't have an account?{" "}
             <Link href="/register" className="text-main-green font-bold hover:underline underline-offset-4 decoration-2">
@@ -136,15 +136,15 @@ function LoginForm() {
           </p>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-20">
+        <div className="flex-1 flex items-center justify-start p-6 lg:py-30 lg:px-20">
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="w-full max-w-[480px]"
+            className="w-full lg:max-w-full max-w-[580px]"
           >
             <motion.div variants={itemVariants} className="mb-10 text-center lg:text-left">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign in to Padi-Loan</h2>
+              <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Sign in to Padi-Loan</h2>
               <p className="text-gray-500 font-medium">
                 Enter your credentials to access your account securely.
               </p>
