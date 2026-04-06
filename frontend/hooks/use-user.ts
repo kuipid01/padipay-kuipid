@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { getCookie } from "@/lib/utils";
 
 interface User {
   id: string;
@@ -49,8 +50,9 @@ export interface Borrower {
   documents?: any[];
 }
 export function useUser() {
+  const userId = getCookie("uid");
   const query = useQuery<User>({
-    queryKey: ["user"],
+    queryKey: ["user", userId],
     queryFn: async () => {
       const res = await fetch("/api/settings");
           console.log("RES", res)
@@ -76,8 +78,10 @@ export function useUser() {
   };
 }
 export function useBorrower() {
+  const borrowerId = getCookie("uid"); // Or a specific borrower_id if you set one
+  
   const query = useQuery<Borrower>({
-    queryKey: ["borrower"],
+    queryKey: ["borrower", borrowerId],
     queryFn: async () => {
       const res = await fetch("/api/borrower/auth/me");
       

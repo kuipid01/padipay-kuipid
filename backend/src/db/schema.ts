@@ -118,7 +118,8 @@ export const users = pgTable("users", {
   // Security
   isTwoFactorEnabled: boolean("is_two_factor_enabled").default(false),
   twoFactorSecret: text("two_factor_secret"),
-
+ emailVerified:boolean("email_verified").default(false),
+ phoneNumberVerified:boolean("phone_verified").default(false),
   // Branding (Global/Account Level)
   brandLogoUrl: text("brand_logo_url"),
   brandColor: varchar("brand_color", { length: 10 }).default("#0D4715"),

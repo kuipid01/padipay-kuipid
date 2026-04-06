@@ -326,6 +326,33 @@ class BrevoService {
             tags: ["approval", "loan"],
         });
     }
+async sendVerificationEmail (email:string,name:string,token:string)  {
+    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+   console.log(verificationUrl,"VERIFICATION URL")
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Email Verification</title>
+        </head>
+        <body>
+            <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px;">
+                    <h1 style="color: #333;">Email Verification</h1>
+                    <p style="color: #666;">Please verify your email address by clicking the link below:</p>
+                    <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px;">Verify Email</a>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+    return this.sendEmail({
+        to: [{ email, name }],
+        subject: "Email Verification",
+        htmlContent,
+        tags: ["verification", "email"],
+    });
+  }
 
     async sendPaymentReminder(
         email: string,

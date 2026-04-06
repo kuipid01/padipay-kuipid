@@ -10,9 +10,9 @@ import { Field, FieldError } from "@/components/ui/field-form";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, User, Mail, Phone, Lock, ChevronRight, Star } from "lucide-react";
+import { Loader2, Eye, EyeOff, User, Mail, Phone, Lock, ChevronRight, Check } from "lucide-react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Easing } from "framer-motion";
 import { SuspenseLoader } from "../../../components/ui/suspense-loader";
 
 const registerSchema = z.object({
@@ -30,22 +30,24 @@ const containerVariants = {
         opacity: 1,
         transition: {
             staggerChildren: 0.1,
-            delayChildren: 0.3,
+            delayChildren: 0.1,
         },
     },
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 10 },
     visible: {
         opacity: 1,
         y: 0,
-        transition: { duration: 0.5, ease: "easeOut" },
+        transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as Easing },
     },
 };
 
 function RegisterForm() {
     const [isLoading, setIsLoading] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [registeredEmail, setRegisteredEmail] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -75,10 +77,9 @@ function RegisterForm() {
                 throw new Error(data.error || "Registration failed");
             }
 
+            setRegisteredEmail(values.email);
+            setIsSuccess(true);
             toast.success("Account created successfully!");
-            const redirect = searchParams.get("redirect") || "/dashboard";
-            router.push(redirect);
-            router.refresh();
         } catch (err: any) {
             toast.error(err.message);
         } finally {
@@ -87,289 +88,273 @@ function RegisterForm() {
     }
 
     return (
-        <div className="min-h-screen font-sans overflow-hidden bg-[#FAFCF9] grid grid-cols-1 lg:grid-cols-2">
-            {/* Left Side: Illustration & Branding */}
-            <div className="hidden lg:flex flex-col relative overflow-hidden bg-main-green p-12">
-                {/* Background Decorations */}
-                <div className="absolute top-0 left-0 w-full h-full opacity-10">
-                    <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-lemon-primary blur-[120px]" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-lemon-primary blur-[100px]" />
+        <div className="min-h-screen bg-white flex overflow-hidden">
+            {/* Left Side: Branding and Hero */}
+            <div className="hidden lg:flex w-[40%] bg-main-green relative flex-col justify-between p-12 overflow-hidden">
+                {/* Background Mesh Gradient for Premium Look */}
+                <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+                    <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[140%] bg-[radial-gradient(circle_at_30%_30%,#BDF49D_0%,transparent_50%),radial-gradient(circle_at_70%_70%,#1F4941_0%,transparent_50%)] blur-[100px]" />
                 </div>
 
-                {/* Logo or Brand Name */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="relative z-20 flex items-center gap-2 mb-20"
-                >
-                    <div className="w-10 h-10 bg-lemon-primary rounded-xl flex items-center justify-center">
-                        <span className="text-main-green font-black text-xl">P</span>
+                <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-24">
+                        <div className="w-10 h-10 bg-lemon-primary rounded-xl flex items-center justify-center font-black text-main-green text-xl shadow-lg shadow-black/10">
+                            P
+                        </div>
+                        <span className="text-2xl font-bold text-white tracking-tight">Padi-Loan</span>
                     </div>
-                    <span className="text-white font-libreBaskerville font-bold text-2xl tracking-tight">Padi-Loan</span>
-                </motion.div>
 
-                <div className="relative z-20 mt-auto">
-                    <motion.h2
-                        initial={{ opacity: 0, x: -30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                        className="text-5xl font-libreBaskerville font-bold text-white leading-[1.1] mb-6"
-                    >
-                        Smart Financing <br /> 
-                        <span className="text-lemon-primary">For Your Future.</span>
-                    </motion.h2>
-                    <motion.p
-                        initial={{ opacity: 0, x: -30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8, delay: 0.4 }}
-                        className="text-white/70 text-lg max-w-md mb-10"
-                    >
-                        Join over 50,000 users who trust Padi-Loan for their financial growth and flexible credit solutions.
-                    </motion.p>
-
-                    {/* Trust Badge/Testimonial */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.6, delay: 0.6 }}
-                        className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 flex items-center gap-4 max-w-sm"
-                    >
-                        <div className="flex -space-x-3">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="w-10 h-10 rounded-full border-2 border-main-green bg-gray-200 overflow-hidden">
-                                     <Image src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" width={40} height={40} />
-                                </div>
-                            ))}
+                    <div className="max-w-md">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-white/90 text-[10px] font-bold uppercase tracking-widest mb-8">
+                            <span className="w-1.5 h-1.5 rounded-full bg-lemon-primary animate-pulse" />
+                            Empowering Businesses
                         </div>
-                        <div>
-                            <div className="flex gap-0.5 mb-1">
-                                {[1, 2, 3, 4, 5].map((i) => (
-                                    <Star key={i} size={12} className="fill-lemon-primary text-lemon-primary" />
-                                ))}
-                            </div>
-                            <p className="text-white text-xs font-medium">Joined by 1.2k+ users this week</p>
-                        </div>
-                    </motion.div>
+                        <h1 className="text-5xl font-libreBaskerville font-black text-white leading-[1.1] mb-6">
+                            Grow Money <br />
+                            <span className="text-lemon-primary">in Seconds.</span>
+                        </h1>
+                        <p className="text-white/70 text-lg leading-relaxed font-medium">
+                            Access quick, flexible loans to scale your business and manage your finances with ease. Built for speed and clarity.
+                        </p>
+                    </div>
                 </div>
 
-                {/* Main Illustration */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.8, rotate: 5 }}
-                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                    transition={{ duration: 1.2, ease: "easeOut" }}
-                    className="absolute top-1/2 right-[-10%] translate-y-[-50%] w-[80%] h-[60%] z-10 hidden xl:block"
-                >
-                    <div className="relative w-full h-full">
-                        <Image
-                            src="/register-illustration.png"
-                            alt="Workspace Illustration"
-                            fill
-                            className="object-contain drop-shadow-2xl"
-                            priority
-                        />
+                <div className="relative z-10 flex flex-col gap-8">
+                    <div className="flex gap-2.5">
+                        <div className="w-8 h-1.5 rounded-full bg-white transition-all" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
                     </div>
-                </motion.div>
+
+                    <div className="flex items-center justify-between border-t border-white/10 pt-8 mt-4 text-[10px] text-white/50 font-semibold uppercase tracking-wider">
+                        <span>© 2026 Padi-Loan. All Rights Reserved.</span>
+                        <div className="flex gap-4">
+                            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+                            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* Right Side: Form */}
-            <div className="flex items-center justify-center p-6 lg:p-12 bg-white relative">
-                {/* Mobile Background elements */}
-                <div className="lg:hidden absolute top-0 right-0 w-32 h-32 bg-lemon-primary/20 blur-3xl rounded-full" />
-                <div className="lg:hidden absolute bottom-0 left-0 w-32 h-32 bg-main-green/10 blur-3xl rounded-full" />
-
-                <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="w-full max-w-[480px] z-10"
-                >
-                    <motion.div variants={itemVariants} className="text-center mb-10">
-                        <h1 className="text-4xl font-libreBaskerville font-black mb-3 text-main-green leading-tight">
-                            Create Account
-                        </h1>
-                        <p className="text-gray-500 font-medium">
-                            Start your financial journey with Padi-Loan
+            {/* Right Side: Form / Success State */}
+            <div className="flex-1 flex flex-col relative overflow-y-auto">
+                <div className="absolute top-8 right-8 z-20">
+                    {!isSuccess && (
+                        <p className="text-sm font-medium text-gray-500 transition-opacity">
+                            Already have an account?{" "}
+                            <Link href="/login" className="text-main-green font-bold hover:underline underline-offset-4 decoration-2">
+                                Sign In
+                            </Link>
                         </p>
-                    </motion.div>
+                    )}
+                </div>
 
-                    <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-5"
-                    >
-                        <motion.div variants={itemVariants}>
-                            <Controller
-                                name="fullName"
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                    <Field data-invalid={fieldState.invalid} className="gap-1.5">
-                                        <div className="relative group">
-                                            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-main-green transition-colors">
-                                                <User size={20} />
-                                            </div>
-                                            <Input
-                                                {...field}
-                                                id={field.name}
-                                                placeholder="Full Name"
-                                                aria-invalid={fieldState.invalid}
-                                                className="h-14 bg-gray-50 border-gray-100 rounded-2xl pl-14 pr-6 focus-visible:ring-main-green/20 focus-visible:border-main-green font-medium transition-all hover:bg-gray-100/50"
-                                            />
+                <div className="flex-1 flex items-center justify-center p-6 lg:p-20">
+                    <AnimatePresence mode="wait">
+                        {!isSuccess ? (
+                            <motion.div
+                                key="form"
+                                variants={containerVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit={{ opacity: 0, x: -20 }}
+                                className="w-full max-w-[540px]"
+                            >
+                                <motion.div variants={itemVariants} className="mb-10">
+                                    <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
+                                    <p className="text-gray-500 font-medium">
+                                        Start your business journey with Padi-Loan. Set up takes less than 5 minutes.
+                                    </p>
+                                </motion.div>
+
+                                {/* Step Indicator Pattern */}
+                                <motion.div variants={itemVariants} className="bg-gray-50/80 border border-gray-100 rounded-2xl p-6 mb-10">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Step 1 of 1</span>
+                                        <span className="text-xs font-bold text-main-green">Basic Information</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-full bg-main-green text-white text-[10px] flex items-center justify-center font-bold">1</div>
+                                            <span className="text-xs font-bold text-gray-900">Basic</span>
                                         </div>
-                                        {fieldState.invalid && (
-                                            <FieldError errors={[fieldState.error]} />
-                                        )}
-                                    </Field>
-                                )}
-                            />
-                        </motion.div>
-
-                        <motion.div variants={itemVariants}>
-                            <Controller
-                                name="email"
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                    <Field data-invalid={fieldState.invalid} className="gap-1.5">
-                                        <div className="relative group">
-                                            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-main-green transition-colors">
-                                                <Mail size={20} />
-                                            </div>
-                                            <Input
-                                                {...field}
-                                                id={field.name}
-                                                placeholder="Email address"
-                                                type="email"
-                                                aria-invalid={fieldState.invalid}
-                                                className="h-14 bg-gray-50 border-gray-100 rounded-2xl pl-14 pr-6 focus-visible:ring-main-green/20 focus-visible:border-main-green font-medium transition-all hover:bg-gray-100/50"
-                                            />
+                                        <div className="h-[1px] flex-1 bg-gray-200" />
+                                        <div className="flex items-center gap-2 opacity-40">
+                                            <div className="w-6 h-6 rounded-full border-2 border-gray-300 text-[10px] flex items-center justify-center font-bold text-gray-400">2</div>
+                                            <span className="text-xs font-bold text-gray-400">Contact</span>
                                         </div>
-                                        {fieldState.invalid && (
-                                            <FieldError errors={[fieldState.error]} />
-                                        )}
-                                    </Field>
-                                )}
-                            />
-                        </motion.div>
+                                    </div>
+                                </motion.div>
 
-                        <motion.div variants={itemVariants}>
-                            <Controller
-                                name="phone"
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                    <Field data-invalid={fieldState.invalid} className="gap-1.5">
-                                        <div className="relative group">
-                                            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-main-green transition-colors">
-                                                <Phone size={20} />
-                                            </div>
-                                            <Input
-                                                {...field}
-                                                id={field.name}
-                                                placeholder="Phone Number"
-                                                type="tel"
-                                                aria-invalid={fieldState.invalid}
-                                                className="h-14 bg-gray-50 border-gray-100 rounded-2xl pl-14 pr-6 focus-visible:ring-main-green/20 focus-visible:border-main-green font-medium transition-all hover:bg-gray-100/50"
+                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <motion.div variants={itemVariants}>
+                                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 ml-1">
+                                                Full Name <span className="text-red-500">*</span>
+                                            </label>
+                                            <Controller
+                                                name="fullName"
+                                                control={form.control}
+                                                render={({ field, fieldState }) => (
+                                                    <Field data-invalid={fieldState.invalid} className="gap-1.5">
+                                                        <Input
+                                                            {...field}
+                                                            placeholder="Enter full name"
+                                                            className="h-12 bg-white border-gray-200 rounded-xl px-4 focus-visible:ring-main-green/10 focus-visible:border-main-green font-medium transition-all"
+                                                        />
+                                                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                                    </Field>
+                                                )}
                                             />
-                                        </div>
-                                        {fieldState.invalid && (
-                                            <FieldError errors={[fieldState.error]} />
-                                        )}
-                                    </Field>
-                                )}
-                            />
-                        </motion.div>
+                                        </motion.div>
 
-                        <motion.div variants={itemVariants}>
-                            <Controller
-                                name="password"
-                                control={form.control}
-                                render={({ field, fieldState }) => (
-                                    <Field data-invalid={fieldState.invalid} className="gap-1.5">
-                                        <div className="relative group">
-                                            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-main-green transition-colors">
-                                                <Lock size={20} />
-                                            </div>
-                                            <Input
-                                                {...field}
-                                                id={field.name}
-                                                type={showPassword ? "text" : "password"}
-                                                placeholder="Password"
-                                                aria-invalid={fieldState.invalid}
-                                                className="h-14 bg-gray-50 border-gray-100 rounded-2xl pl-14 pr-14 focus-visible:ring-main-green/20 focus-visible:border-main-green font-medium transition-all hover:bg-gray-100/50"
+                                        <motion.div variants={itemVariants}>
+                                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 ml-1">
+                                                Email address <span className="text-red-500">*</span>
+                                            </label>
+                                            <Controller
+                                                name="email"
+                                                control={form.control}
+                                                render={({ field, fieldState }) => (
+                                                    <Field data-invalid={fieldState.invalid} className="gap-1.5">
+                                                        <Input
+                                                            {...field}
+                                                            type="email"
+                                                            placeholder="Enter email address"
+                                                            className="h-12 bg-white border-gray-200 rounded-xl px-4 focus-visible:ring-main-green/10 focus-visible:border-main-green font-medium transition-all"
+                                                        />
+                                                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                                    </Field>
+                                                )}
                                             />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-main-green transition-colors p-1"
+                                        </motion.div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <motion.div variants={itemVariants}>
+                                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 ml-1">
+                                                Phone Number <span className="text-red-500">*</span>
+                                            </label>
+                                            <Controller
+                                                name="phone"
+                                                control={form.control}
+                                                render={({ field, fieldState }) => (
+                                                    <Field data-invalid={fieldState.invalid} className="gap-1.5">
+                                                        <Input
+                                                            {...field}
+                                                            type="tel"
+                                                            placeholder="Enter phone number"
+                                                            className="h-12 bg-white border-gray-200 rounded-xl px-4 focus-visible:ring-main-green/10 focus-visible:border-main-green font-medium transition-all"
+                                                        />
+                                                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                                    </Field>
+                                                )}
+                                            />
+                                        </motion.div>
+
+                                        <motion.div variants={itemVariants}>
+                                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 ml-1">
+                                                Password <span className="text-red-500">*</span>
+                                            </label>
+                                            <Controller
+                                                name="password"
+                                                control={form.control}
+                                                render={({ field, fieldState }) => (
+                                                    <Field data-invalid={fieldState.invalid} className="gap-1.5">
+                                                        <div className="relative">
+                                                            <Input
+                                                                {...field}
+                                                                type={showPassword ? "text" : "password"}
+                                                                placeholder="Create password"
+                                                                className="h-12 bg-white border-gray-200 rounded-xl pl-4 pr-12 focus-visible:ring-main-green/10 focus-visible:border-main-green font-medium transition-all"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setShowPassword(!showPassword)}
+                                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-main-green transition-colors"
+                                                            >
+                                                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                            </button>
+                                                        </div>
+                                                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                                    </Field>
+                                                )}
+                                            />
+                                        </motion.div>
+                                    </div>
+
+                                    <motion.div variants={itemVariants} className="pt-4">
+                                        <p className="text-[11px] text-gray-400 font-medium mb-8 leading-relaxed max-w-sm">
+                                            By clicking Next, you agree to Padi-Loan's{" "}
+                                            <Link href="/terms" className="text-main-green font-bold hover:underline">Terms</Link> &{" "}
+                                            <Link href="/privacy" className="text-main-green font-bold hover:underline">Privacy Policy</Link>.
+                                        </p>
+
+                                        <div className="flex border-t border-gray-100 pt-8 items-center gap-10">
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                <div className="w-2 h-2 rounded-full bg-main-green" />
+                                                <div className="w-1.5 h-1.5 rounded-full bg-gray-200" />
+                                                <span className="text-xs font-black text-gray-700 ml-1">1/2</span>
+                                            </div>
+
+                                            <Button
+                                                disabled={isLoading}
+                                                className="flex-1 h-12 bg-[#2D4BF0] hover:bg-[#1e38c7] text-white rounded-full text-sm font-bold shadow-xl shadow-[#2D4BF0]/10 transition-all active:scale-[0.98] group"
+                                                type="submit"
+                                                style={{ backgroundColor: "#1F4941" }}
                                             >
-                                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                            </button>
+                                                {isLoading ? (
+                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        Next
+                                                        <ChevronRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                                                    </>
+                                                )}
+                                            </Button>
                                         </div>
-                                        {fieldState.invalid && (
-                                            <FieldError errors={[fieldState.error]} />
-                                        )}
-                                    </Field>
-                                )}
-                            />
-                        </motion.div>
-
-                        <motion.div variants={itemVariants} className="pt-2">
-                            <Button
-                                disabled={isLoading}
-                                className="w-full h-14 bg-main-green text-lemon-primary hover:bg-main-green/90 rounded-2xl text-lg font-bold shadow-lg shadow-main-green/10 transition-all active:scale-[0.98] group"
-                                type="submit"
+                                    </motion.div>
+                                </form>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="success"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="w-full max-w-[480px] text-center"
                             >
-                                {isLoading ? (
-                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                ) : (
-                                    <>
-                                        Create account
-                                        <ChevronRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
-                                    </>
-                                )}
-                            </Button>
-                        </motion.div>
-                    </form>
+                                <div className="w-20 h-20 bg-main-green/10 rounded-3xl flex items-center justify-center mx-auto mb-8">
+                                    <Mail className="w-10 h-10 text-main-green" />
+                                </div>
+                                <h2 className="text-3xl font-bold text-gray-900 mb-4">Check your email</h2>
+                                <p className="text-gray-500 font-medium leading-relaxed mb-10">
+                                    We've sent a verification link to <span className="text-main-green font-bold italic">{registeredEmail}</span>. 
+                                    Please check your inbox (and spam folder) to activate your account.
+                                </p>
 
-                    <motion.div variants={itemVariants} className="mt-8">
-                        <div className="relative flex items-center justify-center mb-6">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-100"></div>
-                            </div>
-                            <span className="relative px-4 bg-white text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                or sign up with
-                            </span>
-                        </div>
-
-                        <button className="flex gap-3 items-center justify-center w-full h-14 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all active:scale-[0.98] font-semibold text-gray-700">
-                            <img height={24} width={24} src="/google.png" className="object-contain" alt="Google" />
-                            Sign up with Google
-                        </button>
-                    </motion.div>
-
-                    <motion.div variants={itemVariants} className="mt-10 text-center">
-                        <p className="text-xs text-gray-400 mb-6">
-                            By creating an account you agree to Padi-Loan's{" "}
-                            <Link href="/terms" className="text-main-green font-bold hover:underline">
-                                Terms
-                            </Link>{" "}
-                            &{" "}
-                            <Link href="/privacy" className="text-main-green font-bold hover:underline">
-                                Privacy Policy
-                            </Link>
-                        </p>
-
-                        <div className="text-sm">
-                            <span className="text-gray-500 font-medium tracking-tight">
-                                Already have an account?{" "}
-                            </span>
-                            <Link
-                                href="/login"
-                                className="text-main-green font-black hover:underline underline-offset-4 decoration-2"
-                            >
-                                Log in
-                            </Link>
-                        </div>
-                    </motion.div>
-                </motion.div>
+                                <div className="flex flex-col gap-4">
+                                    <Button
+                                        onClick={() => router.push("/login")}
+                                        className="w-full h-14 bg-main-green hover:bg-main-green/90 text-white rounded-full text-lg font-bold shadow-xl shadow-main-green/10 transition-all active:scale-[0.98] group"
+                                    >
+                                        Got it, take me to login
+                                        <ChevronRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                                    </Button>
+                                    
+                                    <div className="pt-4 text-sm font-medium text-gray-400">
+                                        Didn't receive the email?{" "}
+                                        <button 
+                                            onClick={() => setIsSuccess(false)}
+                                            className="text-main-green font-bold hover:underline"
+                                        >
+                                            Try another email address
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
             </div>
         </div>
     );

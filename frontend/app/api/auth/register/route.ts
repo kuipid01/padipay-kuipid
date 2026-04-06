@@ -23,14 +23,14 @@ export async function POST(req: Request) {
     }
 
     const { user, token } = data;
-
-    const cookieStore = await cookies();
-    cookieStore.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24, // 1 day
-      path: "/",
-    });
+//we should save cookie on registration
+    // const cookieStore = await cookies();
+    // cookieStore.set("token", token, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production",
+    //   maxAge: 60 * 60 * 24, // 1 day
+    //   path: "/",
+    // });
 
     return NextResponse.json({ user });
   } catch (error) {

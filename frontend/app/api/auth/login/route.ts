@@ -25,10 +25,20 @@ export async function POST(req: Request) {
     const { user, token } = data;
 
     const cookieStore = await cookies();
+    
+    // Secure token cookie (httpOnly)
     cookieStore.set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24, // 1 day
+      path: "/",
+    });
+
+    // Client-readable user ID for React Query cache-busting
+    cookieStore.set("uid", user.id, {
+      httpOnly: false, // Must be false to be readable by useUser hook
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24,
       path: "/",
     });
 

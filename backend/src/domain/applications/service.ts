@@ -5,14 +5,7 @@ import { loans, repayments, loanApplications } from "../../db/schema";
 import { eq } from "drizzle-orm";
 import { generateRepaymentSchedule } from "../../utils/loan-math";
 
-export interface ServiceError {
-  code: number;
-  message: string;
-}
-
-export type ServiceResult<T> = 
-  | { success: true; data: T }
-  | { success: false; error: ServiceError };
+import { ServiceError, ServiceResult } from "../../lib/types";
 
 export const applicationsService = {
   async getAll(ownerId: string): Promise<ServiceResult<Awaited<ReturnType<typeof applicationsRepo.findAllByOwner>>>> {

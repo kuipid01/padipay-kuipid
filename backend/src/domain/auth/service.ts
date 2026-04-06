@@ -4,14 +4,7 @@ import { InsertUserSession } from "../../zod-schemas/user";
 import { brevo } from "../../lib/brevo";
 import { randomBytes } from "crypto";
 
-export interface ServiceError {
-  code: number;
-  message: string;
-}
-
-export type ServiceResult<T> = 
-  | { success: true; data: T }
-  | { success: false; error: ServiceError };
+import { ServiceError, ServiceResult } from "../../lib/types";
 
 // User without password
 type SafeUser = Omit<NonNullable<Awaited<ReturnType<typeof usersRepo.findById>>>, "passwordHash">;
@@ -26,15 +19,16 @@ export const authService = {
     fullName?: string;
     phone?: string;
   }): Promise<ServiceResult<{ user: SafeUser; token: string }>> {
-    if (!input.email || !input.password) {
+    if (!input.email || !input.password || !input.phone) {
       return {
         success: false,
-        error: { code: 400, message: "Email and password are required" },
+        error: { code: 400, message: "Email and password and phone number must be provided are required" },
       };
     }
 
     const existingUser = await usersRepo.findByEmail(input.email);
-    if (existingUser) {
+    const existingUserPhone = await usersRepo.findByPhone(input.phone!);
+    if (existingUser || existingUserPhone) {
       return {
         success: false,
         error: { code: 400, message: "User already exists" },
@@ -98,7 +92,31 @@ export const authService = {
 
     return { success: true, data: { user: userWithoutPassword, token } };
   },
+  async sendVerificationMessage(mail: string): Promise<ServiceResult<{ success: true }>> {
+    if (!mail) {
+      return {
+        success: false,
+        error: { code: 400, message: "Email is required" }
+      }
+    }
+    const user = await usersRepo.findByEmail(mail);
+    if (!user) {
+      return {
+        success: false,
+        error: { code: 404, message: "User not found" }
+      }
+    }
 
+    // Generate a secure random token instead of a full JWT for this specific case
+    const token = randomBytes(32).toString("hex");
+
+    await usersRepo.updateResetToken(mail, token, new Date(Date.now() + 1000 * 60 * 60));
+    await brevo.sendVerificationEmail(mail, user.fullName || "", token);
+    return {
+      success: true,
+      data: { success: true }
+    }
+  },
 async saveSessions(data: InsertUserSession): Promise<void> {
   await usersRepo.saveSession(data);
 },
@@ -174,5 +192,20 @@ async saveSessions(data: InsertUserSession): Promise<void> {
     await usersRepo.updatePassword(user.id, passwordHash);
 
     return { success: true, data: { success: true } };
+  },
+
+  async verifyToken(token: string): Promise<ServiceResult<{ user: SafeUser }>> {
+    const user = await usersRepo.findByResetToken(token);
+    
+    if (!user || !user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
+      return {
+        success: false,
+        error: { code: 400, message: "Invalid or expired token" },
+      };
+    }
+    await usersRepo.updateResetToken(user.email, null, null);
+    await usersRepo.updateEmailVerified(user.email, true);
+    const { passwordHash: _, ...userWithoutPassword } = user;
+    return { success: true, data: { user: userWithoutPassword } };
   },
 };

@@ -12,6 +12,11 @@ export async function logoutUser() {
     path: "/",
   });
 
+  cookieStore.set("uid", "", {
+    expires: new Date(0),
+    path: "/",
+  });
+
   cookieStore.set("borrower_token", "", {
     expires: new Date(0),
     path: "/",

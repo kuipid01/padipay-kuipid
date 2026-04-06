@@ -2,14 +2,7 @@ import { UpdateLoanAppInput } from "../../zod-schemas/loan-apps";
 import { loanAppsRepo } from "./repo";
 import { CreateLoanAppInput } from "./types";
 
-export interface ServiceError {
-  code: number;
-  message: string;
-}
-
-export type ServiceResult<T> = 
-  | { success: true; data: T }
-  | { success: false; error: ServiceError };
+import { ServiceError, ServiceResult } from "../../lib/types";
 
 /**
  * Service layer for loan apps business logic.

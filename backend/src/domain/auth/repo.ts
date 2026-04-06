@@ -19,6 +19,11 @@ export const usersRepo = {
       where: eq(users.email, email),
     });
   },
+  async findByPhone(phone: string) {
+    return db.query.users.findFirst({
+      where: eq(users.phone, phone),
+    });
+  },
   async findById(id: string) {
     return db.query.users.findFirst({
       where: eq(users.id, id),
@@ -86,10 +91,18 @@ export const usersRepo = {
     return user;
   },
 
-  async updateResetToken(email: string, token: string, expires: Date) {
+  async updateResetToken(email: string, token: string | null, expires: Date | null) {
     const [updated] = await db
       .update(users)
       .set({ resetPasswordToken: token, resetPasswordExpires: expires })
+      .where(eq(users.email, email))
+      .returning();
+    return updated;
+  },
+  async updateEmailVerified(email: string, verified: boolean) {
+    const [updated] = await db
+      .update(users)
+      .set({ emailVerified: verified })
       .where(eq(users.email, email))
       .returning();
     return updated;

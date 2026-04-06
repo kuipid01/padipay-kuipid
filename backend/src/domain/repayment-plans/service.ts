@@ -1,14 +1,7 @@
 import { UpdateRepaymentPlanInput } from "../../zod-schemas/repayment-plans";
 import { repaymentPlansRepo } from "./repo";
 
-export interface ServiceError {
-  code: number;
-  message: string;
-}
-
-export type ServiceResult<T> = 
-  | { success: true; data: T }
-  | { success: false; error: ServiceError };
+import { ServiceError, ServiceResult } from "../../lib/types";
 
 /**
  * Service layer for repayment plans business logic.

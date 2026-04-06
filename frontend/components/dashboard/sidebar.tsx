@@ -53,6 +53,7 @@ import {
 
 import { useUser } from "../../hooks/use-user";
 import { logoutUser } from "../../lib/logout";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DashboardSidebarProps {
   setUpgradeModal: Dispatch<SetStateAction<boolean>>;
@@ -292,14 +293,14 @@ export function DashboardSidebar({
 }
 
 export function DashboardHeader() {
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
   const { setIsMobileOpen } = useSidebar();
   const [isFocused, setIsFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  console.log(user, "USER")
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -418,46 +419,60 @@ export function DashboardHeader() {
           </Button>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="flex items-center gap-1 md:gap-2 bg-white rounded-2xl md:p-1 md:px-2 shadow-md cursor-pointer hover:bg-gray-50 transition-colors">
-              <Avatar className="size-10 md:size-12 rounded-full border-2 border-primary/10">
-                <AvatarImage src={user?.avatarUrl} />
-                <AvatarFallback>
-                  <User2 />
-                </AvatarFallback>
-              </Avatar>
-              <div className="md:flex flex-col hidden gap-1 text-left">
-                <p className="font-bold">{user?.fullName}</p>
-                <p className="text-xs text-gray-400">{user?.email}</p>
-              </div>
+        {isLoading ? (
+          <div className="flex items-center gap-1 md:gap-2 bg-white rounded-2xl md:p-1 md:px-2 shadow-md p-1 min-w-[140px]">
+            <Skeleton className="size-10 md:size-12 rounded-full" />
+            <div className="md:flex flex-col hidden gap-2">
+              <Skeleton className="h-4 w-20 rounded-md" />
+              <Skeleton className="h-3 w-28 rounded-md" />
             </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-[200px] rounded-2xl p-2"
-          >
-            <DropdownMenuLabel className="font-bold text-gray-500 uppercase text-[10px] tracking-widest">
-              My Account
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="rounded-xl font-bold cursor-pointer"
-              onClick={() => router.push("/dashboard/settings")}
+          </div>
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-1 md:gap-2 bg-white rounded-2xl md:p-1 md:px-2 shadow-md cursor-pointer hover:bg-gray-50 transition-colors">
+                <Avatar className="size-10 md:size-12 rounded-full border-2 border-primary/10">
+                  <AvatarImage src={user?.avatarUrl} />
+                  <AvatarFallback className="bg-lemon-primary/10 text-main-green font-bold">
+                    {user?.fullName?.charAt(0) || <User2 className="size-5" />}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="md:flex flex-col hidden gap-1 text-left">
+                  <p className="font-bold text-sm leading-none">{user?.fullName}</p>
+                  <p className="text-[11px] text-gray-400 font-medium truncate max-w-[120px]">{user?.email}</p>
+                </div>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-[220px] rounded-[24px] p-2 shadow-2xl border-gray-100"
             >
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <form action={logoutUser}>
-              <DropdownMenuItem asChild>
-                <button type="submit" className="w-full text-red-700 font-bold text-left">
-                  <LogOut className="mr-2 h-4 w-4 text-red-500" />   Logout
-                </button>
+              <div className="px-3 py-3 md:hidden">
+                <p className="font-bold text-sm">{user?.fullName}</p>
+                <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
+              </div>
+              <DropdownMenuSeparator className="md:hidden" />
+              <DropdownMenuLabel className="px-3 pt-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                My Account
+              </DropdownMenuLabel>
+              <DropdownMenuItem
+                className="rounded-xl px-3 py-2.5 font-bold cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => router.push("/dashboard/settings")}
+              >
+                <Settings className="mr-3 h-4 w-4 text-gray-400" />
+                Settings
               </DropdownMenuItem>
-            </form>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuSeparator className="my-2 bg-gray-100" />
+              <form action={logoutUser} className="w-full">
+                <DropdownMenuItem asChild className="rounded-xl px-0 py-0">
+                  <button type="submit" className="w-full flex items-center px-3 py-2.5 text-red-600 font-bold hover:bg-red-50 transition-colors rounded-xl">
+                    <LogOut className="mr-3 h-4 w-4 text-red-500" /> Logout
+                  </button>
+                </DropdownMenuItem>
+              </form>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </header>
   );

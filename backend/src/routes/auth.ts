@@ -37,11 +37,18 @@ auth.post("/register", async (c) => {
     fullName: body.fullName,
     phone: body.phone,
   });
-
   if (!result.success) {
     return c.json(
       { error: result.error.message },
       result.error.code as 400 | 401,
+    );
+  }
+
+  const verificationMailSent = await authService.sendVerificationMessage(body.email);
+  if (!verificationMailSent.success) {
+    return c.json(
+      { error: verificationMailSent.error.message },
+      verificationMailSent.error.code as 400 | 401 | 404,
     );
   }
 
@@ -50,6 +57,7 @@ auth.post("/register", async (c) => {
     {
       user: result.data.user,
       token: result.data.token,
+      verificationMail:verificationMailSent.success
     },
     201,
   );
@@ -73,10 +81,10 @@ auth.post("/login", async (c) => {
     password: body.password,
   });
 
-  if (!result.success) {
+  if (result.success === false) {
     return c.json(
       { error: result.error.message },
-      result.error.code as 400 | 401
+      result.error.code as 400 | 401,
     );
   }
 
@@ -187,6 +195,26 @@ auth.post("/forgot-password", async (c) => {
 
   // Still return 200/success even if email doesn't exist (handled by service)
   return c.json({ success: true, message: "If an account with that email exists, a reset link has been sent." });
+});
+
+// GET /api/auth/verify-token
+auth.get("/verify-token", async (c) => {
+  const token = c.req.query("token");
+
+  if (!token) {
+    return c.json({ error: "Token is required" }, 400);
+  }
+
+  const result = await authService.verifyToken(token);
+
+  if (!result.success) {
+    return c.json(
+      { error: result.error.message },
+      result.error.code as 400 | 401 | 404
+    );
+  }
+
+  return c.json({ user: result.data.user });
 });
 
 // POST /api/auth/reset-password
