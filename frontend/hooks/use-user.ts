@@ -42,6 +42,7 @@ export interface Borrower {
   address: string | null;
   city: string | null;
   state: string | null;
+  avatarUrl: string | null;
   country: string;
   employmentType: string | null;
   monthlyIncome: string | null;
