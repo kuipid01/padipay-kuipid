@@ -136,10 +136,10 @@ export function BorrowerHeader() {
                     <Bell size={20} />
                 </Button>
                 <div className="flex items-center gap-2 bg-white rounded-2xl p-1 px-2 shadow-sm border border-gray-100">
-                    <Avatar className="size-10 rounded-full border-2 border-primary/10">
+                    {/* <Avatar className="size-10 rounded-full border-2 border-primary/10">
                         <AvatarImage src={user?.avatarUrl} />
                         <AvatarFallback><User2 /></AvatarFallback>
-                    </Avatar>
+                    </Avatar> */}
                     <div className="md:flex flex-col hidden text-left">
                         <p className="font-bold text-sm leading-none">{user?.firstName ?? ""}</p>
                         <p className="text-[10px] text-gray-400">Borrower</p>
