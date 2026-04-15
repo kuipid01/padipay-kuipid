@@ -8,6 +8,7 @@ import { AccountDisabledWrapper } from "../../components/general/disabled";
 import { Plans } from "../../components/landing/plans";
 import { useState } from "react";
 import { X } from "lucide-react";
+import { FundingStatusChecker } from "@/components/dashboard/funding-status-checker";
 
 export default function DashboardClientLayout({
     children,
@@ -16,6 +17,7 @@ export default function DashboardClientLayout({
 
     return (
         <SidebarProvider>
+            <FundingStatusChecker />
             <AccountDisabledWrapper>
                 <div className="flex relative min-h-screen bg-white">
                     {/* Sidebar */}

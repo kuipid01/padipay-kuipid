@@ -153,6 +153,7 @@ function SidebarContent({
             >
               <link.icon
                 size={20}
+                color={isActive ? "black" : "black"}
                 className={cn(
                   "transition-colors shrink-0",
                   isActive
