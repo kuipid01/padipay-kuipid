@@ -18,7 +18,7 @@ const CHECK_INTERVAL = 3 * 60 * 60 * 1000; // 3 hours
 const STORAGE_KEY = "padipay_last_funding_check";
 const LOW_BALANCE_THRESHOLD = 2000000; // 20,000 Naira in kobo
 
-export function FundingStatusChecker() {
+export function FundingStatusChecker({ inline = false }: { inline?: boolean }) {
     const [isVisible, setIsVisible] = useState(false);
     const [statusType, setStatusType] = useState<"low" | "empty">("low");
     const [shouldFetch, setShouldFetch] = useState(false);
@@ -132,7 +132,10 @@ export function FundingStatusChecker() {
                     animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 12, x: 12, scale: 0.98 }}
                     transition={{ duration: 0.22, ease: "easeOut" }}
-                    className="pointer-events-none fixed bottom-4 right-4 z-[100] w-[calc(100vw-1.5rem)] max-w-[360px] sm:bottom-5 sm:right-5"
+                    className={inline 
+                        ? "pointer-events-none w-full max-w-[360px]"
+                        : "pointer-events-none fixed bottom-4 right-4 z-[100] w-[calc(100vw-1.5rem)] max-w-[360px] sm:bottom-5 sm:right-5"
+                    }
                 >
                     <div className="pointer-events-auto relative overflow-hidden rounded-[24px] border border-gray-200/70 bg-white/95 p-5 shadow-[0_12px_40px_rgba(0,0,0,0.10)] backdrop-blur-md">
                         <div className="absolute -right-6 -top-6 size-24 rounded-full bg-lemon-primary/10 blur-2xl transition-colors duration-500" />

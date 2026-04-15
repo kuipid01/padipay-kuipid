@@ -13,38 +13,39 @@ const router = new Hono();
 router.use("*", authMiddleware);
 
 router.get("/", async (c) => {
-    const user = c.get("user");
-    
-    const settings = await db.query.users.findFirst({
-        where: eq(users.id, user.id),
-        columns: {
-            id: true,
-            fullName: true,
-            email: true,
-            phone: true,
-            paystackPublicKey: true,
-            role: true,
-            avatarUrl:true,
-            brandColor:true,
-            brandLogoUrl:true,
-            isTwoFactorEnabled:true,
-            language:true,
-            timezone:true,
-            emailNotifyNewApplication:true,
-            emailNotifyPaymentFailed:true,
-            emailNotifyPaymentReceived:true,
-            emailNotifyLoanOverdue:true,
-            smsNotifyCriticalOnly:true,
-            disabledAt:true,
-            deletedAt:true,
-            deletionRequestedAt:true,
-            plan:true,
-            subscriptionStatus:true,
-            subscriptionEndsAt:true,
-        }
-    });
+  const user = c.get("user");
 
-    return c.json(settings);
+  const settings = await db.query.users.findFirst({
+    where: eq(users.id, user.id),
+    columns: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      paystackPublicKey: true,
+      role: true,
+      avatarUrl: true,
+      brandColor: true,
+      brandLogoUrl: true,
+      isTwoFactorEnabled: true,
+      language: true,
+      timezone: true,
+      emailNotifyNewApplication: true,
+      emailNotifyPaymentFailed: true,
+      emailNotifyPaymentReceived: true,
+      emailNotifyLoanOverdue: true,
+      smsNotifyCriticalOnly: true,
+      disabledAt: true,
+      deletedAt: true,
+      deletionRequestedAt: true,
+      plan: true,
+      subscriptionStatus: true,
+      subscriptionEndsAt: true,
+      trialEndsAt: true,
+    }
+  });
+
+  return c.json(settings);
 });
 
 router.patch("/", async (c) => {
@@ -125,33 +126,33 @@ router.patch("/", async (c) => {
 //enable user 
 
 //enable user 
-router.post("/enable", async (c) => { 
-    const userCtx = c.get("user");
-    if(!userCtx?.id){
-        return c.json({error:"Unauthorized"}, 401);
-    }
-    
-    const {password} = await c.req.json();
+router.post("/enable", async (c) => {
+  const userCtx = c.get("user");
+  if (!userCtx?.id) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
 
-    const user = await usersRepo.findById(userCtx.id);
-    if (!user) {
-        return c.json({
-            success: false,
-            error: { code: 401, message: "Invalid credentials" }
-        }, 401);
-    }
-    
-    const isValid = await comparePassword(password, user.passwordHash);
-    if(!isValid) {
-        return c.json({error:"Invalid password"}, 401);
-    }
+  const { password } = await c.req.json();
 
-    const updated = await db.update(users)
-        .set({disabledAt: null})
-        .where(eq(users.id, user.id))
-        .returning();
-        
-    return c.json(updated[0]);
+  const user = await usersRepo.findById(userCtx.id);
+  if (!user) {
+    return c.json({
+      success: false,
+      error: { code: 401, message: "Invalid credentials" }
+    }, 401);
+  }
+
+  const isValid = await comparePassword(password, user.passwordHash);
+  if (!isValid) {
+    return c.json({ error: "Invalid password" }, 401);
+  }
+
+  const updated = await db.update(users)
+    .set({ disabledAt: null })
+    .where(eq(users.id, user.id))
+    .returning();
+
+  return c.json(updated[0]);
 })
 
 

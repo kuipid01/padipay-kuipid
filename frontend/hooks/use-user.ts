@@ -22,6 +22,7 @@ interface User {
   plan?: "Basic" | "Pro" | "Enterprise";
   subscriptionStatus?: "active" | "inactive" | "expired" | "cancelled";
   subscriptionEndsAt?: string;
+  trialEndsAt?: string;
 }
 
 export interface Borrower {
@@ -56,14 +57,13 @@ export function useUser() {
     queryKey: ["user", userId],
     queryFn: async () => {
       const res = await fetch("/api/settings");
-          console.log("RES", res)
+
       if (!res.ok) {
         if (res.status === 401) {
           throw new Error("Unauthorized");
         }
         throw new Error("Failed to fetch user");
       }
-      
       return res.json();
     },
     retry: (failureCount, error) => {
@@ -80,12 +80,12 @@ export function useUser() {
 }
 export function useBorrower() {
   const borrowerId = getCookie("uid"); // Or a specific borrower_id if you set one
-  
+
   const query = useQuery<Borrower>({
     queryKey: ["borrower", borrowerId],
     queryFn: async () => {
       const res = await fetch("/api/borrower/auth/me");
-      
+
       if (!res.ok) {
         if (res.status === 401) {
           throw new Error("Unauthorized");
@@ -93,7 +93,7 @@ export function useBorrower() {
         throw new Error("Failed to fetch borrower");
       }
       const data = await res.json();
-      return data?.user || data; 
+      return data?.user || data;
     },
     retry: (failureCount, error) => {
       if (error.message === "Unauthorized") return false;

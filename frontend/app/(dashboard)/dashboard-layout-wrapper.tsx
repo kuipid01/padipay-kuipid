@@ -8,16 +8,23 @@ import { AccountDisabledWrapper } from "../../components/general/disabled";
 import { Plans } from "../../components/landing/plans";
 import { useState } from "react";
 import { X } from "lucide-react";
-import { FundingStatusChecker } from "@/components/dashboard/funding-status-checker";
+import { DashboardNoticeStack } from "@/components/dashboard/notice-stack";
+import { useEffect } from "react";
 
 export default function DashboardClientLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
     const [upgradeModal, setUpgradeModal] = useState(false);
 
+    useEffect(() => {
+        const handleOpenUpgrade = () => setUpgradeModal(true);
+        window.addEventListener("open-upgrade-modal", handleOpenUpgrade);
+        return () => window.removeEventListener("open-upgrade-modal", handleOpenUpgrade);
+    }, []);
+
     return (
         <SidebarProvider>
-            <FundingStatusChecker />
+            <DashboardNoticeStack />
             <AccountDisabledWrapper>
                 <div className="flex relative min-h-screen bg-white">
                     {/* Sidebar */}

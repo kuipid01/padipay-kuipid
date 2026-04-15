@@ -79,6 +79,9 @@ export const usersRepo = {
 
 
   async create(data: CreateUserInput) {
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 30);
+
     const [user] = await db
       .insert(users)
       .values({
@@ -86,6 +89,7 @@ export const usersRepo = {
         passwordHash: data.passwordHash,
         fullName: data.fullName,
         phone: data.phone,
+        trialEndsAt: trialEndsAt,
       })
       .returning();
     return user;

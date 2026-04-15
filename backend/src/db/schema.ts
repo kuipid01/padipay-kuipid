@@ -129,6 +129,7 @@ export const users = pgTable("users", {
   plan: planEnum("plan").default("Basic"),
   subscriptionStatus: subscriptionStatusEnum("subscription_status").default("inactive"),
   subscriptionEndsAt: timestamp("subscription_ends_at"),
+  trialEndsAt: timestamp("trial_ends_at"),
 
   // Notifications - Email
   emailNotifyNewApplication: boolean("email_notify_new_application").default(
