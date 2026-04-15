@@ -5,86 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Wallet, X, AlertTriangle, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-import { useUser } from "@/hooks/use-user";
+import { useWallet } from "@/hooks/use-wallet";
 
-interface WalletBalances {
-    balance: number;
-    locked_balance: number;
-    available_balance: number;
-}
-
-const CHECK_INTERVAL = 3 * 60 * 60 * 1000; // 3 hours
-const STORAGE_KEY = "padipay_last_funding_check";
 const LOW_BALANCE_THRESHOLD = 2000000; // 20,000 Naira in kobo
 
 export function FundingStatusChecker({ inline = false }: { inline?: boolean }) {
     const [isVisible, setIsVisible] = useState(false);
     const [statusType, setStatusType] = useState<"low" | "empty">("low");
-    const [shouldFetch, setShouldFetch] = useState(false);
-
-    useEffect(() => {
-        const lastCheck = localStorage.getItem(STORAGE_KEY);
-        const now = Date.now();
-
-        console.log("[FundingStatusChecker] Initializing check", {
-            lastCheck,
-            now,
-            diff: lastCheck ? now - parseInt(lastCheck) : null,
-            checkInterval: CHECK_INTERVAL,
-        });
-
-        if (!lastCheck || now - parseInt(lastCheck) > CHECK_INTERVAL) {
-            console.log("[FundingStatusChecker] Triggering fetch");
-            setShouldFetch(true);
-        } else {
-            console.log("[FundingStatusChecker] Skipping fetch due to interval");
-        }
-    }, []);
-
-    const { data: balances, isLoading, isError, error } = useQuery<WalletBalances | null>({
-        queryKey: ["wallet-balances-check"],
-        queryFn: async () => {
-            console.log("[FundingStatusChecker] Fetching wallet balances");
-
-            const res = await fetch("/api/lender/wallet");
-
-            console.log("[FundingStatusChecker] Wallet API response", {
-                ok: res.ok,
-                status: res.status,
-                statusText: res.statusText,
-            });
-
-            if (!res.ok) {
-                console.log("[FundingStatusChecker] Wallet API request failed");
-                return null;
-            }
-
-            const data = await res.json();
-
-            console.log("[FundingStatusChecker] Wallet balances received", data);
-
-            localStorage.setItem(STORAGE_KEY, Date.now().toString());
-            console.log("[FundingStatusChecker] Updated last check timestamp");
-
-            return data;
-        },
-        enabled: shouldFetch,
-        staleTime: CHECK_INTERVAL,
-        refetchOnWindowFocus: false,
-    });
-
-    useEffect(() => {
-        if (isLoading) {
-            console.log("[FundingStatusChecker] Query loading");
-        }
-    }, [isLoading]);
-
-    useEffect(() => {
-        if (isError) {
-            console.log("[FundingStatusChecker] Query error", error);
-        }
-    }, [isError, error]);
+    const { data: balances, isLoading } = useWallet();
 
     useEffect(() => {
         if (balances) {
@@ -95,34 +23,45 @@ export function FundingStatusChecker({ inline = false }: { inline?: boolean }) {
                 threshold: LOW_BALANCE_THRESHOLD,
             });
 
+            // If we have a healthy balance, never show the popup
+            if (available >= LOW_BALANCE_THRESHOLD) {
+                setIsVisible(false);
+                return;
+            }
+
+            // Check if dismissed today
+            const lastDismissed = localStorage.getItem("padipay_funding_dismissed_at");
+            const today = new Date().toDateString();
+            
+            if (lastDismissed === today) {
+                return;
+            }
+
             if (available === 0) {
-                console.log("[FundingStatusChecker] Wallet empty. Showing popup");
                 setStatusType("empty");
                 setIsVisible(true);
             } else if (available < LOW_BALANCE_THRESHOLD) {
-                console.log("[FundingStatusChecker] Wallet low. Showing popup");
                 setStatusType("low");
                 setIsVisible(true);
-            } else {
-                console.log("[FundingStatusChecker] Wallet balance is healthy. No popup");
             }
         }
     }, [balances]);
 
     const handleClose = () => {
-        console.log("[FundingStatusChecker] Popup dismissed");
         setIsVisible(false);
+        // Persist dismissal for 24 hours
+        localStorage.setItem("padipay_funding_dismissed_at", new Date().toDateString());
     };
 
     const handleFundNow = () => {
-        console.log("[FundingStatusChecker] Fund Now clicked");
         setIsVisible(false);
     };
 
     const handleLater = () => {
-        console.log("[FundingStatusChecker] Later clicked");
-        setIsVisible(false);
+        handleClose();
     };
+
+    if (isLoading || !isVisible) return null;
 
     return (
         <AnimatePresence>

@@ -94,9 +94,19 @@ export function OverviewClient() {
         }
     };
 
+    const { data: wallet, isLoading: isLoadingWallet } = useQuery<{ balance: number; available_balance: number }>({
+        queryKey: ["wallet-balance"],
+        queryFn: () => fetch("/api/lender/wallet").then((res) => res.json()),
+    });
+
     const formatCurrency = (amount: string | number | undefined) => {
         const val = Number(amount || 0);
         return `₦${val.toLocaleString()}`;
+    };
+
+    const formatKoboCurrency = (koboAmount: number | undefined) => {
+        const val = (koboAmount || 0) / 100;
+        return `₦${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
 
     const topStats = [
@@ -154,32 +164,57 @@ export function OverviewClient() {
                         animate={{ opacity: 1, x: 0 }}
                         className="flex-1 max-h-[80vh] w-full"
                     >
-                        <Card className="bg-main-green text-white border-none h-full shadow-xl relative overflow-hidden group min-h-[240px]">
-                            <div className="absolute top-0 right-0 size-40 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-white/10 transition-colors" />
-                            <CardContent className="p-6 flex flex-col justify-between h-full relative z-10">
-                                <div>
-                                    <div className="flex justify-between items-center mb-6">
-                                        <Wallet size={24} className="text-lemon-primary" />
-                                        <Badge className="bg-white/10 text-white font-bold border-none backdrop-blur-md">Payout Ready</Badge>
-                                    </div>
-                                    <p className="text-xs font-bold text-white/60 mb-1">Total Balance</p>
-                                    <h2 className="text-2xl md:text-3xl font-black mb-2">₦420,500.00</h2>
-                                </div>
-                                <div className="mt-4 lg:mt-8 pt-6 border-t border-white/10">
-                                    <p className="text-[10px] font-black text-white/40 uppercase mb-4 tracking-wider">Linked Account</p>
-                                    <div className="flex items-center gap-3">
-                                        <div className="size-8 rounded bg-white/10 flex items-center justify-center">
-                                            <CheckCircle2 size={16} className="text-lemon-primary" />
+                        {isLoadingWallet ? (
+                            <Card className="bg-main-green/90 text-white border-none h-full shadow-xl relative overflow-hidden min-h-[240px]">
+                                <CardContent className="p-6 flex flex-col justify-between h-full">
+                                    <div>
+                                        <div className="flex justify-between items-center mb-6">
+                                            <Skeleton className="size-8 rounded-full bg-white/20" />
+                                            <Skeleton className="h-6 w-24 rounded-full bg-white/20" />
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-bold">Access Bank</p>
-                                            <p className="text-xs text-white/40">**** 8902</p>
+                                        <Skeleton className="h-3 w-20 mb-2 bg-white/20" />
+                                        <Skeleton className="h-10 w-48 mb-4 bg-white/20" />
+                                    </div>
+                                    <div className="mt-4 pt-6 border-t border-white/10">
+                                        <Skeleton className="h-3 w-24 mb-4 bg-white/20" />
+                                        <div className="flex items-center gap-3">
+                                            <Skeleton className="size-8 rounded bg-white/20" />
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-32 bg-white/20" />
+                                                <Skeleton className="h-3 w-24 bg-white/20" />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                            <Image src="/cc.png" width={400} height={300} className="object-cover absolute -right-[50px] -bottom-[100px] w-[300px] md:w-[400px]" alt="CREDIT CARD" />
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <Card className="bg-main-green text-white border-none h-full shadow-xl relative overflow-hidden group min-h-[240px]">
+                                <div className="absolute top-0 right-0 size-40 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-white/10 transition-colors" />
+                                <CardContent className="p-6 flex flex-col justify-between h-full relative z-10">
+                                    <div>
+                                        <div className="flex justify-between items-center mb-6">
+                                            <Wallet size={24} className="text-lemon-primary" />
+                                            <Badge className="bg-white/10 text-white font-bold border-none backdrop-blur-md">Payout Ready</Badge>
+                                        </div>
+                                        <p className="text-xs font-bold text-white/60 mb-1">Available Balance</p>
+                                        <h2 className="text-2xl md:text-3xl font-black mb-2">{formatKoboCurrency(wallet?.available_balance)}</h2>
+                                    </div>
+                                    <div className="mt-4 lg:mt-8 pt-6 border-t border-white/10">
+                                        <p className="text-[10px] font-black text-white/40 uppercase mb-4 tracking-wider">Default Payout Status</p>
+                                        <div className="flex items-center gap-3">
+                                            <div className="size-8 rounded bg-white/10 flex items-center justify-center">
+                                                <CheckCircle2 size={16} className="text-lemon-primary" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold">Account Verified</p>
+                                                <p className="text-xs text-white/40">Ready for automatic settlements</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                                <Image src="/cc.png" width={400} height={300} className="object-cover absolute -right-[50px] -bottom-[100px] w-[300px] md:w-[400px]" alt="CREDIT CARD" />
+                            </Card>
+                        )}
                     </motion.div>
                     {/* 3. Upcoming Payments */}
                     <div className="w-full max-h-[80vh] overflow-y-auto lg:w-[400px]">
