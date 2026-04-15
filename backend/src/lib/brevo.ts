@@ -7,7 +7,7 @@
 const BREVO_BASE_URL = "https://api.brevo.com/v3";
 const BREVO_API_KEY = process.env.BREVO_API_KEY || "";
 const DEFAULT_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || "padiloan@kuipid.com";
-const DEFAULT_SENDER_NAME = process.env.BREVO_SENDER_NAME || "mycashng";
+const DEFAULT_SENDER_NAME = process.env.BREVO_SENDER_NAME || "padiloan";
 
 interface EmailRecipient {
     email: string;
@@ -34,10 +34,8 @@ interface SendEmailOptions {
 
 interface BrevoResponse {
     messageId?: string;
-    error?: {
-        code: string;
-        message: string;
-    };
+    code?: string;
+    message?: string;
 }
 
 interface ContactOptions {
@@ -96,8 +94,12 @@ class BrevoService {
 
             const result: BrevoResponse = await response.json();
 
-            if (!response.ok || result.error) {
-                return { success: false, error: result.error?.message || "Failed to send email" };
+            if (!response.ok) {
+                console.error("Brevo API Error:", result);
+                return { 
+                    success: false, 
+                    error: result.message || `Brevo error (${response.status}): ${response.statusText}` 
+                };
             }
 
             return { success: true, messageId: result.messageId };

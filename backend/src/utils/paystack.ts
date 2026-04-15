@@ -59,7 +59,7 @@ export class PaystackService {
 
   constructor(secretKey?: string) {
     this.secretKey = secretKey || process.env.PAYSTACK_SECRET_KEY || "";
-    
+
     if (!this.secretKey) {
       console.warn("Paystack secret key is missing");
     }
@@ -121,6 +121,38 @@ export class PaystackService {
   }
 
   /**
+   * Charge a customer using a saved authorization code
+   */
+  async chargeAuthorization(params: {
+    email: string;
+    amount: number; // in kobo
+    authorization_code: string;
+    reference?: string;
+    metadata?: any;
+  }): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/transaction/charge_authorization`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.secretKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: params.email,
+        amount: params.amount,
+        authorization_code: params.authorization_code,
+        reference: params.reference,
+        metadata: params.metadata,
+      }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to charge authorization");
+    }
+
+    return response.json();
+  }
+
+  /**
    * Verify webhook signature
    */
   verifyWebhookSignature(payload: string, signature: string): boolean {
@@ -129,7 +161,7 @@ export class PaystackService {
       .createHmac("sha512", this.secretKey)
       .update(payload)
       .digest("hex");
-    
+
     return hash === signature;
   }
 }

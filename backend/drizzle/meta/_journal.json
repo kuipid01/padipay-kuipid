@@ -169,6 +169,13 @@
       "when": 1775500440312,
       "tag": "0023_clammy_menace",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1776258163346,
+      "tag": "0024_easy_gamma_corps",
+      "breakpoints": true
     }
   ]
 }

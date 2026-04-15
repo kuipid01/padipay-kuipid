@@ -70,5 +70,25 @@ export const Templates = {
       <p>We are writing to confirm that we have successfully received your payment of <strong>${amount}</strong>.</p>
       <p>Thank you for choosing PadiLoan!</p>
     `
+  },
+  FUNDING_REQUESTED: {
+    SMS: (name: string, amount: string, dueDate: string, link: string) => 
+      `Hi Admin, loan application for ${name} (${amount}) was approved and requires funding. Link: ${link}`,
+    EMAIL_SUBJECT: (amount: string) => `FUNDING REQUIRED: Application approved for ${amount}`,
+    EMAIL_HTML: (name: string, amount: string, dueDate: string, link: string) => `
+      <p>Hello Admin,</p>
+      <p>A loan application for <strong>${name}</strong> has been approved for the amount of <strong>${amount}</strong>.</p>
+      <p>Please review and handle the funding here: <a href="${link}">${link}</a></p>
+    `
+  },
+  FUNDS_DISBURSED: {
+    SMS: (name: string, amount: string, dueDate: string, link: string) => 
+      `Hi ${name}, your loan of ${amount} has been successfully funded!`,
+    EMAIL_SUBJECT: (amount: string) => `Funds Disbursed: Your loan of ${amount} is on the way!`,
+    EMAIL_HTML: (name: string, amount: string, dueDate: string, link: string) => `
+      <p>Hi ${name},</p>
+      <p>Great news! Your loan application for <strong>${amount}</strong> has been successfully funded.</p>
+      <p>The funds should reflect in your account shortly. You can view your active loan and repayment schedule here: <a href="${link}">${link}</a></p>
+    `
   }
 };

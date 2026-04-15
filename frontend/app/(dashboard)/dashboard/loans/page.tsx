@@ -3,6 +3,7 @@
 
 
 import { LoansList } from "@/components/dashboard/loans-list";
+import { LoansListSkeleton } from "@/components/dashboard/skeletons";
 import { PageHeader } from "@/components/ui/page-header";
 import { useFetch } from "../../../../hooks/general";
 
@@ -26,7 +27,11 @@ export default function LoansPage() {
                 description="Track repayments and manage your active loan portfolio."
             />
 
-            <LoansList initialLoans={loans} />
+            {isLoading ? (
+                <LoansListSkeleton />
+            ) : (
+                <LoansList initialLoans={loans} />
+            )}
         </div>
     );
 }

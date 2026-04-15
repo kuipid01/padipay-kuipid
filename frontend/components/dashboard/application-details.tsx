@@ -121,11 +121,11 @@ export function ApplicationDetails({ application }: ApplicationDetailsProps) {
                   icon={<History size={16} />}
                   label="History"
                 />
-                <TabTrigger
+                {/* <TabTrigger
                   value="activity"
                   icon={<MessageSquare size={16} />}
                   label="Activity"
-                />
+                /> */}
               </TabsList>
             </div>
 
@@ -151,7 +151,7 @@ export function ApplicationDetails({ application }: ApplicationDetailsProps) {
 
             <HistoryTab loanHistory={loanHistory} />
 
-            <ActivityTab application={application} />
+            {/* <ActivityTab application={application} /> */}
           </Tabs>
         </div>
 

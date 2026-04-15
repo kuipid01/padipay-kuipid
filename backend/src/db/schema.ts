@@ -19,6 +19,7 @@ export const loanAppStatusEnum = pgEnum("loan_app_status", [
   "PENDING",
   "APPROVED",
   "REJECTED",
+  "FUNDED",
 ]);
 export const loanStatusEnum = pgEnum("loan_status", [
   "ACTIVE",
@@ -743,5 +744,29 @@ export const notificationLogsRelations = relations(notificationLogs, ({ one }) =
   repayment: one(repayments, {
     fields: [notificationLogs.repaymentId],
     references: [repayments.id],
+  }),
+}));
+
+export const auditLogs = pgTable("audit_logs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  applicationId: uuid("application_id")
+    .references(() => loanApplications.id)
+    .notNull(),
+  action: varchar("action", { length: 50 }).notNull(),
+  actorId: uuid("actor_id")
+    .references(() => users.id)
+    .notNull(),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  application: one(loanApplications, {
+    fields: [auditLogs.applicationId],
+    references: [loanApplications.id],
+  }),
+  actor: one(users, {
+    fields: [auditLogs.actorId],
+    references: [users.id],
   }),
 }));

@@ -23,11 +23,11 @@ applications.use("/*", authMiddleware);
 applications.get("/", async (c) => {
   const user = c.get("user");
   const result = await applicationsService.getAll(user.id);
-  
+
   if (!result.success) {
     return c.json({ error: result.error.message }, result.error.code as errorcode);
   }
-  
+
   return c.json({ applications: result.data });
 });
 
@@ -35,13 +35,13 @@ applications.get("/", async (c) => {
 applications.get("/:appId", async (c) => {
   const user = c.get("user");
   const appId = c.req.param("appId");
-  
+
   const result = await applicationsService.getById(appId, user.id);
-  
+
   if (!result.success) {
     return c.json({ error: result.error.message }, result.error.code as errorcode);
   }
-  
+
   return c.json({ application: result.data });
 });
 
@@ -50,13 +50,13 @@ applications.patch("/:appId", zValidator("json", UpdateApplicationSchema), async
   const user = c.get("user");
   const appId = c.req.param("appId");
   const body = c.req.valid("json");
-  
+
   const result = await applicationsService.update(appId, user.id, body);
-  
+  console.log(result)
   if (!result.success) {
     return c.json({ error: result.error.message }, result.error.code as errorcode);
   }
-  
+
   return c.json({ application: result.data });
 });
 
@@ -64,13 +64,27 @@ applications.patch("/:appId", zValidator("json", UpdateApplicationSchema), async
 applications.post("/:appId/approve", async (c) => {
   const user = c.get("user");
   const appId = c.req.param("appId");
-  
+
   const result = await applicationsService.approve(appId, user.id);
-  
+
   if (!result.success) {
     return c.json({ error: result.error.message }, result.error.code as errorcode);
   }
-  
+
+  return c.json(result.data);
+});
+
+// POST /api/applications/:appId/fund
+applications.post("/:appId/fund", async (c) => {
+  const user = c.get("user");
+  const appId = c.req.param("appId");
+
+  const result = await applicationsService.fund(appId, user.id);
+
+  if (!result.success) {
+    return c.json({ error: result.error.message }, result.error.code as errorcode);
+  }
+
   return c.json(result.data);
 });
 

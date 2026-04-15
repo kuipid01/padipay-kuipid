@@ -76,7 +76,7 @@ export function TableSkeleton({ rows = 5, columns = 5 }: { rows?: number; column
                     <Skeleton className="h-12 w-full md:w-96 rounded-2xl" />
                     <Skeleton className="h-12 w-full md:w-32 rounded-2xl" />
                 </div>
-                
+
                 <div className="space-y-6">
                     {/* Table Header */}
                     <div className="flex items-center justify-between border-b border-gray-50 pb-4">
@@ -95,5 +95,70 @@ export function TableSkeleton({ rows = 5, columns = 5 }: { rows?: number; column
                 </div>
             </CardContent>
         </Card>
+    );
+}
+
+export function LoansListSkeleton() {
+    return (
+        <div className="space-y-6">
+            {/* Stats Cards Skeleton */}
+            <StatCardsSkeleton count={4} />
+
+            {/* Search & Filters Skeleton */}
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <Skeleton className="h-12 w-full md:w-96 rounded-2xl" />
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                    <Skeleton className="h-12 w-28 rounded-2xl" />
+                    <Skeleton className="h-12 w-32 rounded-2xl" />
+                </div>
+            </div>
+
+            {/* Data Table Skeleton */}
+            <Card className="border-none shadow-sm overflow-hidden rounded-[32px]">
+                <div className="p-8">
+                    <div className="space-y-8">
+                        {/* Table Header */}
+                        <div className="flex items-center justify-between border-b border-gray-50 pb-6 px-4">
+                            <Skeleton className="h-3 w-32" />
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-3 w-16" />
+                        </div>
+                        {/* Table Rows */}
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="flex items-center justify-between border-b border-gray-50/50 pb-8 last:border-none px-4">
+                                <div className="flex items-center gap-3 w-32">
+                                    <Skeleton className="size-10 rounded-full shrink-0" />
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-4 w-24" />
+                                        <Skeleton className="h-3 w-32" />
+                                    </div>
+                                </div>
+                                <Skeleton className="h-6 w-24" />
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-20" />
+                                    <Skeleton className="h-3 w-24" />
+                                </div>
+                                <div className="w-24">
+                                    <Skeleton className="h-1.5 w-full rounded-full" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-3 w-20" />
+                                </div>
+                                <Skeleton className="h-7 w-20 rounded-full" />
+                                <div className="flex gap-2">
+                                    <Skeleton className="h-10 w-20 rounded-xl" />
+                                    <Skeleton className="size-10 rounded-xl" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </Card>
+        </div>
     );
 }
