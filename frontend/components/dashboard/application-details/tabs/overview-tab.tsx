@@ -27,6 +27,7 @@ export function OverviewTab({
     totalActiveLoans,
     totalOutstanding,
 }: OverviewTabProps) {
+    console.log(application, "application")
     const creditReport = application?.borrower?.creditReport?.entity;
     const fullName = `${application?.borrower?.firstName ?? "NA"} ${application?.borrower?.lastName ?? ""}`;
 
@@ -158,7 +159,7 @@ export function OverviewTab({
                                 Interest Rate
                             </p>
                             <p className="text-3xl font-black text-main-green">
-                                {application.interestRate}%
+                                {application?.repaymentPlan?.interestRate}%
                             </p>
                         </div>
                         <div>
@@ -177,7 +178,7 @@ export function OverviewTab({
                                 ₦
                                 {(
                                     (parseFloat(application.amount) *
-                                        (1 + parseFloat(application.interestRate) / 100)) /
+                                        (1 + parseFloat(application?.repaymentPlan?.interestRate.toString()) / 100)) /
                                     application.durationMonths
                                 ).toLocaleString(undefined, {
                                     maximumFractionDigits: 0,

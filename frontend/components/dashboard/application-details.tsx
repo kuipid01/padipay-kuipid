@@ -111,11 +111,11 @@ export function ApplicationDetails({ application }: ApplicationDetailsProps) {
                   icon={<FileText size={16} />}
                   label="Documents"
                 />
-                <TabTrigger
+                {/* <TabTrigger
                   value="repayment"
                   icon={<ShieldCheck size={16} />}
                   label="Repayment"
-                />
+                /> */}
                 <TabTrigger
                   value="history"
                   icon={<History size={16} />}
@@ -147,7 +147,7 @@ export function ApplicationDetails({ application }: ApplicationDetailsProps) {
 
             <DocumentsTab borrowerId={application.borrower.id} />
 
-            <RepaymentTab application={application} />
+            {/* <RepaymentTab application={application} /> */}
 
             <HistoryTab loanHistory={loanHistory} />
 

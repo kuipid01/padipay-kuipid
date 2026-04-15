@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { LoanApp } from "@/hooks/user/loan-apps";
+import { PageHeader } from "@/components/ui/page-header";
 
 type LoanApplication = {
     id: string;
@@ -168,25 +169,31 @@ export default function AppDetailsPage() {
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex flex-col gap-2">
+            <PageHeader
+                title={
                     <div className="flex items-center gap-2">
-                        <h1 className="text-4xl font-black text-main-green tracking-tight">{app.name}</h1>
+                        {app.name}
                         <Badge className={cn("text-[10px] font-black uppercase tracking-widest border-none px-3 h-6", app.isActive ? "bg-green-50 text-green-600" : "bg-gray-100 text-gray-500")}>
                             {app.isActive ? "Active" : "Inactive"}
                         </Badge>
                     </div>
-                    <p className="text-gray-500 font-medium">Overview and management for <span className="font-black text-main-green">{app.slug}</span></p>
-                </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" className="border-gray-100 rounded-2xl font-bold h-11" asChild>
-                        <Link href={`/dashboard/apps/${appId}/settings`}>Settings</Link>
-                    </Button>
-                    <Button className="bg-lemon-primary text-main-green hover:bg-lemon-primary/90 font-black rounded-2xl h-11 shadow-lg shadow-lemon-primary/20" asChild>
-                        <Link href={`/dashboard/apps/${appId}/analytics`}>Analytics</Link>
-                    </Button>
-                </div>
-            </div>
+                }
+                description={
+                    <>
+                        Overview and management for <span className="font-black text-main-green">{app.slug}</span>
+                    </>
+                }
+                actions={
+                    <>
+                        <Button variant="outline" className="border-gray-100 rounded-2xl font-bold h-11" asChild>
+                            <Link href={`/dashboard/apps/${appId}/settings`}>Settings</Link>
+                        </Button>
+                        <Button className="bg-lemon-primary text-main-green hover:bg-lemon-primary/90 font-black rounded-2xl h-11 shadow-lg shadow-lemon-primary/20" asChild>
+                            <Link href={`/dashboard/apps/${appId}/analytics`}>Analytics</Link>
+                        </Button>
+                    </>
+                }
+            />
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

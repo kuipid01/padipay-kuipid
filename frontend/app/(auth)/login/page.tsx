@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Lock, Mail, ChevronRight, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence, Easing } from "framer-motion";
 import { SuspenseLoader } from "../../../components/ui/suspense-loader";
+import Image from "next/image";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -97,10 +98,10 @@ function LoginForm() {
 
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-24">
-            <div className="w-10 h-10 bg-lemon-primary rounded-xl flex items-center justify-center font-black text-main-green text-xl shadow-lg shadow-black/10">
-              P
-            </div>
-            <span className="text-2xl font-bold text-white tracking-tight">Padi-Loan</span>
+            <Image src="/logo.svg" alt="Logo" width={50} height={50} />
+            <span className="font-bold text-white uppercase text-3xl">My</span>
+            <span className="font-extrabold text-lemon-primary uppercase -ml-3 text-4xl">Cash</span>
+            <span className="font-bold text-white uppercase -ml-3 text-3xl">NG</span>
           </div>
 
           <div className="max-w-md">
@@ -136,7 +137,7 @@ function LoginForm() {
           </p>
         </div>
 
-        <div className="flex-1 flex items-center justify-start p-6 lg:py-30 lg:px-20">
+        <div className="flex-1 flex items-center justify-start p-6 lg:pt-40 lg:px-20">
           <motion.div
             variants={containerVariants}
             initial="hidden"

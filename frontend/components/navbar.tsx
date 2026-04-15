@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import ButtonPrimary from "./general/button";
 import { Menu, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export function NavBar() {
     const router = useRouter()
@@ -60,7 +61,7 @@ export function NavBar() {
                     href="/"
                     className="text-xl md:text-2xl font-bold bg-linear-to-r from-primary to-violet-600 bg-clip-text text-transparent"
                 >
-                    MyCashNG
+                    <Image src="/logo.svg" alt="Logo" width={50} height={50} />
                 </Link>
 
                 {/* Desktop Navigation */}

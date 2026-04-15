@@ -82,6 +82,7 @@ import { SessionsCard } from "../../../../components/settings/sessions";
 import { TwoFA } from "../../../../components/settings/twofa";
 import { IntegrationsSection } from "../../../../components/settings/integrations";
 import { SectionHeader } from "../../../../components/settings/section-header";
+import { PageHeader } from "../../../../components/ui/page-header";
 import { BrandingSection } from "../../../../components/settings/branding";
 import { LoanPreferenceSection } from "../../../../components/settings/loand-preference";
 import { BankAccounts } from "../../../../components/settings/bank-accounts";
@@ -411,14 +412,10 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-black text-main-green tracking-tight">
-          Settings
-        </h1>
-        <p className="text-gray-500 font-medium">
-          Manage your account, security, and platform preferences.
-        </p>
-      </div>
+      <PageHeader
+        title="Settings"
+        description="Manage your account, security, and platform preferences."
+      />
 
       {/* Main Layout */}
       <div className="flex flex-col lg:flex-row gap-8">

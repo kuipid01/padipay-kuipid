@@ -31,7 +31,7 @@ export interface Application {
         creditScore: Record<any, any>;
       };
     };
-    creditScore?:any
+    creditScore?: any
   };
   loan?: {
     id: string;
@@ -53,5 +53,19 @@ export interface Application {
       }>;
     }>;
   };
-  loanApp?:LoanApp
+  repaymentPlan: {
+    "id": string
+    "loanAppId": string;
+    "name": string
+    "durationDays": number,
+    "interestRate": number,
+    "creditTier": string,
+    "earlyRepaymentAllowed": boolean,
+    "earlyRepaymentDiscount": number,
+    "lateFeesPercentage": number,
+    "gracePeriodDays": number
+    "isDefault": boolean,
+    "isActive": boolean;
+  }
+  loanApp?: LoanApp
 }

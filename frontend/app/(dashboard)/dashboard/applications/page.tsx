@@ -2,6 +2,8 @@
 
 import { ApplicationsList } from "@/components/dashboard/applications-list";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
+import { TableSkeleton } from "@/components/dashboard/skeletons";
 import { useFetch } from "@/hooks/general";
 
 type ApplicationsResponse = {
@@ -15,14 +17,14 @@ export default function ApplicationsPage() {
     const applications = data?.applications ?? [];
 
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-4xl font-black text-main-green tracking-tight">Loan Applications</h1>
-                <p className="text-gray-500 font-medium">Scan, filter, and review incoming borrower requests with ease.</p>
-            </div>
+        <div className="space-y-6">
+            <PageHeader
+                title="Loan Applications"
+                description="Scan, filter, and review incoming borrower requests with ease."
+            />
 
             {isLoading ? (
-                <div className="h-64 rounded-[32px] bg-gray-50 animate-pulse" />
+                <TableSkeleton rows={6} columns={6} />
             ) : error ? (
                 <div className="space-y-4">
                     <p className="text-sm font-bold text-red-500">Failed to load applications.</p>
