@@ -94,8 +94,8 @@ function PublicLoanForm() {
         setApp(data);
 
         // Recover persisted data if state was lost
-        const savedEmail = localStorage.getItem(`padi_loan_email_${slug}`);
-        const savedPhone = localStorage.getItem(`padi_loan_phone_${slug}`);
+        const savedEmail = localStorage.getItem(`mycashng_loan_email_${slug}`);
+        const savedPhone = localStorage.getItem(`mycashng_loan_phone_${slug}`);
 
         // Set default amount and plan from JSON data
         if (data.minLoanAmount) {
@@ -309,8 +309,8 @@ function PublicLoanForm() {
       console.log(result, "reult")
 
       // Persist identified user details
-      localStorage.setItem(`padi_loan_email_${slug}`, formData.email);
-      localStorage.setItem(`padi_loan_phone_${slug}`, formData.phone);
+      localStorage.setItem(`mycashng_loan_email_${slug}`, formData.email);
+      localStorage.setItem(`mycashng_loan_phone_${slug}`, formData.phone);
 
       setStatus((prev) => ({ ...prev, bvnVerified: true }));
       toast.success("Identity verified!");

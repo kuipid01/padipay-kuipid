@@ -39,7 +39,7 @@ MyCashNG is a professional lending infrastructure platform built for modern lend
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/kuipid01/padipay-kuipid.git
+git clone https://github.com/kuipid01/MyCashNG-kuipid.git
 cd MyCashNG
 ```
 

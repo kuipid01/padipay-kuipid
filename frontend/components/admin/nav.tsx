@@ -62,7 +62,7 @@ export function AdminNav() {
                         <Shield size={18} className="text-[#1F4941]" />
                     </div>
                     <div>
-                        <p className="font-black text-white text-sm">PadiPay</p>
+                        <p className="font-black text-white text-sm">MyCashNG</p>
                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
                             Admin Console
                         </p>

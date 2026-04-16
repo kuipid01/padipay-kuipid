@@ -109,7 +109,7 @@ export default function ForgotPasswordPage() {
 
         <div className="relative z-10">
           <div className="flex items-center justify-between border-t border-white/10 pt-8 text-[10px] text-white/50 font-semibold uppercase tracking-wider">
-            <span>© 2026 Padi-Loan. All Rights Reserved.</span>
+            <span>© 2026 MyCashNG. All Rights Reserved.</span>
           </div>
         </div>
       </div>

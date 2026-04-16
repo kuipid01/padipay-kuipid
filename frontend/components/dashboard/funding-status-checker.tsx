@@ -30,9 +30,9 @@ export function FundingStatusChecker({ inline = false }: { inline?: boolean }) {
             }
 
             // Check if dismissed today
-            const lastDismissed = localStorage.getItem("padipay_funding_dismissed_at");
+            const lastDismissed = localStorage.getItem("MyCashNG_funding_dismissed_at");
             const today = new Date().toDateString();
-            
+
             if (lastDismissed === today) {
                 return;
             }
@@ -50,7 +50,7 @@ export function FundingStatusChecker({ inline = false }: { inline?: boolean }) {
     const handleClose = () => {
         setIsVisible(false);
         // Persist dismissal for 24 hours
-        localStorage.setItem("padipay_funding_dismissed_at", new Date().toDateString());
+        localStorage.setItem("MyCashNG_funding_dismissed_at", new Date().toDateString());
     };
 
     const handleFundNow = () => {
@@ -71,7 +71,7 @@ export function FundingStatusChecker({ inline = false }: { inline?: boolean }) {
                     animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 12, x: 12, scale: 0.98 }}
                     transition={{ duration: 0.22, ease: "easeOut" }}
-                    className={inline 
+                    className={inline
                         ? "pointer-events-none w-full max-w-[360px]"
                         : "pointer-events-none fixed bottom-4 right-4 z-[100] w-[calc(100vw-1.5rem)] max-w-[360px] sm:bottom-5 sm:right-5"
                     }
@@ -90,8 +90,8 @@ export function FundingStatusChecker({ inline = false }: { inline?: boolean }) {
                         <div className="flex gap-3 pr-8">
                             <div
                                 className={`flex size-11 shrink-0 items-center justify-center rounded-[16px] shadow-inner ${statusType === "empty"
-                                        ? "bg-red-50 text-red-500"
-                                        : "bg-orange-50 text-orange-400"
+                                    ? "bg-red-50 text-red-500"
+                                    : "bg-orange-50 text-orange-400"
                                     }`}
                             >
                                 {statusType === "empty" ? (

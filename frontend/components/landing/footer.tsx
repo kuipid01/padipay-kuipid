@@ -63,13 +63,7 @@ export function LandingFooter() {
 
                     {/* Right Links Grid */}
                     <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-8">
-                        <FooterColumn
-                            title="Company"
-                            links={[
-                                { label: "About us", href: "/about" },
-                                { label: "Blog", href: "/blog" },
-                            ]}
-                        />
+
                         <FooterColumn
                             title="Product"
                             links={[

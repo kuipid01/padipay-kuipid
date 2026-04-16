@@ -121,7 +121,7 @@ function LoginForm() {
 
         <div className="relative z-10">
           <div className="flex items-center justify-between border-t border-white/10 pt-8 text-[10px] text-white/50 font-semibold uppercase tracking-wider">
-            <span>© 2026 Padi-Loan. All Rights Reserved.</span>
+            <span>© 2026 MyCashNG. All Rights Reserved.</span>
           </div>
         </div>
       </div>
@@ -151,7 +151,7 @@ function LoginForm() {
               </motion.div>
 
               <motion.div variants={itemVariants} className="mb-10 hidden lg:block text-left">
-                <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Sign in to Padi-Loan</h2>
+                <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Sign in to MyCashNG</h2>
                 <p className="text-gray-500 font-medium">
                   Enter your credentials to access your account securely.
                 </p>
@@ -245,7 +245,7 @@ function LoginForm() {
             </div>
 
             <motion.p variants={itemVariants} className="mt-8 text-center text-[10px] text-white/40 lg:text-gray-400 font-bold uppercase tracking-widest px-6">
-              By signing in, you agree to Padi-Loan's{" "}
+              By signing in, you agree to MyCashNG's{" "}
               <Link href="/terms" className="hover:text-white lg:hover:text-main-green transition-colors">Terms</Link> &{" "}
               <Link href="/privacy" className="hover:text-white lg:hover:text-main-green transition-colors">Privacy Policy</Link>
             </motion.p>
