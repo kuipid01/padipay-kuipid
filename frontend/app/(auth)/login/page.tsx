@@ -97,12 +97,12 @@ function LoginForm() {
       {/* Left Side: Branding and Hero (Desktop Only) */}
       <div className="hidden lg:flex w-[40%] relative flex-col justify-between p-12 overflow-hidden z-10">
         <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-24">
-            <Image src="/logo.svg" alt="Logo" width={50} height={50} />
+          <Link href="/" className="flex items-center gap-2 mb-24 group">
+            <Image src="/logo.svg" alt="Logo" width={50} height={50} className="group-hover:scale-105 transition-transform" />
             <span className="font-bold text-white uppercase text-3xl">My</span>
             <span className="font-extrabold text-lemon-primary uppercase -ml-3 text-4xl">Cash</span>
             <span className="font-bold text-white uppercase -ml-3 text-3xl">NG</span>
-          </div>
+          </Link>
 
           <div className="max-w-md">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-white/90 text-[10px] font-bold uppercase tracking-widest mb-8">
@@ -130,12 +130,12 @@ function LoginForm() {
       <div className="flex-1 flex flex-col relative overflow-y-auto bg-transparent z-10">
         {/* Mobile Logo Section */}
         <div className="lg:hidden flex justify-center pt-12 pb-6">
-          <div className="flex items-center gap-1.5 grayscale-0 contrast-125">
+          <Link href="/" className="flex items-center gap-1.5 grayscale-0 contrast-125">
             <Image src="/logo.svg" alt="Logo" width={40} height={40} />
             <span className="font-bold text-white uppercase text-xl">My</span>
             <span className="font-extrabold text-lemon-primary uppercase -ml-2 text-2xl">Cash</span>
             <span className="font-bold text-white uppercase -ml-2 text-xl">NG</span>
-          </div>
+          </Link>
         </div>
 
         <div className="flex-1 flex items-center justify-center p-4 lg:p-20">

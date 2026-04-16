@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, CheckCircle2, ChevronRight, Lock } from "lucide-react";
 import { motion, AnimatePresence, Easing } from "framer-motion";
 import { SuspenseLoader } from "@/components/ui/suspense-loader";
+import Image from "next/image";
 
 const resetPasswordSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -40,7 +41,7 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1]  as Easing},
+    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as Easing },
   },
 };
 
@@ -93,7 +94,7 @@ function ResetPasswordForm() {
 
       setIsSuccess(true);
       toast.success("Password reset successful!");
-      
+
       // Redirect to login after a short delay
       setTimeout(() => {
         router.push("/login");
@@ -108,21 +109,21 @@ function ResetPasswordForm() {
   if (!token) return null;
 
   return (
-    <div className="min-h-screen bg-white flex overflow-hidden">
-      {/* Left Side: Branding and Hero */}
-      <div className="hidden lg:flex w-[40%] bg-main-green relative flex-col justify-between p-12 overflow-hidden">
-        {/* Background Mesh Gradient */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
-          <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[140%] bg-[radial-gradient(circle_at_30%_30%,#BDF49D_0%,transparent_50%),radial-gradient(circle_at_70%_70%,#1F4941_0%,transparent_50%)] blur-[100px]" />
-        </div>
+    <div className="min-h-screen bg-white lg:bg-main-green flex overflow-hidden lg:flex-row flex-col">
+      {/* Background Mesh Gradient (Universal) */}
+      <div className="fixed inset-0 lg:w-[40%] bg-main-green pointer-events-none overflow-hidden">
+        <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[140%] bg-[radial-gradient(circle_at_30%_30%,#BDF49D_0%,transparent_50%),radial-gradient(circle_at_70%_70%,#1F4941_0%,transparent_50%)] blur-[100px] opacity-40 lg:opacity-20" />
+      </div>
 
+      {/* Left Side: Branding and Hero (Desktop Only) */}
+      <div className="hidden lg:flex w-[40%] relative flex-col justify-between p-12 overflow-hidden z-10">
         <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-24">
-            <div className="w-10 h-10 bg-lemon-primary rounded-xl flex items-center justify-center font-black text-main-green text-xl shadow-lg shadow-black/10">
-              P
-            </div>
-            <span className="text-2xl font-bold text-white tracking-tight">Padi-Loan</span>
-          </div>
+          <Link href="/" className="flex items-center gap-2 mb-24 group">
+            <Image src="/logo.svg" alt="Logo" width={50} height={50} className="group-hover:scale-105 transition-transform" />
+            <span className="font-bold text-white uppercase text-3xl">My</span>
+            <span className="font-extrabold text-lemon-primary uppercase -ml-3 text-4xl">Cash</span>
+            <span className="font-bold text-white uppercase -ml-3 text-3xl">NG</span>
+          </Link>
 
           <div className="max-w-md">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-white/90 text-[10px] font-bold uppercase tracking-widest mb-8">
@@ -138,22 +139,26 @@ function ResetPasswordForm() {
             </p>
           </div>
         </div>
-
-        <div className="relative z-10">
-          <div className="flex items-center justify-between border-t border-white/10 pt-8 text-[10px] text-white/50 font-semibold uppercase tracking-wider">
-            <span>© 2026 Padi-Loan. All Rights Reserved.</span>
-          </div>
-        </div>
       </div>
 
       {/* Right Side: Form */}
-      <div className="flex-1 flex flex-col relative overflow-y-auto">
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-20">
+      <div className="flex-1 flex flex-col relative overflow-y-auto bg-transparent z-10">
+        {/* Mobile Logo Section */}
+        <div className="lg:hidden flex justify-center pt-12 pb-6">
+          <Link href="/" className="flex items-center gap-1.5 grayscale-0 contrast-125">
+            <Image src="/logo.svg" alt="Logo" width={40} height={40} />
+            <span className="font-bold text-white uppercase text-xl">My</span>
+            <span className="font-extrabold text-lemon-primary uppercase -ml-2 text-2xl">Cash</span>
+            <span className="font-bold text-white uppercase -ml-2 text-xl">NG</span>
+          </Link>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center p-4 lg:p-20">
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="w-full max-w-[480px] text-center"
+            className="w-full lg:max-w-[580px] max-w-[420px]"
           >
             <AnimatePresence mode="wait">
               {!isSuccess ? (
@@ -162,18 +167,22 @@ function ResetPasswordForm() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 1.05 }}
-                  className="space-y-8"
+                  className="bg-white rounded-[32px] p-8 lg:p-12 shadow-[0_20px_60px_rgba(0,0,0,0.1)] border border-gray-100/50 backdrop-blur-sm"
                 >
-                  <div className="text-center">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">Set New Password</h2>
-                    <p className="text-gray-500 font-medium text-sm lg:text-base">
-                      Enter your new credentials below to regain access to your account.
+                  <motion.div variants={itemVariants} className="mb-8 block lg:hidden text-center">
+                    <h2 className="text-2xl font-black text-main-green">New Password</h2>
+                  </motion.div>
+
+                  <motion.div variants={itemVariants} className="mb-10 hidden lg:block text-left">
+                    <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Set New Password</h2>
+                    <p className="text-gray-500 font-medium text-sm">
+                      Enter your new credentials below to regain access.
                     </p>
-                  </div>
+                  </motion.div>
 
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 text-left">
                     <motion.div variants={itemVariants}>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 ml-1">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1">
                         New Password
                       </label>
                       <Controller
@@ -185,8 +194,8 @@ function ResetPasswordForm() {
                               <Input
                                 {...field}
                                 type={showPassword ? "text" : "password"}
-                                placeholder="Create new password"
-                                className="h-14 bg-white border-gray-200 rounded-xl px-4 pr-12 focus-visible:ring-main-green/10 focus-visible:border-main-green font-medium transition-all"
+                                placeholder="••••••••"
+                                className="h-14 bg-gray-50/50 border-gray-200 rounded-2xl px-5 focus-visible:ring-main-green/10 focus-visible:border-main-green font-bold transition-all placeholder:text-gray-300"
                               />
                               <button
                                 type="button"
@@ -203,7 +212,7 @@ function ResetPasswordForm() {
                     </motion.div>
 
                     <motion.div variants={itemVariants}>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 ml-1">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1">
                         Confirm Password
                       </label>
                       <Controller
@@ -215,8 +224,8 @@ function ResetPasswordForm() {
                               <Input
                                 {...field}
                                 type={showConfirmPassword ? "text" : "password"}
-                                placeholder="Repeat new password"
-                                className="h-14 bg-white border-gray-200 rounded-xl px-4 pr-12 focus-visible:ring-main-green/10 focus-visible:border-main-green font-medium transition-all"
+                                placeholder="••••••••"
+                                className="h-14 bg-gray-50/50 border-gray-200 rounded-2xl px-5 focus-visible:ring-main-green/10 focus-visible:border-main-green font-bold transition-all placeholder:text-gray-300"
                               />
                               <button
                                 type="button"
@@ -235,15 +244,15 @@ function ResetPasswordForm() {
                     <motion.div variants={itemVariants} className="pt-2">
                       <Button
                         disabled={isLoading}
-                        className="w-full h-14 bg-main-green hover:bg-main-green/90 text-white rounded-full text-lg font-bold shadow-xl shadow-main-green/10 transition-all active:scale-[0.98] group"
+                        className="w-full h-14 bg-main-green hover:bg-main-green/90 text-white rounded-2xl text-base font-black shadow-xl shadow-main-green/20 transition-all active:scale-[0.98] group"
                         type="submit"
                       >
                         {isLoading ? (
                           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         ) : (
                           <>
-                            Save New Password
-                            <ChevronRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                            Reset Password
+                            <ChevronRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
                           </>
                         )}
                       </Button>
@@ -255,20 +264,21 @@ function ResetPasswordForm() {
                   key="success"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="space-y-6"
+                  className="bg-white rounded-[32px] p-8 lg:p-12 shadow-[0_20px_60px_rgba(0,0,0,0.1)] border border-gray-100/50 text-center backdrop-blur-sm"
                 >
-                  <div className="w-20 h-20 bg-main-green/10 rounded-3xl flex items-center justify-center mx-auto mb-8">
-                    <CheckCircle2 size={40} className="text-main-green" />
+                  <div className="w-20 h-20 bg-main-green/10 rounded-[24px] flex items-center justify-center mx-auto mb-8 relative">
+                    <div className="absolute inset-0 bg-main-green/20 rounded-[24px] animate-ping opacity-20" />
+                    <CheckCircle2 size={40} className="text-main-green relative z-10" />
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Password reset!</h2>
-                  <p className="text-gray-500 font-medium leading-relaxed mb-10">
-                    Your password has been successfully reset. You will be redirected to the login page in just a moment.
+                  <h2 className="text-2xl font-black text-gray-900 mb-4">Password reset!</h2>
+                  <p className="text-sm text-gray-500 font-bold leading-relaxed mb-10 px-4">
+                    Your password has been successfully reset. Redirecting you to login...
                   </p>
-                  
+
                   <motion.div variants={itemVariants} className="flex flex-col gap-4">
                     <Button
                       asChild
-                      className="w-full h-14 bg-main-green hover:bg-main-green/90 text-white rounded-full text-lg font-bold shadow-xl shadow-main-green/10 transition-all active:scale-[0.98] group"
+                      className="w-full h-14 bg-main-green hover:bg-main-green/90 text-white rounded-2xl text-base font-black shadow-xl shadow-main-green/20 transition-all active:scale-[0.98] group"
                     >
                       <Link href="/login">Go to Login Now</Link>
                     </Button>

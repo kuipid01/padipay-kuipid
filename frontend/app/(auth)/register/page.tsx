@@ -16,10 +16,15 @@ import { motion, AnimatePresence, Easing } from "framer-motion";
 import { SuspenseLoader } from "../../../components/ui/suspense-loader";
 
 const registerSchema = z.object({
-    fullName: z.string().min(2, "Full name is required"),
+    firstName: z.string().min(2, "First name is required"),
+    lastName: z.string().min(2, "Last name is required"),
     email: z.string().email("Invalid email address"),
     phone: z.string().min(10, "Phone number is required"),
     password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(6, "Confirm password is required"),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -49,16 +54,19 @@ function RegisterForm() {
     const [isSuccess, setIsSuccess] = useState(false);
     const [registeredEmail, setRegisteredEmail] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
 
     const form = useForm<RegisterFormData>({
         resolver: zodResolver(registerSchema),
         defaultValues: {
-            fullName: "",
+            firstName: "",
+            lastName: "",
             email: "",
             phone: "",
             password: "",
+            confirmPassword: "",
         },
     });
 
@@ -68,7 +76,12 @@ function RegisterForm() {
             const res = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(values),
+                body: JSON.stringify({
+                    fullName: `${values.firstName} ${values.lastName}`,
+                    email: values.email,
+                    phone: values.phone,
+                    password: values.password,
+                }),
             });
 
             const data = await res.json();
@@ -94,15 +107,15 @@ function RegisterForm() {
                 <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[140%] bg-[radial-gradient(circle_at_30%_30%,#BDF49D_0%,transparent_50%),radial-gradient(circle_at_70%_70%,#1F4941_0%,transparent_50%)] blur-[100px] opacity-40 lg:opacity-20" />
             </div>
 
-            {/* Left Side: Branding and Hero (Desktop Only) */}
+            {/* Left Side: Brandin3g and Hero (Desktop Only) */}
             <div className="hidden lg:flex w-[40%] relative flex-col justify-between p-12 overflow-hidden z-10">
                 <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-24">
-                        <Image src="/logo.svg" alt="Logo" width={50} height={50} />
+                    <Link href="/" className="flex items-center gap-2 mb-24 group">
+                        <Image src="/logo.svg" alt="Logo" width={50} height={50} className="group-hover:scale-105 transition-transform" />
                         <span className="font-bold text-white uppercase text-3xl">My</span>
                         <span className="font-extrabold text-lemon-primary uppercase -ml-3 text-4xl">Cash</span>
                         <span className="font-bold text-white uppercase -ml-3 text-3xl">NG</span>
-                    </div>
+                    </Link>
 
                     <div className="max-w-md">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-white/90 text-[10px] font-bold uppercase tracking-widest mb-8">
@@ -140,12 +153,12 @@ function RegisterForm() {
             <div className="flex-1 flex flex-col relative overflow-y-auto bg-transparent z-10">
                 {/* Mobile Logo Section */}
                 <div className="lg:hidden flex justify-center pt-12 pb-6">
-                    <div className="flex items-center gap-1.5 grayscale-0 contrast-125">
+                    <Link href="/" className="flex items-center gap-1.5 grayscale-0 contrast-125">
                         <Image src="/logo.svg" alt="Logo" width={40} height={40} />
                         <span className="font-bold text-white uppercase text-xl">My</span>
                         <span className="font-extrabold text-lemon-primary uppercase -ml-2 text-2xl">Cash</span>
                         <span className="font-bold text-white uppercase -ml-2 text-xl">NG</span>
-                    </div>
+                    </Link>
                 </div>
 
                 <div className="flex-1 flex items-center justify-center p-4 lg:p-20">
@@ -171,26 +184,47 @@ function RegisterForm() {
                                         </p>
                                     </motion.div>
 
-                                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                                        <motion.div variants={itemVariants}>
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1">
-                                                Full Name
-                                            </label>
-                                            <Controller
-                                                name="fullName"
-                                                control={form.control}
-                                                render={({ field, fieldState }) => (
-                                                    <Field data-invalid={fieldState.invalid} className="gap-1.5">
-                                                        <Input
-                                                            {...field}
-                                                            placeholder="John Doe"
-                                                            className="h-14 bg-gray-50/50 border-gray-200 rounded-2xl px-5 focus-visible:ring-main-green/10 focus-visible:border-main-green font-bold transition-all placeholder:text-gray-300"
-                                                        />
-                                                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                                    </Field>
-                                                )}
-                                            />
-                                        </motion.div>
+                                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <motion.div variants={itemVariants}>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1">
+                                                    First Name
+                                                </label>
+                                                <Controller
+                                                    name="firstName"
+                                                    control={form.control}
+                                                    render={({ field, fieldState }) => (
+                                                        <Field data-invalid={fieldState.invalid} className="gap-1.5">
+                                                            <Input
+                                                                {...field}
+                                                                placeholder="John"
+                                                                className="h-14 bg-gray-50/50 border-gray-200 rounded-2xl px-5 focus-visible:ring-main-green/10 focus-visible:border-main-green font-bold transition-all placeholder:text-gray-300"
+                                                            />
+                                                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                                        </Field>
+                                                    )}
+                                                />
+                                            </motion.div>
+                                            <motion.div variants={itemVariants}>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1">
+                                                    Last Name
+                                                </label>
+                                                <Controller
+                                                    name="lastName"
+                                                    control={form.control}
+                                                    render={({ field, fieldState }) => (
+                                                        <Field data-invalid={fieldState.invalid} className="gap-1.5">
+                                                            <Input
+                                                                {...field}
+                                                                placeholder="Doe"
+                                                                className="h-14 bg-gray-50/50 border-gray-200 rounded-2xl px-5 focus-visible:ring-main-green/10 focus-visible:border-main-green font-bold transition-all placeholder:text-gray-300"
+                                                            />
+                                                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                                        </Field>
+                                                    )}
+                                                />
+                                            </motion.div>
+                                        </div>
 
                                         <motion.div variants={itemVariants}>
                                             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1">
@@ -213,28 +247,27 @@ function RegisterForm() {
                                             />
                                         </motion.div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                            <motion.div variants={itemVariants}>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1">
-                                                    Phone
-                                                </label>
-                                                <Controller
-                                                    name="phone"
-                                                    control={form.control}
-                                                    render={({ field, fieldState }) => (
-                                                        <Field data-invalid={fieldState.invalid} className="gap-1.5">
-                                                            <Input
-                                                                {...field}
-                                                                type="tel"
-                                                                placeholder="080 000 0000"
-                                                                className="h-14 bg-gray-50/50 border-gray-200 rounded-2xl px-5 focus-visible:ring-main-green/10 focus-visible:border-main-green font-bold transition-all placeholder:text-gray-300"
-                                                            />
-                                                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                                        </Field>
-                                                    )}
-                                                />
-                                            </motion.div>
+                                        <motion.div variants={itemVariants}>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1">
+                                                Phone Number
+                                            </label>
+                                            <Controller
+                                                name="phone"
+                                                control={form.control}
+                                                render={({ field, fieldState }) => (
+                                                    <Field data-invalid={fieldState.invalid} className="gap-1.5">
+                                                        <Input
+                                                            {...field}
+                                                            placeholder="080 000 0000"
+                                                            className="h-14 bg-gray-50/50 border-gray-200 rounded-2xl px-5 focus-visible:ring-main-green/10 focus-visible:border-main-green font-bold transition-all placeholder:text-gray-300"
+                                                        />
+                                                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                                    </Field>
+                                                )}
+                                            />
+                                        </motion.div>
 
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <motion.div variants={itemVariants}>
                                                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1">
                                                     Password
@@ -257,6 +290,36 @@ function RegisterForm() {
                                                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-main-green transition-colors"
                                                                 >
                                                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                                                </button>
+                                                            </div>
+                                                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                                                        </Field>
+                                                    )}
+                                                />
+                                            </motion.div>
+
+                                            <motion.div variants={itemVariants}>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1">
+                                                    Confirm Password
+                                                </label>
+                                                <Controller
+                                                    name="confirmPassword"
+                                                    control={form.control}
+                                                    render={({ field, fieldState }) => (
+                                                        <Field data-invalid={fieldState.invalid} className="gap-1.5">
+                                                            <div className="relative">
+                                                                <Input
+                                                                    {...field}
+                                                                    type={showConfirmPassword ? "text" : "password"}
+                                                                    placeholder="••••••••"
+                                                                    className="h-14 bg-gray-50/50 border-gray-200 rounded-2xl pl-5 pr-12 focus-visible:ring-main-green/10 focus-visible:border-main-green font-bold transition-all placeholder:text-gray-300"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-main-green transition-colors"
+                                                                >
+                                                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                                                 </button>
                                                             </div>
                                                             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -314,7 +377,7 @@ function RegisterForm() {
                                     </div>
                                     <h2 className="text-2xl font-black text-gray-900 mb-4">Check your email</h2>
                                     <p className="text-sm text-gray-500 font-bold leading-relaxed mb-10">
-                                        We've sent a verification link to <br/>
+                                        We've sent a verification link to <br />
                                         <span className="text-main-green italic">{registeredEmail}</span>
                                     </p>
 

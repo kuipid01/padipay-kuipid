@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, ArrowLeft, Mail, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence, Easing } from "framer-motion";
+import Image from "next/image";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -75,21 +76,21 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex overflow-hidden">
-      {/* Left Side: Branding and Hero */}
-      <div className="hidden lg:flex w-[40%] bg-main-green relative flex-col justify-between p-12 overflow-hidden">
-        {/* Background Mesh Gradient */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
-          <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[140%] bg-[radial-gradient(circle_at_30%_30%,#BDF49D_0%,transparent_50%),radial-gradient(circle_at_70%_70%,#1F4941_0%,transparent_50%)] blur-[100px]" />
-        </div>
+    <div className="min-h-screen bg-white lg:bg-main-green flex overflow-hidden lg:flex-row flex-col">
+      {/* Background Mesh Gradient (Universal) */}
+      <div className="fixed inset-0 lg:w-[40%] bg-main-green pointer-events-none overflow-hidden">
+        <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[140%] bg-[radial-gradient(circle_at_30%_30%,#BDF49D_0%,transparent_50%),radial-gradient(circle_at_70%_70%,#1F4941_0%,transparent_50%)] blur-[100px] opacity-40 lg:opacity-20" />
+      </div>
 
+      {/* Left Side: Branding and Hero (Desktop Only) */}
+      <div className="hidden lg:flex w-[40%] relative flex-col justify-between p-12 overflow-hidden z-10">
         <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-24">
-            <div className="w-10 h-10 bg-lemon-primary rounded-xl flex items-center justify-center font-black text-main-green text-xl shadow-lg shadow-black/10">
-              P
-            </div>
-            <span className="text-2xl font-bold text-white tracking-tight">Padi-Loan</span>
-          </div>
+          <Link href="/" className="flex items-center gap-2 mb-24 group">
+            <Image src="/logo.svg" alt="Logo" width={50} height={50} className="group-hover:scale-105 transition-transform" />
+            <span className="font-bold text-white uppercase text-3xl">My</span>
+            <span className="font-extrabold text-lemon-primary uppercase -ml-3 text-4xl">Cash</span>
+            <span className="font-bold text-white uppercase -ml-3 text-3xl">NG</span>
+          </Link>
 
           <div className="max-w-md">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-white/90 text-[10px] font-bold uppercase tracking-widest mb-8">
@@ -114,13 +115,23 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* Right Side: Content */}
-      <div className="flex-1 flex flex-col relative overflow-y-auto">
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-20">
+      <div className="flex-1 flex flex-col relative overflow-y-auto bg-transparent z-10">
+        {/* Mobile Logo Section */}
+        <div className="lg:hidden flex justify-center pt-12 pb-6">
+          <Link href="/" className="flex items-center gap-1.5 grayscale-0 contrast-125">
+            <Image src="/logo.svg" alt="Logo" width={40} height={40} />
+            <span className="font-bold text-white uppercase text-xl">My</span>
+            <span className="font-extrabold text-lemon-primary uppercase -ml-2 text-2xl">Cash</span>
+            <span className="font-bold text-white uppercase -ml-2 text-xl">NG</span>
+          </Link>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center p-4 lg:p-20">
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="w-full max-w-[480px] text-center"
+            className="w-full lg:max-w-[580px] max-w-[420px]"
           >
             <AnimatePresence mode="wait">
               {!isSubmitted ? (
@@ -129,18 +140,22 @@ export default function ForgotPasswordPage() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 1.05 }}
-                  className="space-y-8"
+                  className="bg-white rounded-[32px] p-8 lg:p-12 shadow-[0_20px_60px_rgba(0,0,0,0.1)] border border-gray-100/50 backdrop-blur-sm"
                 >
-                  <div className="text-center">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">Reset Password</h2>
+                  <motion.div variants={itemVariants} className="mb-8 block lg:hidden text-center">
+                    <h2 className="text-2xl font-black text-main-green">Reset Password</h2>
+                  </motion.div>
+
+                  <motion.div variants={itemVariants} className="mb-10 hidden lg:block text-left">
+                    <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Reset Password</h2>
                     <p className="text-gray-500 font-medium">
                       Enter your email address to receive reset instructions
                     </p>
-                  </div>
+                  </motion.div>
 
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 text-left">
                     <motion.div variants={itemVariants}>
-                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 ml-1">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1">
                         Email address
                       </label>
                       <Controller
@@ -150,8 +165,8 @@ export default function ForgotPasswordPage() {
                           <Field data-invalid={fieldState.invalid} className="gap-1.5">
                             <Input
                               {...field}
-                              placeholder="Enter your email"
-                              className="h-14 bg-white border-gray-200 rounded-xl px-4 focus-visible:ring-main-green/10 focus-visible:border-main-green font-medium transition-all"
+                              placeholder="name@company.com"
+                              className="h-14 bg-gray-50/50 border-gray-200 rounded-2xl px-5 focus-visible:ring-main-green/10 focus-visible:border-main-green font-bold transition-all placeholder:text-gray-300"
                             />
                             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                           </Field>
@@ -162,27 +177,27 @@ export default function ForgotPasswordPage() {
                     <motion.div variants={itemVariants} className="pt-2">
                       <Button
                         disabled={isLoading}
-                        className="w-full h-14 bg-main-green hover:bg-main-green/90 text-white rounded-full text-lg font-bold shadow-xl shadow-main-green/10 transition-all active:scale-[0.98] group"
+                        className="w-full h-14 bg-main-green hover:bg-main-green/90 text-white rounded-2xl text-base font-black shadow-xl shadow-main-green/20 transition-all active:scale-[0.98] group"
                         type="submit"
                       >
                         {isLoading ? (
                           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         ) : (
                           <>
-                            Send Reset Link
-                            <ChevronRight size={20} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                            Send Link
+                            <ChevronRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
                           </>
                         )}
                       </Button>
                     </motion.div>
                   </form>
 
-                  <motion.div variants={itemVariants} className="pt-4">
+                  <motion.div variants={itemVariants} className="pt-6 border-t border-gray-100 text-center">
                     <Link
                       href="/login"
-                      className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-main-green transition-colors group"
+                      className="inline-flex items-center text-sm font-bold text-gray-400 hover:text-main-green transition-colors group"
                     >
-                      <ArrowLeft size={18} className="mr-2 transition-transform group-hover:-translate-x-1" />
+                      <ArrowLeft size={16} className="mr-2 transition-transform group-hover:-translate-x-1" />
                       Back to Login
                     </Link>
                   </motion.div>
@@ -192,33 +207,31 @@ export default function ForgotPasswordPage() {
                   key="success"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="space-y-6"
+                  className="bg-white rounded-[32px] p-8 lg:p-12 shadow-[0_20px_60px_rgba(0,0,0,0.1)] border border-gray-100/50 text-center backdrop-blur-sm"
                 >
-                  <div className="w-20 h-20 bg-main-green/10 rounded-3xl flex items-center justify-center mx-auto mb-8">
-                    <Mail size={40} className="text-main-green" />
+                  <div className="w-20 h-20 bg-main-green/10 rounded-[24px] flex items-center justify-center mx-auto mb-8 relative">
+                    <div className="absolute inset-0 bg-main-green/20 rounded-[24px] animate-ping opacity-20" />
+                    <Mail size={40} className="text-main-green relative z-10" />
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Check your inbox</h2>
-                  <p className="text-gray-500 font-medium leading-relaxed mb-10">
-                    If an account exists for <span className="text-main-green font-bold underline decoration-2 underline-offset-4">{form.getValues("email")}</span>, you will receive a password reset link shortly.
+                  <h2 className="text-2xl font-black text-gray-900 mb-4">Check your inbox</h2>
+                  <p className="text-sm text-gray-500 font-bold leading-relaxed mb-10 px-4">
+                    If an account exists for <span className="text-main-green italic">{form.getValues("email")}</span>, you'll receive a link shortly.
                   </p>
 
                   <motion.div variants={itemVariants} className="flex flex-col gap-4">
                     <Button
                       asChild
-                      className="w-full h-14 bg-main-green hover:bg-main-green/90 text-white rounded-full text-lg font-bold shadow-xl shadow-main-green/10 transition-all active:scale-[0.98] group"
+                      className="w-full h-14 bg-main-green hover:bg-main-green/90 text-white rounded-2xl text-base font-black shadow-xl shadow-main-green/20 transition-all active:scale-[0.98] group"
                     >
                       <Link href="/login">Return to Login</Link>
                     </Button>
 
-                    <div className="pt-4 text-sm font-medium text-gray-400">
-                      Didn't receive the email? Check your spam folder or{" "}
-                      <button
-                        onClick={() => setIsSubmitted(false)}
-                        className="text-main-green font-bold hover:underline"
-                      >
-                        try again
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => setIsSubmitted(false)}
+                      className="text-xs font-black uppercase text-gray-400 hover:text-main-green transition-colors"
+                    >
+                      Try another email
+                    </button>
                   </motion.div>
                 </motion.div>
               )}
