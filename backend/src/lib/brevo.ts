@@ -398,7 +398,59 @@ async sendVerificationEmail (email:string,name:string,token:string)  {
         });
     }
 
+    async sendContactFormEmail(
+        fullName: string,
+        email: string,
+        subject: string,
+        message: string
+    ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+        const adminEmail = process.env.BREVO_SENDER_EMAIL || "padiloan@kuipid.com";
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+                    <div style="background: linear-gradient(135deg, #1F4941 0%, #2a6156 100%); padding: 40px; border-radius: 20px 20px 0 0; text-align: center;">
+                        <h1 style="color: #BDF49D; margin: 0; font-size: 24px; font-weight: bold;">New Contact Message</h1>
+                        <p style="color: rgba(189, 244, 157, 0.8); margin: 10px 0 0 0; font-size: 14px;">Contact Us Page Submission</p>
+                    </div>
+                    <div style="background: white; padding: 40px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                        <div style="margin-bottom: 25px;">
+                            <p style="color: #64748b; font-size: 14px; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px;">From</p>
+                            <p style="color: #1F4941; font-size: 18px; font-weight: 600; margin: 0;">${fullName} (${email})</p>
+                        </div>
+                        <div style="margin-bottom: 25px;">
+                            <p style="color: #64748b; font-size: 14px; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px;">Subject</p>
+                            <p style="color: #1F4941; font-size: 18px; font-weight: 600; margin: 0;">${subject}</p>
+                        </div>
+                        <div style="margin-bottom: 30px;">
+                            <p style="color: #64748b; font-size: 14px; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 1px;">Message</p>
+                            <div style="background: #f1f5f9; padding: 20px; border-radius: 12px; color: #334155; font-size: 16px; line-height: 1.6; white-space: pre-wrap;">${message}</div>
+                        </div>
+                       <p style="color: #94a3b8; font-size: 12px; margin: 0; text-align: center;">
+                            This message was sent from the contact us form on padiloan platform.
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+
+        return this.sendEmail({
+            to: [{ email: adminEmail, name: "Padipay Admin" }],
+            subject: `Contact Form: ${subject}`,
+            htmlContent,
+            replyTo: { email, name: fullName },
+            tags: ["contact-form"],
+        });
+    }
+
     async upsertContact(options: ContactOptions): Promise<{ success: boolean; error?: string }> {
+
         try {
             const response = await fetch(`${BREVO_BASE_URL}/contacts`, {
                 method: "POST",

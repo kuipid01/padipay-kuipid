@@ -1,15 +1,49 @@
 
 import { Hono } from "hono";
 import { db } from "../db";
-import { loanApps, loanApplications, borrowers, repaymentPlans } from "../db/schema";
+import { loanApps, loanApplications, borrowers, repaymentPlans, contactMessages } from "../db/schema";
 import { and, eq, or } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import { CreateLoanApplicationSchema } from "../zod-schemas/applications";
+import { ContactFormSchema } from "../zod-schemas/contact";
 import { getCreditReport, getCreditScore } from "../utils/dojah";
+import { brevo } from "../lib/brevo";
 
 const router = new Hono();
 
 // Public routes do NO authentication check
+
+// Contact Us Route
+router.post(
+  "/contact",
+  zValidator("json", ContactFormSchema),
+  async (c) => {
+    const { fullName, email, subject, message } = c.req.valid("json");
+
+    try {
+      // 1. Save to DB
+      await db.insert(contactMessages).values({
+        fullName,
+        email,
+        subject,
+        message,
+      });
+
+      // 2. Send Email Notification to Admin
+      await brevo.sendContactFormEmail(fullName, email, subject, message);
+
+      return c.json({
+        success: true,
+        message: "Your message has been received. We'll get back to you shortly.",
+      }, 201);
+    } catch (error) {
+      console.error("[CONTACT_ERROR]", error);
+      return c.json({ 
+        error: "Failed to send message. Please try again later." 
+      }, 500);
+    }
+  }
+);
 
 // Get Loan App Details (for landing pages)
 router.get("/loan-apps/:slug", async (c) => {

@@ -162,7 +162,7 @@ export function OverviewClient() {
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="flex-1 max-h-[80vh] w-full"
+                        className="flex-1 max-h-[50vh] w-full"
                     >
                         {isLoadingWallet ? (
                             <Card className="bg-main-green/90 text-white border-none h-full shadow-xl relative overflow-hidden min-h-[240px]">
@@ -217,7 +217,7 @@ export function OverviewClient() {
                         )}
                     </motion.div>
                     {/* 3. Upcoming Payments */}
-                    <div className="w-full max-h-[80vh] overflow-y-auto lg:w-[400px]">
+                    <div className="w-full max-h-[50vh] overflow-y-auto lg:w-[400px]">
                         <h2 className="text-xl font-black text-main-green tracking-tight mb-6">Upcoming Payments</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
                             {isLoadingPayments ? (

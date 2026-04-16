@@ -183,6 +183,13 @@
       "when": 1776265765800,
       "tag": "0025_broad_dakota_north",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1776343376306,
+      "tag": "0026_loud_toad_men",
+      "breakpoints": true
     }
   ]
 }

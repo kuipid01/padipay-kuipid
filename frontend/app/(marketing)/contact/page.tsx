@@ -1,11 +1,25 @@
 "use client";
 
-import { Mail, Phone, MapPin, Send, MessageSquare, Clock } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "sonner";
+import { useState } from "react";
+import { Mail, Phone, MapPin, Send, Clock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Easing, motion } from "framer-motion";
 import { LandingBadge } from "@/components/general/landing-badge";
+
+const contactSchema = z.object({
+    fullName: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    subject: z.string().min(5, "Subject must be at least 5 characters"),
+    message: z.string().min(10, "Message must be at least 10 characters"),
+});
+
+type ContactFormValues = z.infer<typeof contactSchema>;
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -24,6 +38,38 @@ const itemVariants = {
 };
 
 export default function ContactPage() {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const form = useForm<ContactFormValues>({
+        resolver: zodResolver(contactSchema),
+        defaultValues: {
+            fullName: "",
+            email: "",
+            subject: "",
+            message: "",
+        },
+    });
+
+    const onSubmit = async (data: ContactFormValues) => {
+        setIsSubmitting(true);
+        try {
+            const response = await fetch("/api/public/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) throw new Error("Failed to send message");
+
+            toast.success("Message sent! We'll get back to you shortly.");
+            form.reset();
+        } catch (error) {
+            toast.error("Something went wrong. Please try again later.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <section className="relative min-h-screen bg-linear-to-b from-white to-lemon-primary/20 pt-28 pb-20 overflow-hidden">
             {/* Background Decorative Elements */}
@@ -98,40 +144,64 @@ export default function ContactPage() {
                                         <p className="text-gray-500 font-medium">Fill out the form below and we'll get back to you shortly.</p>
                                     </div>
 
-                                    <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                                    <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
                                         <div className="grid md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
                                                 <label className="text-sm font-bold text-main-green ml-1">Full Name</label>
                                                 <Input
+                                                    {...form.register("fullName")}
                                                     placeholder="John Doe"
                                                     className="bg-gray-50/50 border-gray-200 h-14 rounded-2xl focus-visible:ring-lemon-primary focus-visible:border-lemon-primary"
                                                 />
+                                                {form.formState.errors.fullName && (
+                                                    <p className="text-xs text-red-500 ml-1">{form.formState.errors.fullName.message}</p>
+                                                )}
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-sm font-bold text-main-green ml-1">Email Address</label>
                                                 <Input
+                                                    {...form.register("email")}
                                                     type="email"
                                                     placeholder="john@example.com"
                                                     className="bg-gray-50/50 border-gray-200 h-14 rounded-2xl focus-visible:ring-lemon-primary focus-visible:border-lemon-primary"
                                                 />
+                                                {form.formState.errors.email && (
+                                                    <p className="text-xs text-red-500 ml-1">{form.formState.errors.email.message}</p>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-sm font-bold text-main-green ml-1">Subject</label>
                                             <Input
+                                                {...form.register("subject")}
                                                 placeholder="How can we help?"
                                                 className="bg-gray-50/50 border-gray-200 h-14 rounded-2xl focus-visible:ring-lemon-primary focus-visible:border-lemon-primary"
                                             />
+                                            {form.formState.errors.subject && (
+                                                <p className="text-xs text-red-500 ml-1">{form.formState.errors.subject.message}</p>
+                                            )}
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-sm font-bold text-main-green ml-1">Message</label>
                                             <Textarea
+                                                {...form.register("message")}
                                                 placeholder="Tell us more about your needs..."
                                                 className="bg-gray-50/50 border-gray-200 min-h-[180px] rounded-2xl p-4 focus-visible:ring-lemon-primary focus-visible:border-lemon-primary"
                                             />
+                                            {form.formState.errors.message && (
+                                                <p className="text-xs text-red-500 ml-1">{form.formState.errors.message.message}</p>
+                                            )}
                                         </div>
-                                        <Button className="w-full bg-lemon-primary text-main-green hover:bg-main-green hover:text-white transition-all duration-300 font-black h-16 rounded-2xl text-lg shadow-lg shadow-lemon-primary/30">
-                                            Send Message <Send className="ml-2 size-5" />
+                                        <Button
+                                            disabled={isSubmitting}
+                                            className="w-full bg-lemon-primary text-main-green hover:bg-main-green hover:text-white transition-all duration-300 font-black h-16 rounded-2xl text-lg shadow-lg shadow-lemon-primary/30"
+                                        >
+                                            {isSubmitting ? (
+                                                <Loader2 className="animate-spin mr-2" />
+                                            ) : (
+                                                <Send className="mr-2 size-5" />
+                                            )}
+                                            {isSubmitting ? "Sending..." : "Send Message"}
                                         </Button>
                                     </form>
                                 </div>
@@ -158,4 +228,5 @@ function ContactCard({ icon, title, detail, subDetail }: { icon: React.ReactNode
         </div>
     );
 }
+
 

@@ -771,3 +771,12 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
     references: [users.id],
   }),
 }));
+
+export const contactMessages = pgTable("contact_messages", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  fullName: varchar("full_name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  subject: varchar("subject", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});

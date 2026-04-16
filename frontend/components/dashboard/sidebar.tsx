@@ -222,17 +222,17 @@ function SidebarContent({
         </div>
       )}
 
-      <div
-        className={cn(
-          "mt-auto bg-[#FAFAFA] rounded-[32px] p-4 shadow-sm",
-          isCollapsed && "flex justify-center",
-        )}
-      >
-        <button className="flex gap-1 items-center font-bold text-sm text-gray-700">
+
+      <form action={logoutUser} className={cn(
+        "mt-auto bg-[#FAFAFA] cursor-pointer rounded-[32px] p-4 shadow-sm",
+        isCollapsed && "flex justify-center",
+      )}>
+        <button className="flex gap-1 cursor-pointer items-center font-bold text-sm text-gray-700">
           <LogOut color="red" size={isCollapsed ? 24 : 20} />
           {!isCollapsed && "Logout"}
         </button>
-      </div>
+      </form>
+
     </div>
   );
 }
