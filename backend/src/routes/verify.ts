@@ -56,7 +56,7 @@ router.post("/passcode", async (c) => {
     if (existingBorrower) {
       await db
         .update(borrowers)
-        .set({ passcodeHash: hashedPasscode,email, emailVerified: true,  updatedAt: new Date() })
+        .set({ passcodeHash: hashedPasscode, email, emailVerified: true, updatedAt: new Date() })
         .where(eq(borrowers.id, existingBorrower.id));
     }
 
@@ -71,7 +71,7 @@ router.post("/passcode", async (c) => {
     if (existingTemp) {
       await db
         .update(tempBorrowers)
-        .set({ passcodeHash: hashedPasscode,email, emailVerified: true, updatedAt: new Date() })
+        .set({ passcodeHash: hashedPasscode, email, emailVerified: true, updatedAt: new Date() })
         .where(eq(tempBorrowers.id, existingTemp.id));
     }
 
@@ -145,11 +145,11 @@ router.post("/bvn", async (c) => {
     if (!bvn) {
       return c.json({ status: "error", message: "BVN is required" }, 400);
     }
-    console.log("WE ARE HERE,")
+
     // const {valid,reason} = await verifyAuthenticity({bvn,phone,email,slug})
     const valid = true
     const reason = ""
-     console.log("WE ARE HERE again,", valid, reason)
+    console.log("WE ARE HERE again,", valid, reason)
     // if(!valid){
     //     return c.json({ status: "error", message: reason }, 400);
     // }
@@ -170,14 +170,14 @@ router.post("/bvn", async (c) => {
     } catch (creditError: any) {
       console.warn("[CREDIT CHECK FAILED]", creditError.message);
     }
-    if(!creditScore){
-       return c.json(
-      {
-        status: "error",
-        message: "Couldnt Verify Credit Score please retry , or try again later",
-      },
-      400,
-    );  
+    if (!creditScore) {
+      return c.json(
+        {
+          status: "error",
+          message: "Couldnt Verify Credit Score please retry , or try again later",
+        },
+        400,
+      );
     }
 
     console.log("CREDIT SCORE,", creditReport);
@@ -243,7 +243,7 @@ router.post("/bvn", async (c) => {
         phone,
         email: existingTemp?.email || "",
         emailVerified: existingTemp?.emailVerified || false,
-        
+
         bvn: bvn,
         passcodeHash: existingTemp?.passcodeHash || null,
         creditReport: creditReport,
@@ -278,6 +278,157 @@ router.post("/bvn", async (c) => {
       {
         status: "error",
         message: error.message || "Verification failed",
+      },
+      400,
+    );
+  }
+});
+
+// ─── Sandbox Mock: POST /api/verify/bvn/test ───────────────────────────────
+// Mirrors the real /bvn flow but uses fake KYC + credit data.
+// No external API calls are made — safe for sandbox / dev testing.
+router.post("/bvn/test", async (c) => {
+  try {
+    const { bvn, phone, email } = await c.req.json();
+
+    if (!bvn) {
+      return c.json({ status: "error", message: "BVN is required" }, 400);
+    }
+
+    console.log("[SANDBOX /bvn/test] Using mock data for BVN:", bvn);
+
+    // ── Mock KYC entity (mirrors Dojah verifyBVN response shape) ──
+    const kycData = {
+      first_name: "Adewale",
+      last_name: "Ogunleye",
+      middle_name: "Chukwuemeka",
+      gender: "Male",
+      date_of_birth: "1995-06-15",
+      dob: "1995-06-15",
+      image: "https://api.dicebear.com/7.x/thumbs/svg?seed=" + bvn,
+      state_of_origin: "Lagos",
+    };
+
+    // ── Mock Credit Score (mirrors getCreditScore response) ──
+    const creditScore = {
+      score: 720,
+      provider: "sandbox",
+      band: "Good",
+      reason: "Consistent repayment history",
+      generatedAt: new Date().toISOString(),
+    };
+
+    // ── Mock Credit Report (mirrors getCreditReport response) ──
+    const creditReport = {
+      provider: "sandbox",
+      totalAccounts: 4,
+      openAccounts: 2,
+      closedAccounts: 2,
+      delinquentAccounts: 0,
+      totalBalance: 150000,
+      monthlyPayment: 25000,
+      oldestAccount: "2019-03-10",
+      recentInquiries: 1,
+      negativeMarks: 0,
+      summary: "Healthy credit profile with no defaults",
+      generatedAt: new Date().toISOString(),
+    };
+
+    const { eq, or } = await import("drizzle-orm");
+    const { db, tempBorrowers, borrowers } = await import("../db");
+
+    // ── Prepare Update Data ──
+    const updateData = {
+      bvn,
+      email: email || undefined,
+      firstName: kycData.first_name,
+      lastName: kycData.last_name,
+      middleName: kycData.middle_name,
+      gender: kycData.gender,
+      dob: kycData.date_of_birth,
+      image: kycData.image,
+      kycVerified: true,
+      state: kycData.state_of_origin,
+      creditReport,
+      creditScore,
+      updatedAt: new Date(),
+    };
+
+    // ── Upsert Temp Borrower ──
+    let existingTemp = await db.query.tempBorrowers.findFirst({
+      where: or(
+        phone ? eq(tempBorrowers.phoneNumber, phone) : undefined,
+        eq(tempBorrowers.bvn, bvn),
+        email ? eq(tempBorrowers.email, email) : undefined,
+      ),
+    });
+
+    if (existingTemp) {
+      await db
+        .update(tempBorrowers)
+        .set(updateData)
+        .where(eq(tempBorrowers.id, existingTemp.id));
+    } else {
+      const inserted = await db
+        .insert(tempBorrowers)
+        .values({
+          ...updateData,
+          phoneNumber: phone,
+          phoneNumberVerified: !!phone,
+        })
+        .returning();
+      existingTemp = inserted[0];
+    }
+
+    // ── Upsert Borrower ──
+    if (phone) {
+      const existingBorrower = await db.query.borrowers.findFirst({
+        where: eq(borrowers.phone, phone),
+      });
+
+      const borrowerData = {
+        firstName: kycData.first_name,
+        lastName: kycData.last_name,
+        middleName: kycData.middle_name,
+        gender: kycData.gender,
+        dob: kycData.date_of_birth,
+        phone,
+        email: existingTemp?.email || "",
+        emailVerified: existingTemp?.emailVerified || false,
+        bvn,
+        passcodeHash: existingTemp?.passcodeHash || null,
+        creditReport,
+        creditScore,
+        kycVerified: true,
+        updatedAt: new Date(),
+      };
+
+      if (existingBorrower) {
+        await db
+          .update(borrowers)
+          .set(borrowerData)
+          .where(eq(borrowers.id, existingBorrower.id));
+      } else {
+        await db.insert(borrowers).values(borrowerData);
+      }
+    }
+
+    return c.json({
+      status: "success",
+      message: "[SANDBOX] BVN verified and credit profile updated",
+      data: {
+        firstName: kycData.first_name,
+        lastName: kycData.last_name,
+        phone,
+        creditScore,
+      },
+    });
+  } catch (error: any) {
+    console.error("[SANDBOX] Verification Error:", error);
+    return c.json(
+      {
+        status: "error",
+        message: error.message || "Sandbox verification failed",
       },
       400,
     );

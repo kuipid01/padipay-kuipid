@@ -5,20 +5,20 @@ export function OurValue() {
     const values = [
         {
             icon: <Server className="size-6 text-main-green" />,
-            title: "Built For Scalability",
-            description: "From freelancers to startups, manage every dollar as your finances grow.",
+            title: "Scalable Infrastructure",
+            description: "From personal loans for family to high-growth lending startups, our platform scales with your capital.",
             highlight: false
         },
         {
             icon: <LayoutGrid className="size-6 text-main-green" />,
-            title: "Clarity First",
-            description: "Designed to simplify, not overwhelm — with a clean UI and actionable insights.",
+            title: "Launch In Minutes",
+            description: "No technical expertise required. Setup your lending portal, brand it, and start disbursements instantly.",
             highlight: true
         },
         {
             icon: <Database className="size-6 text-main-green" />,
-            title: "Data-Driven Decisions",
-            description: "Make smarter, data-driven decisions with powerful predictive analytics and personalized recommendations.",
+            title: "Automated Collections",
+            description: "Say goodbye to manual tracking. Our system handles repayment reminders and automated card charges via Paystack.",
             highlight: false
         }
     ];
@@ -33,10 +33,10 @@ export function OurValue() {
                         </div>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-extrabold text-main-green font-robotoSlab max-w-3xl mx-auto leading-tight">
-                        What Sets MyCashNG Apart
+                        Why Choose MyCashNG?
                     </h2>
                     <p className="text-muted-foreground max-w-2xl mx-auto font-medium">
-                        We don't just help you manage money — we empower you with clarity, control, and confidence every step of the way.
+                        We provide the underlying tools and security so you can focus on building relationships and growing your lending portfolio.
                     </p>
                 </div>
 

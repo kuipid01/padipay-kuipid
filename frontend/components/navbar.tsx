@@ -41,9 +41,9 @@ export function NavBar() {
     };
 
     const navLinks = [
-        { name: "Features", href: "#features" },
-        { name: "How it works", href: "#how-it-works" },
-        { name: "Pricing", href: "#pricing" },
+        { name: "Features", href: "/#features" },
+        { name: "How it works", href: "/#how-it-works" },
+        { name: "Pricing", href: "/#pricing" },
     ];
 
     return (

@@ -1,26 +1,26 @@
-import { Zap, Clock, Shield, BarChart3 } from "lucide-react";
+import { Zap, Clock, Shield, BarChart3, Share2, Wallet, Send } from "lucide-react";
 
 export function Features() {
     const featureList = [
         {
             icon: <Zap className="size-5 text-main-green" />,
-            title: "One-click transaction categorization and syncing",
-            description: "Automatically organize your financial data in seconds. With just one click, your transactions instantly synced"
+            title: "Instant Loan App Creation",
+            description: "Launch your own fully-branded lending portal in minutes. No coding required, just set your terms and go."
         },
         {
-            icon: <Clock className="size-5 text-main-green" />,
-            title: "Real-time budget tracking with spending alerts",
-            description: "Our advanced analytics give you a real-time view of your entire operation—sales, profit margins,"
+            icon: <Share2 className="size-5 text-main-green" />,
+            title: "One-Link Applications",
+            description: "Share your unique loan application link via WhatsApp, Email, or Social Media. Collect borrower data effortlessly."
         },
         {
-            icon: <Shield className="size-5 text-main-green" />,
-            title: "Integrated saving plans with automated goals",
-            description: "Take the stress out of saving with built-in plans that adapt to your lifestyle."
+            icon: <Wallet className="size-5 text-main-green" />,
+            title: "Paystack-Integrated Funding",
+            description: "Securely fund your lending wallet using Paystack. Keep your capital ready for instant disbursements."
         },
         {
-            icon: <BarChart3 className="size-5 text-main-green" />,
-            title: "Income & expense with smart analytics",
-            description: "Track your cash flow with clarity and confidence. Categorize your income and expenses with smart analytics"
+            icon: <Send className="size-5 text-main-green" />,
+            title: "Automated & Manual Payouts",
+            description: "Choose to disburse loans automatically upon acceptance or review every application manually before payout."
         }
     ];
 
@@ -34,10 +34,10 @@ export function Features() {
                         </div>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-extrabold text-main-green font-robotoSlab max-w-3xl mx-auto leading-tight">
-                        Smarter Features To Manage And Grow Your Money
+                        Everything You Need To <br /> Run Your Lending Business
                     </h2>
                     <p className="text-muted-foreground max-w-2xl mx-auto font-medium">
-                        Everything you need in one platform to track, plan, and optimize your finances.
+                        Powerful infrastructure to help you manage borrowers, track repayments, and grow your lending portfolio with ease.
                     </p>
                 </div>
 

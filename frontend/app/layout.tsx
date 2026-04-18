@@ -25,6 +25,9 @@ import { Providers } from "@/components/providers";
 export const metadata: Metadata = {
   title: "MyCashNG | Peer-to-Peer Lending Infrastructure",
   description: "Peer-to-peer lending infrastructure for lenders and borrowers in Nigeria.",
+  icons: {
+    icon: "/logo.svg",
+  },
 };
 
 export default function RootLayout({

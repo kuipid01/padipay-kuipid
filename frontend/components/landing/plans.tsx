@@ -119,11 +119,10 @@ export function Plans({ headerShown = true }: { headerShown?: boolean }) {
               Pricing
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-4 md:mb-5 text-main-green leading-tight">
-              Choose The Plan That Fits
-              <br className="hidden sm:inline" /> Your Finances
+              Choose The Plan That <br className="hidden sm:inline" /> Powers Your Lending
             </h2>
             <p className="text-gray-600 max-w-xl mx-auto text-base sm:text-lg font-medium">
-              Simple, transparent pricing — perfect for startups and growing teams.
+              Simple, infrastructure-grade pricing for lenders of all sizes. No hidden fees.
             </p>
           </div>
         )}

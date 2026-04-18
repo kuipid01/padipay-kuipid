@@ -17,7 +17,7 @@ export function Faq() {
             items: [
                 {
                     q: "Is there a free trial?",
-                    a: "Yes, you can use MyCashNG free for 30 days with full access to all features."
+                    a: "Yes, you can use our lending infrastructure free for 30 days with full access to all tools."
                 },
                 {
                     q: "Do I need a card to start the free trial?",
@@ -83,8 +83,8 @@ export function Faq() {
             title: "Usage & Flexibility",
             items: [
                 {
-                    q: "Can this be used for personal loans?",
-                    a: "No, it is not designed for personal loans. It is built specifically for structured lending use cases."
+                    q: "Can this be used for family or friend loans?",
+                    a: "Absolutely! MyCashNG is designed to provide the infrastructure for any individual or business wanting to manage structured lending, whether to family, friends, or customers."
                 },
                 {
                     q: "Who can use MyCashNG?",
@@ -137,7 +137,7 @@ export function Faq() {
                         </h2>
 
                         <p className="text-gray-500 font-medium text-lg leading-relaxed max-w-sm">
-                            Everything you need to know about our lending infrastructure and automated collections.
+                            Everything you need to know about our lending infrastructure, Paystack integration, and automated collections.
                         </p>
                     </motion.div>
 
@@ -180,7 +180,7 @@ export function Faq() {
                                     </AccordionContent>
                                 </AccordionItem>
                             ))}
-                        </Accordion>``
+                        </Accordion>
                     </motion.div>
                 </div>
             </div>

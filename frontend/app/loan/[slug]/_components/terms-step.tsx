@@ -70,7 +70,7 @@ export function TermsStep({ formData, update, summary, onSubmit, onBack, app }: 
                         onCheckedChange={(checked) => update({ agreedToTerms: !!checked })}
                     />
                     <label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed cursor-pointer">
-                        I have read and agree to the <button className="text-main-green font-bold underline" onClick={() => setViewFull(!viewFull)}>Terms of Service</button> and authorize automated repayment from my linked account.
+                        I have read and agree to the <button onClick={() => window.open("/terms", "_blank")} className="text-main-green cursor-pointer font-bold underline" >Terms of Service</button> and authorize automated repayment from my linked account.
                     </label>
                 </div>
 

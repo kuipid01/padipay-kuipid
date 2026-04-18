@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Facebook, Instagram, Linkedin, Youtube, Send } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Facebook, Instagram, Linkedin, Youtube, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function LandingFooter() {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     return (
         <footer className="py-24 bg-white">
             <div className="container mx-auto px-4">
@@ -16,11 +20,11 @@ export function LandingFooter() {
                             <div className="size-8 bg-main-green rounded-lg flex items-center justify-center">
                                 <span className="text-lemon-primary font-black text-xl">P</span>
                             </div>
-                            <span className="text-2xl font-black text-main-green tracking-tight">MyCashNG</span>
+                            <span className="text-2xl font-black text-main-green tracking-tight font-robotoSlab">MyCashNG</span>
                         </Link>
 
-                        <p className="text-gray-500 text-md font-medium leading-relaxed max-w-md">
-                            We are passionate about helping businesses leverage the power of technology to achieve their goals.
+                        <p className="text-gray-500 text-md font-medium leading-relaxed max-w-sm">
+                            The industrial-grade bridge between lenders and borrowers. Providing the infrastructure to launch, manage, and scale your lending operations with ease.
                         </p>
 
                         <div className="space-y-4">
@@ -29,20 +33,30 @@ export function LandingFooter() {
                                 onSubmit={async (e) => {
                                     e.preventDefault();
                                     const form = e.currentTarget;
-                                    const email = new FormData(form).get("email");
+                                    const formData = new FormData(form);
+                                    const email = formData.get("email") as string;
+
+                                    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                                        toast.error("Please enter a valid email address.");
+                                        return;
+                                    }
+
+                                    setIsSubmitting(true);
                                     try {
                                         const res = await fetch("/api/newsletter", {
                                             method: "POST",
                                             body: JSON.stringify({ email }),
                                         });
                                         if (res.ok) {
-                                            alert("Subscribed successfully!");
+                                            toast.success("Subscribed successfully!");
                                             form.reset();
                                         } else {
-                                            alert("Failed to subscribe.");
+                                            toast.error("Failed to subscribe. Please try again.");
                                         }
                                     } catch (err) {
-                                        alert("An error occurred.");
+                                        toast.error("An error occurred. Please try again later.");
+                                    } finally {
+                                        setIsSubmitting(false);
                                     }
                                 }}
                                 className="flex gap-2 max-w-md"
@@ -54,30 +68,40 @@ export function LandingFooter() {
                                     placeholder="Enter your email"
                                     className="h-12 bg-gray-50 border-gray-100 rounded-xl focus-visible:ring-main-green font-medium"
                                 />
-                                <Button type="submit" size="icon" className="h-12 w-12 bg-lemon-primary text-main-green hover:bg-lemon-primary/90 rounded-xl shadow-lg shadow-lemon-primary/20 shrink-0">
-                                    <Send size={18} />
+                                <Button
+                                    type="submit"
+                                    size="icon"
+                                    disabled={isSubmitting}
+                                    className="h-12 w-12 bg-lemon-primary text-main-green hover:bg-lemon-primary/90 rounded-xl shadow-lg shadow-lemon-primary/20 shrink-0"
+                                >
+                                    {isSubmitting ? (
+                                        <Loader2 size={18} className="animate-spin" />
+                                    ) : (
+                                        <Send size={18} />
+                                    )}
                                 </Button>
                             </form>
                         </div>
                     </div>
 
                     {/* Right Links Grid */}
-                    <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-10 lg:gap-8">
 
                         <FooterColumn
-                            title="Product"
+                            title="Platform"
                             links={[
-                                { label: "Pricing", href: "/pricing" },
-                                { label: "Security", href: "/security" }
+                                { label: "Features", href: "/#features" },
+                                { label: "Pricing", href: "/#pricing" }
                             ]}
                         />
                         <FooterColumn
                             title="Support"
                             links={[
                                 { label: "FAQ", href: "/faq" },
-                                { label: "Contact", href: "/contact" }
+                                { label: "Contact Us", href: "/contact" }
                             ]}
                         />
+
                         <FooterColumn
                             title="Legal"
                             links={[
@@ -95,10 +119,10 @@ export function LandingFooter() {
                     </p>
 
                     <div className="flex gap-4">
-                        <SocialIcon icon={<Facebook size={18} />} />
-                        <SocialIcon icon={<Instagram size={18} />} />
-                        <SocialIcon icon={<Linkedin size={18} />} />
-                        <SocialIcon icon={<Youtube size={18} />} />
+                        <SocialIcon href="https://facebook.com/MyCashNG" icon={<Facebook size={18} />} />
+                        <SocialIcon href="https://instagram.com/MyCashNG" icon={<Instagram size={18} />} />
+                        <SocialIcon href="https://linkedin.com/company/mycashng" icon={<Linkedin size={18} />} />
+                        <SocialIcon href="https://youtube.com/@MyCashNG" icon={<Youtube size={18} />} />
                     </div>
                 </div>
             </div>
@@ -109,11 +133,11 @@ export function LandingFooter() {
 function FooterColumn({ title, links }: { title: string; links: { label: string; href: string }[] }) {
     return (
         <div className="space-y-6">
-            <h4 className="text-sm font-black text-main-green uppercase tracking-wider">{title}</h4>
+            <h4 className="text-xs font-black text-main-green uppercase tracking-[0.2em]">{title}</h4>
             <ul className="space-y-4">
                 {links.map((link) => (
                     <li key={link.label}>
-                        <Link href={link.href} className="text-gray-500 hover:text-main-green text-sm font-bold transition-colors">
+                        <Link href={link.href} className="text-gray-500 hover:text-main-green text-[13px] font-bold transition-all duration-300 hover:translate-x-1 inline-block">
                             {link.label}
                         </Link>
                     </li>
@@ -123,9 +147,9 @@ function FooterColumn({ title, links }: { title: string; links: { label: string;
     );
 }
 
-function SocialIcon({ icon }: { icon: React.ReactNode }) {
+function SocialIcon({ icon, href }: { icon: React.ReactNode; href: string }) {
     return (
-        <Link href="/" className="w-10 h-10 rounded-full bg-lemon-primary/40 text-main-green flex items-center justify-center hover:bg-lemon-primary transition-all duration-300">
+        <Link href={href} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-lemon-primary/40 text-main-green flex items-center justify-center hover:bg-lemon-primary transition-all duration-300">
             {icon}
         </Link>
     );

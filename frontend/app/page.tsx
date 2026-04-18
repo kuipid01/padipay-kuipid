@@ -21,7 +21,9 @@ export default function Home() {
       <Features />
       <OurValue />
       <Overview />
-      <Integrations />
+
+      {/* //TODO:RETSORE */}
+      {/* <Integrations /> */}
       <Testimonials />
 
       <Plans />

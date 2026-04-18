@@ -4,93 +4,18 @@ import { motion } from "framer-motion";
 export function Overview() {
     const gridItems = [
         {
-            title: "Portfolio Performance Tracking",
-            description: "Monitor your active loan portfolio in real-time. Track total disbursements, accrued interest, and overall ROI with precision to ensure your lending business stays profitable.",
-            illustration: (
-                <div className="relative w-full h-full flex items-center justify-center p-4">
-                    <div className="absolute left-4 rotate-[-4deg] opacity-40 scale-75 bg-white rounded-2xl p-4 shadow-sm border w-48 h-32 hidden lg:block" />
-                    <div className="absolute right-4 rotate-[4deg] opacity-40 scale-75 bg-white rounded-2xl p-4 shadow-sm border w-48 h-32 hidden lg:block" />
-                    <div className="z-10 bg-white rounded-2xl p-6 shadow-xl border border-gray-100 w-full max-w-[260px] space-y-4">
-                        <div className="flex justify-between items-center">
-                            <div className="size-8 rounded-lg bg-lemon-primary/20 flex items-center justify-center">
-                                <div className="size-4 rounded-full border-2 border-main-green border-t-transparent animate-spin-slow" />
-                            </div>
-                            <div className="size-1 rounded-full bg-gray-300" />
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] uppercase font-bold text-main-green bg-lemon-primary/30 px-2 py-0.5 rounded w-fit">Active Portfolio</p>
-                            <h4 className="text-2xl font-black text-main-green">₦4.2M</h4>
-                            <p className="text-xs text-gray-500 font-medium">Total Interests Earned</p>
-                        </div>
-                    </div>
-                </div>
-            )
-        },
-        {
-            title: "Automated Repayment Cycles",
-            description: "Visualize collection trends and analyze monthly repayment cycles. Our automated system helps you track upcoming installments and manage cash flow effortlessly.",
+            title: "1. Brand & Customize",
+            description: "Setup your professional lending portal in seconds. Add your branding, define your loan products, and set your interest rates to match your business model.",
             illustration: (
                 <div className="bg-white rounded-2xl p-4 md:p-6 shadow-xl border border-gray-100 w-full max-w-sm space-y-6">
                     <div className="flex justify-between items-center">
-                        <h4 className="font-bold text-main-green text-sm italic">Collection Rate</h4>
-                        <div className="text-[10px] font-bold text-gray-400 border rounded px-2 py-1">Monthly</div>
-                    </div>
-                    <div className="flex items-end justify-between gap-1.5 h-32">
-                        {[40, 70, 45, 90, 65, 80, 50, 85, 60, 95, 75, 55].map((h, i) => (
-                            <div key={i} className="flex-1 space-y-1 group">
-                                <div className="w-full bg-lemon-primary/30 rounded-t-sm group-hover:bg-main-green transition-colors" style={{ height: `${h * 0.6}%` }} />
-                                <div className="w-full bg-main-green/10 rounded-t-sm group-hover:bg-lemon-primary transition-colors" style={{ height: `${h * 0.4}%` }} />
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex justify-between items-center pt-2">
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-gray-400 font-bold uppercase">Disbursed This Month</p>
-                            <p className="text-lg font-black text-main-green">₦840,000</p>
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="flex items-center gap-1.5">
-                                <div className="size-2 rounded-full bg-main-green" />
-                                <span className="text-[10px] font-bold text-gray-600">Collected</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <div className="size-2 rounded-full bg-lemon-primary" />
-                                <span className="text-[10px] font-bold text-gray-600">Pending</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )
-        },
-        {
-            title: "Risk Analysis & Health Metrics",
-            description: "Mitigate risks with intelligent credit scoring and health monitoring. Gain a 360-degree view of borrower behavior and portfolio delinquency rates at a glance.",
-            illustration: (
-                <div className="relative size-48 md:size-64 flex items-center justify-center">
-                    <div className="size-36 md:size-48 rounded-full border-[15px] md:border-[20px] border-gray-100 relative">
-                        <div className="absolute inset-[-15px] md:inset-[-20px] rounded-full border-[15px] md:border-[20px] border-main-green border-t-transparent border-l-transparent rotate-45" />
-                        <div className="absolute inset-[-15px] md:inset-[-20px] rounded-full border-[15px] md:border-[20px] border-lemon-primary border-t-transparent border-r-transparent border-b-transparent -rotate-12" />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center space-y-1">
-                            <p className="text-[10px] text-gray-400 font-bold uppercase">Success Rate</p>
-                            <h4 className="text-xl font-black text-main-green">98.4%</h4>
-                        </div>
-                    </div>
-                </div>
-            )
-        },
-        {
-            title: "Smart Loan Management",
-            description: "Create and manage diverse loan products with ease. From personal micro-loans to business credit, track performance metrics for every product category you offer.",
-            illustration: (
-                <div className="bg-white rounded-2xl p-4 md:p-6 shadow-xl border border-gray-100 w-full max-w-sm space-y-6">
-                    <div className="flex justify-between items-center">
-                        <h4 className="font-bold text-main-green text-sm">Loan Products</h4>
-                        <button className="text-[10px] font-bold text-gray-400 flex items-center gap-1">+ New Product</button>
+                        <h4 className="font-bold text-main-green text-sm italic font-robotoSlab">Lending Portal</h4>
+                        <div className="text-[10px] font-bold text-gray-400 border rounded px-2 py-1 italic">V 2.0</div>
                     </div>
                     <div className="space-y-4">
                         {[
-                            { label: "Micro-Credit", icon: "💰", progress: 85, vol: "₦1.2M" },
-                            { label: "Business Capital", icon: "�", progress: 40, vol: "₦3.5M" }
+                            { label: "Family Loans", icon: "🏠", progress: 85, vol: "₦1.2M" },
+                            { label: "Business Credit", icon: "💼", progress: 40, vol: "₦3.5M" }
                         ].map((item, i) => (
                             <div key={i} className="p-4 rounded-xl border border-gray-50 space-y-3">
                                 <div className="flex justify-between items-center">
@@ -104,11 +29,71 @@ export function Overview() {
                                     <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                                         <div className="h-full bg-main-green rounded-full" style={{ width: `${item.progress}%` }} />
                                     </div>
-                                    <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                                        <span>Utilized: {item.progress}%</span>
-                                        <span>Capacity Limit</span>
-                                    </div>
                                 </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )
+        },
+        {
+            title: "2. Fund Your Wallet",
+            description: "Securely fund your lending capital via Paystack. Your wallet is the engine that powers your disbursements, keeping your liquidity ready for Every borrower.",
+            illustration: (
+                <div className="relative w-full h-full flex items-center justify-center p-4">
+                    <div className="z-10 bg-white rounded-2xl p-6 shadow-xl border border-gray-100 w-full max-w-[260px] space-y-4">
+                        <div className="flex justify-between items-center">
+                            <div className="size-8 rounded-lg bg-lemon-primary/20 flex items-center justify-center">
+                                <div className="size-4 rounded-full border-2 border-main-green border-t-transparent animate-spin-slow" />
+                            </div>
+                            <div className="size-1 rounded-full bg-gray-300" />
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-[10px] uppercase font-bold text-main-green bg-lemon-primary/30 px-2 py-0.5 rounded w-fit">Wallet Balance</p>
+                            <h4 className="text-2xl font-black text-main-green">₦5,000,000</h4>
+                            <p className="text-xs text-gray-500 font-medium">Ready for disbursement</p>
+                        </div>
+                    </div>
+                </div>
+            )
+        },
+        {
+            title: "3. Share & Collect",
+            description: "Share your unique loan application link via WhatsApp or email. Borrowers fill in their details and authorize their cards for automated future repayments.",
+            illustration: (
+                <div className="relative size-48 md:size-64 flex items-center justify-center">
+                    <div className="size-36 md:size-48 rounded-full border-[15px] md:border-[20px] border-gray-100 relative">
+                        <div className="absolute inset-[-15px] md:inset-[-20px] rounded-full border-[15px] md:border-[20px] border-main-green border-t-transparent border-l-transparent rotate-45" />
+                        <div className="absolute inset-[-15px] md:inset-[-20px] rounded-full border-[15px] md:border-[20px] border-lemon-primary border-t-transparent border-r-transparent border-b-transparent -rotate-12" />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center space-y-1">
+                            <p className="text-[10px] text-gray-400 font-bold uppercase">Approval Rate</p>
+                            <h4 className="text-xl font-black text-main-green">94.2%</h4>
+                        </div>
+                    </div>
+                </div>
+            )
+        },
+        {
+            title: "4. Verify & Disburse",
+            description: "Review incoming applications in real-time. Once approved, the system automatically disburses funds to the borrower's bank account instantly.",
+            illustration: (
+                <div className="bg-white rounded-2xl p-4 md:p-6 shadow-xl border border-gray-100 w-full max-w-sm space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h4 className="font-bold text-main-green text-sm italic font-robotoSlab">Recent Payouts</h4>
+                        <div className="text-[10px] font-bold text-gray-400 border rounded px-2 py-1">Live Feed</div>
+                    </div>
+                    <div className="space-y-3">
+                        {[
+                            { name: "John Doe", amount: "₦50,000", status: "Successful" },
+                            { name: "Jane Smith", amount: "₦120,000", status: "Successful" },
+                            { name: "Alex K.", amount: "₦25,000", status: "Successful" }
+                        ].map((p, i) => (
+                            <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-gray-50/50 border border-gray-100">
+                                <div className="space-y-0.5">
+                                    <p className="text-xs font-bold text-main-green">{p.name}</p>
+                                    <p className="text-[10px] text-gray-400 font-medium">{p.amount}</p>
+                                </div>
+                                <span className="text-[9px] font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{p.status}</span>
                             </div>
                         ))}
                     </div>
@@ -127,10 +112,10 @@ export function Overview() {
                         </div>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-black text-main-green font-robotoSlab max-w-3xl mx-auto leading-tight">
-                        The Operating System for <br /> Your Lending Business
+                        Your Lending Business, <br /> Streamlined.
                     </h2>
                     <p className="text-gray-500 max-w-2xl mx-auto font-medium text-lg leading-relaxed">
-                        Scale your lending operations with industrial-grade tools that automate disbursements, track repayments, and manage risk in real-time.
+                        Follow our simple 4-step process to launch your lending brand and automate your entire operation from funding to payout.
                     </p>
                 </div>
 

@@ -135,7 +135,7 @@ otp.post("/send", async (c) => {
       console.log("[STEP 3] Sending email OTP via Brevo");
       const otpCode = brevo.generateOTP(6);
       const result = await brevo.sendOTPEmail(value, otpCode);
-
+      console.log(otpCode, "FOR TEST")
       if (!result.success) {
         console.warn(`[FALLBACK] Email OTP send failed, OTP: ${otpCode}`);
       } else {

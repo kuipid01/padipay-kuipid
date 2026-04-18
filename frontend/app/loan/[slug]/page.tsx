@@ -487,7 +487,9 @@ function PublicLoanForm() {
               // For now just go to offer
               setCurrentStep("offer");
             }}
-            onBack={prevStep}
+            onBack={() => {
+              setCurrentStep("kyc")
+            }}
           />
         );
       case "success":

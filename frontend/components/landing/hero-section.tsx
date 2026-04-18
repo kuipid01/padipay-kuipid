@@ -16,9 +16,9 @@ export function HeroSection() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <LandingBadge label="MyCashNG" text="Smarter Money Management" />
+                    <LandingBadge label="MyCashNG" text="Lending Infrastructure For Everyone" />
                     <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl z-10 relative font-extrabold tracking-tight mb-6 text-main-green leading-[1.1]">
-                        Lending Infrastructure <br className="hidden md:block" /> Reimagined.
+                        Industrial-Grade <br className="hidden md:block" /> Lending Infrastructure.
                     </h1>
                 </motion.div>
 
@@ -28,7 +28,7 @@ export function HeroSection() {
                     transition={{ duration: 0.5, delay: 0.1 }}
                 >
                     <p className="text-base sm:text-lg md:text-xl z-10 relative text-muted-foreground max-w-2xl mx-auto mb-8 md:mb-10 font-medium px-4">
-                        The bridge between lenders and borrowers. Automated repayments, reminders, and verification — all in one place.
+                        Launch your own lending app in minutes. Whether you're lending to family, friends, or running a business — automate your disbursements, repayments, and tracking all in one place.
                     </p>
                 </motion.div>
 
