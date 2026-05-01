@@ -48,8 +48,25 @@ interface PaystackVerifyResponse {
       brand: string;
       reusable: boolean;
       signature: string;
-      account_name: string | null;
     };
+  };
+}
+
+interface PaystackTransferResponse {
+  status: boolean;
+  message: string;
+  data: {
+    id: number;
+    domain: string;
+    amount: number;
+    currency: string;
+    reference: string;
+    source: string;
+    reason: string;
+    status: string;
+    transfer_code: string;
+    createdAt: string;
+    updatedAt: string;
   };
 }
 
@@ -163,6 +180,119 @@ export class PaystackService {
       .digest("hex");
 
     return hash === signature;
+  }
+
+  /**
+   * Create a Transfer Recipient
+   */
+  async createTransferRecipient(params: {
+    type: "nuban" | "ghipss" | "mobile_money" | "basa" | string;
+    name: string;
+    account_number: string;
+    bank_code: string;
+    currency?: string;
+    description?: string;
+    metadata?: any;
+  }): Promise<{
+    status: boolean;
+    message: string;
+    data: {
+      recipient_code: string;
+      active: boolean;
+      id: number;
+      name: string;
+      type: string;
+      details: {
+        account_number: string;
+        account_name: string;
+        bank_code: string;
+        bank_name: string;
+      };
+      currency: string
+    };
+  }> {
+    const response = await fetch(`${this.baseUrl}/transferrecipient`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.secretKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: params.type || "nuban",
+        name: params.name,
+        account_number: params.account_number,
+        bank_code: params.bank_code,
+        currency: params.currency || "NGN",
+        description: params.description,
+        metadata: params.metadata,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Unknown error" }));
+      throw new Error(error.message || "Failed to create transfer recipient");
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Initiate a Transfer
+   */
+  async initiateTransfer(params: {
+    source?: string;
+    amount: number; // in kobo/pesewas
+    recipient: string; // recipient code
+    reference: string;
+    reason?: string;
+    currency?: string;
+  }): Promise<PaystackTransferResponse> {
+    const response = await fetch(`${this.baseUrl}/transfer`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.secretKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        source: params.source || "balance",
+        amount: params.amount,
+        recipient: params.recipient,
+        reference: params.reference,
+        reason: params.reason,
+        currency: params.currency || "NGN",
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Unknown error" }));
+      throw new Error(error.message || "Failed to initiate transfer");
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Finalize an initiated transfer
+   */
+  async finalizeTransfer(params: {
+    transfer_code: string;
+    otp: string;
+  }): Promise<PaystackTransferResponse> {
+    const response = await fetch(`${this.baseUrl}/transfer/finalize_transfer`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.secretKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(params),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Unknown error" }));
+      throw new Error(error.message || "Failed to finalize transfer");
+    }
+
+    return response.json();
   }
 }
 

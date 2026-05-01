@@ -9,7 +9,12 @@ import {
   repayments,
   lenderWallets,
   repaymentPlans,
+  transferRecipients,
+  settlements,
+  settlementTypeEnum,
+  settlementStatusEnum,
 } from "../db/schema";
+import { paystackService } from "../utils/paystack";
 import {
   eq,
   sql,
@@ -418,6 +423,238 @@ router.get("/lenders", async (c) => {
   } catch (error: any) {
     console.error("Admin lenders error:", error);
     return c.json({ error: "Failed to fetch admin lenders" }, 500);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TRANSFER RECIPIENTS (Admin Override)
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/borrowers/:borrowerId/transfer-recipients", async (c) => {
+  try {
+    const borrowerId = c.req.param("borrowerId");
+
+    const recipients = await db.query.transferRecipients.findMany({
+      where: eq(transferRecipients.borrowerId, borrowerId),
+      orderBy: desc(transferRecipients.createdAt)
+    });
+
+    return c.json(recipients);
+  } catch (error: any) {
+    console.error("Admin transfer recipients get error:", error);
+    return c.json({ error: "Failed to fetch admin transfer recipients" }, 500);
+  }
+});
+
+router.post("/borrowers/:borrowerId/transfer-recipients", async (c) => {
+  try {
+    const borrowerId = c.req.param("borrowerId");
+    const body = await c.req.json();
+
+    const { account_number, bank_code, name, currency = "NGN", description } = body;
+
+    if (!account_number || !bank_code || !name) {
+      return c.json({ error: "account_number, bank_code, and name are required" }, 400);
+    }
+
+    const existing = await db.query.transferRecipients.findFirst({
+      where: and(
+        eq(transferRecipients.borrowerId, borrowerId),
+        eq(transferRecipients.accountNumber, account_number),
+        eq(transferRecipients.bankCode, bank_code)
+      )
+    });
+
+    if (existing) {
+      return c.json(existing, 200);
+    }
+
+    const response = await paystackService.createTransferRecipient({
+      type: "nuban",
+      name,
+      account_number,
+      bank_code,
+      currency,
+      description,
+    });
+
+    if (!response.status) {
+      return c.json({ error: response.message || "Failed to create recipient" }, 400);
+    }
+
+    const data = response.data;
+    const [newRecipient] = await db.insert(transferRecipients).values({
+      borrowerId: borrowerId,
+      recipientCode: data.recipient_code,
+      accountNumber: data.details.account_number,
+      bankCode: data.details.bank_code,
+      accountName: data.details.account_name || name,
+      bankName: data.details.bank_name,
+      currency: data.currency || currency,
+      type: data.type || "nuban",
+      metadata: data,
+    }).returning();
+
+    return c.json(newRecipient, 201);
+  } catch (error: any) {
+    console.error("Admin transfer recipients post error:", error);
+    return c.json({ error: error.message || "Failed to save transfer recipient" }, 500);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DISBURSEMENT (TRANSFER)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Initiate a disbursement (transfer) for a loan application
+ */
+router.post("/requests/:id/disburse", async (c) => {
+  try {
+    const applicationId = c.req.param("id");
+    const { recipientCode, reason } = await c.req.json();
+
+    if (!recipientCode) {
+      return c.json({ error: "recipientCode is required" }, 400);
+    }
+
+    // 1. Fetch application with details
+    const app = await db.query.loanApplications.findFirst({
+      where: eq(loanApplications.id, applicationId),
+      with: {
+        borrower: true,
+        loanApp: true
+      }
+    });
+
+    if (!app) {
+      return c.json({ error: "Loan application not found" }, 404);
+    }
+
+    // Usually we only disburse APPROVED applications
+    if (app.status !== "APPROVED" && app.status !== "PENDING") {
+      return c.json({ error: `Cannot disburse application in ${app.status} status` }, 400);
+    }
+
+    // 2. Prepare transfer
+    const amountInKobo = Math.round(Number(app.amount) * 100);
+    const reference = `settle_${applicationId}_${Date.now()}`;
+
+    // 3. Initiate Paystack Transfer
+    const ptResponse = await paystackService.initiateTransfer({
+      amount: amountInKobo,
+      recipient: recipientCode,
+      reference,
+      reason: reason || `Loan Disbursement for ${app.borrower?.firstName} ${app.borrower?.lastName}`,
+      source: "balance",
+      currency: "NGN"
+    });
+
+    if (!ptResponse.status) {
+      return c.json({ error: ptResponse.message || "Paystack transfer initiation failed" }, 400);
+    }
+
+    const ptData = ptResponse.data;
+
+    // 4. Create Settlement Record
+    const [settlement] = await db.insert(settlements).values({
+      lenderId: app.loanApp.ownerId,
+      borrowerId: app.borrower?.id,
+      applicationId: app.id,
+      amount: app.amount,
+      type: "LOAN_DISBURSEMENT",
+      paystackTransferId: String(ptData.id),
+      paystackTransferCode: ptData.transfer_code,
+      paystackReference: reference,
+      status: ptData.status === "otp" ? "OTP_REQUIRED" : 
+              ptData.status === "success" ? "SUCCESS" : "PENDING",
+      reason: reason || null,
+      metadata: ptData,
+    }).returning();
+
+    // 5. If immediate success, update application status
+    if (ptData.status === "success") {
+      await db.update(loanApplications)
+        .set({ status: "FUNDED" })
+        .where(eq(loanApplications.id, app.id));
+    }
+
+    return c.json({
+      message: ptResponse.message,
+      settlement,
+      requiresOtp: ptData.status === "otp"
+    });
+
+  } catch (error: any) {
+    console.error("Disbursement initiation error:", error);
+    return c.json({ error: error.message || "Failed to initiate disbursement" }, 500);
+  }
+});
+
+/**
+ * Finalize a transfer that requires OTP
+ */
+router.post("/settlements/:id/finalize", async (c) => {
+  try {
+    const settlementId = c.req.param("id");
+    const { otp } = await c.req.json();
+
+    if (!otp) {
+      return c.json({ error: "OTP is required" }, 400);
+    }
+
+    const settle = await db.query.settlements.findFirst({
+      where: eq(settlements.id, settlementId)
+    });
+
+    if (!settle) {
+      return c.json({ error: "Settlement record not found" }, 404);
+    }
+
+    if (settle.status !== "OTP_REQUIRED") {
+      return c.json({ error: "This settlement does not require OTP or is already processed" }, 400);
+    }
+
+    if (!settle.paystackTransferCode) {
+      return c.json({ error: "Paystack transfer code missing from settlement record" }, 400);
+    }
+
+    // 1. Finalize with Paystack
+    const ptResponse = await paystackService.finalizeTransfer({
+      transfer_code: settle.paystackTransferCode,
+      otp
+    });
+
+    if (!ptResponse.status) {
+      return c.json({ error: ptResponse.message || "Failed to finalize transfer" }, 400);
+    }
+
+    const ptData = ptResponse.data;
+
+    // 2. Update Settlement Status
+    const [updatedSettle] = await db.update(settlements)
+      .set({
+        status: ptData.status === "success" ? "SUCCESS" : "PENDING",
+        metadata: { ...(settle.metadata as object), finalizeResponse: ptData },
+        updatedAt: new Date(),
+      })
+      .where(eq(settlements.id, settle.id))
+      .returning();
+
+    // 3. Update Application Status if success
+    if (ptData.status === "success" && settle.applicationId) {
+      await db.update(loanApplications)
+        .set({ status: "FUNDED" })
+        .where(eq(loanApplications.id, settle.applicationId));
+    }
+
+    return c.json({
+      message: ptResponse.message,
+      settlement: updatedSettle
+    });
+
+  } catch (error: any) {
+    console.error("Finalize transfer error:", error);
+    return c.json({ error: error.message || "Failed to finalize transfer" }, 500);
   }
 });
 

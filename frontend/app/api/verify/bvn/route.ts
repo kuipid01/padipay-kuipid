@@ -31,16 +31,13 @@ export async function POST(request: Request) {
       const errorText = await response.text();
       console.error("Backend returned non-JSON response:", errorText);
       return NextResponse.json(
-        { error: `Backend error: ${errorText.slice(0, 100)}` },
+        { error: errorText },
         { status: response?.status },
       );
     }
 
     if (!response.ok) {
-      return NextResponse.json(
-        { error: data.error || data.message || "Failed to verify BVN" },
-        { status: response?.status },
-      );
+      return NextResponse.json(data, { status: response?.status });
     }
 
     return NextResponse.json({

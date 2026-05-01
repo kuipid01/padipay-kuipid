@@ -8,8 +8,11 @@ import {
     loanApplications, 
     bankAccounts,
     notifications,
-    borrowerDocuments
+    borrowerDocuments,
+    transferRecipients
 } from "../db/schema";
+import { paystackService } from "../utils/paystack";
+
 import { eq, and, desc, sum, count, lt, inArray } from "drizzle-orm";
 import { authMiddleware, borrowerAuthMiddleware } from "../middleware/auth";
 import { hashPassword, comparePassword, signToken } from "../lib/auth";
@@ -431,6 +434,79 @@ router.post("/documents", async (c) => {
       500
     );
   }
+});
+
+
+// 7. Transfer Recipients
+// GET /api/borrower/transfer-recipients
+router.get("/transfer-recipients", async (c) => {
+    const user = c.get("user");
+    
+    const recipients = await db.query.transferRecipients.findMany({
+        where: eq(transferRecipients.borrowerId, user.id),
+        orderBy: desc(transferRecipients.createdAt)
+    });
+
+    return c.json(recipients);
+});
+
+// POST /api/borrower/transfer-recipients
+router.post("/transfer-recipients", async (c) => {
+    try {
+        const user = c.get("user");
+        const body = await c.req.json();
+        
+        const { account_number, bank_code, name, currency = "NGN", description } = body;
+        
+        if (!account_number || !bank_code || !name) {
+            return c.json({ error: "account_number, bank_code, and name are required" }, 400);
+        }
+
+        // Check if we already have it
+        const existing = await db.query.transferRecipients.findFirst({
+            where: and(
+                eq(transferRecipients.borrowerId, user.id),
+                eq(transferRecipients.accountNumber, account_number),
+                eq(transferRecipients.bankCode, bank_code)
+            )
+        });
+
+        if (existing) {
+            return c.json(existing, 200);
+        }
+
+        // Create on Paystack
+        const response = await paystackService.createTransferRecipient({
+            type: "nuban",
+            name,
+            account_number,
+            bank_code,
+            currency,
+            description,
+        });
+
+        if (!response.status) {
+            return c.json({ error: response.message || "Failed to create recipient" }, 400);
+        }
+
+        const data = response.data;
+        const [newRecipient] = await db.insert(transferRecipients).values({
+            borrowerId: user.id,
+            recipientCode: data.recipient_code,
+            accountNumber: data.details.account_number,
+            bankCode: data.details.bank_code,
+            accountName: data.details.account_name || name,
+            bankName: data.details.bank_name,
+            currency: data.currency || currency,
+            type: data.type || "nuban",
+            metadata: data,
+        }).returning();
+
+        return c.json(newRecipient, 201);
+    } catch (err: any) {
+        console.error("Transfer recipient save error:", err);
+        return c.json({ error: err.message || "Failed to save transfer recipient" }, 500);
+    }
 });
 
 

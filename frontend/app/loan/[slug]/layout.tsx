@@ -22,6 +22,7 @@ const Layout = async ({
     let borrowerData = null;
     if (authStatus.isBorrower && authStatus.isLoggedIn) {
         const res = await getBorrower()
+        console.log(res.user, "THIS IS THE BORROWER DATA")
         borrowerData = res.user
     }
 
@@ -47,13 +48,6 @@ export default Layout
 
 const UserOwnsLoanUI = () => {
     return (
-        <div className="flex flex-col items-center justify-center h-[60vh] text-center">
-            <h2 className="text-xl font-semibold">
-                This loan application is yours
-            </h2>
-            <p className="text-gray-500 mt-2">
-                You don’t have permission to view this loan.
-            </p>
-        </div>
+        <UserOwnsLoanUI />
     );
 }; 

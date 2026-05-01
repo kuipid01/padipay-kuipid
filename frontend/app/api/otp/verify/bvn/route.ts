@@ -15,10 +15,7 @@ export async function POST(req: Request) {
     const data = await response.json();
 
     if (!response.ok) {
-      return NextResponse.json(
-        { error: data.error || "Failed to verify OTP" },
-        { status: response.status }
-      );
+      return NextResponse.json(data, { status: response.status });
     }
 
     return NextResponse.json(data);

@@ -10,6 +10,7 @@ import { StepId, FormData } from "./types";
 import { STEP_ORDER, slideVariants } from "./constants";
 
 import { LoadingScreen } from "./_components/loading-screen";
+import { LoanSkeleton } from "./_components/loan-skeleton";
 import { NotFoundScreen } from "./_components/not-found-screen";
 import { ProcessingStep } from "./_components/processing-step";
 import { LandingStep } from "./_components/landing-step";
@@ -24,11 +25,13 @@ import { TermsStep } from "./_components/terms-step";
 import { SuccessStep } from "./_components/success-step";
 import { CreditScoreStep } from "./_components/credit-score-step";
 import DynamicUiForLoans from "./_components/dynamic-ui-for-loans";
+import { ExistingBorrowerModal } from "./_components/existing-borrower-modal";
 
 import { Suspense } from "react";
 import { SuspenseLoader } from "@/components/ui/suspense-loader";
 import { BorrowerDataContext } from "../../../lib/borrower-context";
 import { useConsent } from "@/lib/consent-context";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 function PublicLoanForm() {
   const data = useContext(BorrowerDataContext);
@@ -37,8 +40,6 @@ function PublicLoanForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   // Core State
-  const [app, setApp] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState<StepId>("landing");
   const [direction, setDirection] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,44 +80,45 @@ function PublicLoanForm() {
     creditScoreRefreshed: false,
   });
 
+  // Modal States
+  const [showExistingBorrowerModal, setShowExistingBorrowerModal] = useState(false);
+  const [existingBorrowerMessage, setExistingBorrowerMessage] = useState("");
+
   // Timers & Loaders
   const [otpCountdown, setOtpCountdown] = useState(0);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Fetch App Data
+  const { data: app, isLoading: loading } = useQuery({
+    queryKey: ["loan-app", slug],
+    queryFn: async () => {
+      const res = await fetch(`/api/public/${slug}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      return data;
+    },
+  });
+
   useEffect(() => {
-    async function fetchApp() {
-      try {
-        const res = await fetch(`/api/public/${slug}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
+    if (app) {
+      // Recover persisted data if state was lost
+      const savedEmail = localStorage.getItem(`mycashng_loan_email_${slug}`);
+      const savedPhone = localStorage.getItem(`mycashng_loan_phone_${slug}`);
 
-        setApp(data);
-
-        // Recover persisted data if state was lost
-        const savedEmail = localStorage.getItem(`mycashng_loan_email_${slug}`);
-        const savedPhone = localStorage.getItem(`mycashng_loan_phone_${slug}`);
-
-        // Set default amount and plan from JSON data
-        if (data.minLoanAmount) {
-          setFormData((prev) => ({
-            ...prev,
-            email: savedEmail || prev.email,
-            phone: savedPhone || prev.phone,
-            amount: data.minLoanAmount,
-            planId:
-              data.repaymentPlans?.find((p: any) => p.isDefault)?.id ||
-              data.repaymentPlans?.[0]?.id,
-          }));
-        }
-      } catch (err: any) {
-        toast.error(err.message || "Failed to load application");
-      } finally {
-        setLoading(false);
+      // Set default amount and plan from JSON data
+      if (app.minLoanAmount) {
+        setFormData((prev) => ({
+          ...prev,
+          email: savedEmail || prev.email,
+          phone: savedPhone || prev.phone,
+          amount: app.minLoanAmount,
+          planId:
+            app.repaymentPlans?.find((p: any) => p.isDefault)?.id ||
+            app.repaymentPlans?.[0]?.id,
+        }));
       }
     }
-    fetchApp();
-  }, [slug]);
+  }, [app, slug]);
 
   // Handle Logged-in Borrower Data (Pre-fill & Auto-skip)
   useEffect(() => {
@@ -203,28 +205,45 @@ function PublicLoanForm() {
   }, [activePlan, formData.amount]);
 
   // API Actions
-  const handleSendOtp = async () => {
-    setActionLoading(true);
-    try {
+  const sendOtpMutation = useMutation({
+    mutationFn: async ({ type, value }: { type: "phone" | "email"; value: string }) => {
       const res = await fetch(`/api/otp/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "phone", value: formData.phone, loanAppSlug: app.name }),
+        body: JSON.stringify({ type, value, loanAppSlug: app?.name }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to send code");
-      setStatus((prev) => ({
-        ...prev,
-        otpSent: true,
-        bvnVerified: data.bvnVerified || false,
-      }));
-      setOtpCountdown(60);
-      toast.success("Verification code sent!");
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      setActionLoading(false);
-    }
+      console.log(data, "DATA SEND OTP")
+      if (!res.ok) throw data;
+      return data;
+    },
+    onSuccess: (data, variables) => {
+      if (variables.type === "phone") {
+        setStatus((prev) => ({
+          ...prev,
+          otpSent: true,
+          bvnVerified: data.bvnVerified || false,
+        }));
+        setOtpCountdown(60);
+        toast.success("Verification code sent!");
+      } else {
+        setStatus((prev) => ({ ...prev, emailOtpSent: true }));
+        setOtpCountdown(60);
+        toast.success("Verification code sent to your email!");
+      }
+    },
+    onError: (err: any) => {
+      if (err.code === "BORROWER_ALREADY_EXISTS") {
+        setExistingBorrowerMessage(err.message);
+        setShowExistingBorrowerModal(true);
+      } else {
+        toast.error(err.message || "Failed to send code");
+      }
+    },
+  });
+
+  const handleSendOtp = async () => {
+    sendOtpMutation.mutate({ type: "phone", value: formData.phone });
   };
 
   const handleVerifyOtp = async () => {
@@ -243,6 +262,7 @@ function PublicLoanForm() {
       setStatus((prev) => ({ ...prev, phoneVerified: true }));
       toast.success("Phone verified!");
       if (status.bvnVerified) {
+        toast.info("We noticed you have a verified account alredy")
         setTimeout(() => setCurrentStep("credit-score"), 500);
       } else {
         setTimeout(nextStep, 500);
@@ -255,22 +275,7 @@ function PublicLoanForm() {
   };
 
   const handleSendEmailOtp = async () => {
-    setActionLoading(true);
-    try {
-      const res = await fetch(`/api/otp/send`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "email", value: formData.email }),
-      });
-      if (!res.ok) throw new Error("Failed to send email code");
-      setStatus((prev) => ({ ...prev, emailOtpSent: true }));
-      setOtpCountdown(60);
-      toast.success("Verification code sent to your email!");
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      setActionLoading(false);
-    }
+    sendOtpMutation.mutate({ type: "email", value: formData.email });
   };
 
   const handleVerifyEmailOtp = async () => {
@@ -383,7 +388,7 @@ function PublicLoanForm() {
   function renderStep(step: StepId) {
     switch (step) {
       case "landing":
-        return <LandingStep app={app} onNext={nextStep} />;
+        return <LandingStep app={app} onNext={nextStep} slug={slug} />;
       case "phone":
         return (
           <PhoneStep
@@ -392,7 +397,7 @@ function PublicLoanForm() {
             update={updateFormData}
             onSendOtp={handleSendOtp}
             onVerify={handleVerifyOtp}
-            loading={actionLoading}
+            loading={sendOtpMutation.isPending || actionLoading}
             countdown={otpCountdown}
             onBack={prevStep}
           />
@@ -405,7 +410,7 @@ function PublicLoanForm() {
             update={updateFormData}
             onSendOtp={handleSendEmailOtp}
             onVerify={handleVerifyEmailOtp}
-            loading={actionLoading}
+            loading={sendOtpMutation.isPending || actionLoading}
             countdown={otpCountdown}
             onBack={prevStep}
           />
@@ -500,7 +505,7 @@ function PublicLoanForm() {
   }
 
   // Render Logic
-  if (loading) return <LoadingScreen />;
+  if (loading) return <LoanSkeleton />;
   if (!app) return <NotFoundScreen />;
 
   return (
@@ -548,6 +553,13 @@ function PublicLoanForm() {
                 </motion.div>
               </AnimatePresence>
             </main>
+
+            <ExistingBorrowerModal
+              isOpen={showExistingBorrowerModal}
+              onClose={() => setShowExistingBorrowerModal(false)}
+              slug={slug as string}
+              message={existingBorrowerMessage}
+            />
           </>
         )}
       </DynamicUiForLoans>

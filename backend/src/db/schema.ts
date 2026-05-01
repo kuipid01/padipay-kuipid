@@ -95,6 +95,19 @@ export const walletTransactionTypeEnum = pgEnum("wallet_transaction_type", [
   "fee_debit",
 ]);
 
+export const settlementTypeEnum = pgEnum("settlement_type", [
+  "LOAN_DISBURSEMENT",
+  "LENDER_PAYOUT",
+]);
+
+export const settlementStatusEnum = pgEnum("settlement_status", [
+  "PENDING",
+  "SUCCESS",
+  "FAILED",
+  "REVERSED",
+  "OTP_REQUIRED",
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
@@ -402,6 +415,24 @@ export const bankAccounts = pgTable("bank_accounts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const transferRecipients = pgTable("transfer_recipients", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  borrowerId: uuid("borrower_id")
+    .references(() => borrowers.id)
+    .notNull(),
+  recipientCode: varchar("recipient_code", { length: 255 }).notNull().unique(), // e.g., RCP_m7ljkv8leesep7p
+  accountNumber: varchar("account_number", { length: 50 }).notNull(),
+  bankCode: varchar("bank_code", { length: 20 }).notNull(),
+  accountName: varchar("account_name", { length: 255 }),
+  bankName: varchar("bank_name", { length: 255 }),
+  currency: varchar("currency", { length: 10 }).default("NGN"),
+  type: varchar("type", { length: 20 }).default("nuban"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+
 export const debitMandates = pgTable("debit_mandates", {
   id: uuid("id").defaultRandom().primaryKey(),
   borrowerId: uuid("borrower_id")
@@ -586,6 +617,27 @@ export const walletTransactions = pgTable("wallet_transactions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const settlements = pgTable("settlements", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  lenderId: uuid("lender_id")
+    .references(() => users.id)
+    .notNull(),
+  borrowerId: uuid("borrower_id")
+    .references(() => borrowers.id),
+  applicationId: uuid("application_id")
+    .references(() => loanApplications.id),
+  amount: decimal("amount").notNull(),
+  type: settlementTypeEnum("type").notNull(),
+  paystackTransferId: text("paystack_transfer_id"),
+  paystackTransferCode: text("paystack_transfer_code"),
+  paystackReference: text("paystack_reference").unique(),
+  status: settlementStatusEnum("status").default("PENDING").notNull(),
+  reason: text("reason"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 
 
 
@@ -596,7 +648,8 @@ export const walletTransactions = pgTable("wallet_transactions", {
 export const usersRelations = relations(users, ({ many, one }) => ({
   loanApps: many(loanApps),
   payoutAccounts: many(payoutAccounts),
-   loanPreferences: one(loanPreferences),
+  loanPreferences: one(loanPreferences),
+  settlements: many(settlements),
 }));
 
 
@@ -636,7 +689,7 @@ export const repaymentPlansRelations = relations(repaymentPlans, ({ one, many  }
 
 export const loanApplicationsRelations = relations(
   loanApplications,
-  ({ one }) => ({
+  ({ one, many }) => ({
     loanApp: one(loanApps, {
       fields: [loanApplications.loanAppId],
       references: [loanApps.id],
@@ -649,6 +702,7 @@ export const loanApplicationsRelations = relations(
       fields: [loanApplications.repaymentPlanId],
       references: [repaymentPlans.id],
     }),
+    settlements: many(settlements),
   }), 
 );
 
@@ -676,6 +730,15 @@ export const borrowersRelations = relations(borrowers, ({ many }) => ({
   debitMandates: many(debitMandates),
   notificationLogs: many(notificationLogs),
   documents: many(borrowerDocuments),
+  transferRecipients: many(transferRecipients),
+  settlements: many(settlements),
+}));
+
+export const transferRecipientsRelations = relations(transferRecipients, ({ one }) => ({
+  borrower: one(borrowers, {
+    fields: [transferRecipients.borrowerId],
+    references: [borrowers.id],
+  }),
 }));
 
 export const borrowerDocumentsRelations = relations(borrowerDocuments, ({ one }) => ({
@@ -780,3 +843,17 @@ export const contactMessages = pgTable("contact_messages", {
   message: text("message").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
+export const settlementsRelations = relations(settlements, ({ one }) => ({
+  lender: one(users, {
+    fields: [settlements.lenderId],
+    references: [users.id],
+  }),
+  borrower: one(borrowers, {
+    fields: [settlements.borrowerId],
+    references: [borrowers.id],
+  }),
+  application: one(loanApplications, {
+    fields: [settlements.applicationId],
+    references: [loanApplications.id],
+  }),
+}));

@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Borrower } from "@/hooks/use-user";
 import { useRouter } from "next/navigation";
+import { ConfirmBankModal } from "./confirm-bank-modal";
 
 interface BorrowerProfileStatusProps {
     borrower: Borrower;
@@ -28,6 +29,7 @@ interface BorrowerProfileStatusProps {
 export const BorrowerProfileStatus: React.FC<BorrowerProfileStatusProps> = ({ borrower, onConsent }) => {
     const router = useRouter();
     const [isExpanded, setIsExpanded] = useState(false);
+    const [showBankModal, setShowBankModal] = useState(false);
 
     const formatDate = (dateString: string) => {
         if (!dateString) return "N/A";
@@ -39,14 +41,22 @@ export const BorrowerProfileStatus: React.FC<BorrowerProfileStatusProps> = ({ bo
     };
 
     const handleAction = async (consent: boolean) => {
-        console.log(consent, "consent token handleAction")
-        if (onConsent) {
-            onConsent(consent);
-            console.log(consent, "consent token here")
+        if (!consent) {
+            if (onConsent) onConsent(false);
             return;
         }
 
+        // If confirming, check for bank accounts first
+        if (borrower.bankAccounts && borrower.bankAccounts.length > 0) {
+            setShowBankModal(true);
+        } else if (onConsent) {
+            onConsent(true);
+        }
+    };
 
+    const handleConfirmBank = () => {
+        setShowBankModal(false);
+        if (onConsent) onConsent(true);
     };
 
     return (
@@ -123,14 +133,14 @@ export const BorrowerProfileStatus: React.FC<BorrowerProfileStatusProps> = ({ bo
                         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
                             <button
                                 onClick={() => setIsExpanded(!isExpanded)}
-                                className="text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-main-green transition-colors px-4"
+                                className="text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-main-green transition-colors px-4 h-14 rounded-2xl"
                             >
                                 {isExpanded ? "Close Details" : "Review Profile"}
                             </button>
 
                             <button
                                 onClick={() => handleAction(true)}
-                                className="group flex items-center gap-2 bg-main-green text-white font-black text-xs uppercase tracking-widest px-8 py-4 rounded-2xl hover:bg-main-green/90 transition-all shadow-lg shadow-main-green/20 active:scale-95"
+                                className="group flex items-center gap-3 bg-main-green text-white font-black text-xs uppercase tracking-[0.15em] px-10 py-5 rounded-[20px] hover:bg-main-green/90 transition-all shadow-xl shadow-main-green/20 active:scale-95"
                             >
                                 Confirm & Continue
                                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -198,18 +208,24 @@ export const BorrowerProfileStatus: React.FC<BorrowerProfileStatusProps> = ({ bo
                                     )}
 
                                     {/* Bottom Actions */}
-                                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-100">
-                                        <div className="flex items-center gap-3 text-gray-400">
-                                            <UserMinus size={16} />
-                                            <p className="text-xs font-medium">Not you? <button onClick={() => handleAction(false)} className="text-main-green font-bold hover:underline">Sign out</button></p>
+                                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-10 border-t border-gray-100/50">
+                                        <div className="flex items-center gap-4 text-gray-400 bg-white px-5 py-3 rounded-2xl border border-gray-50">
+                                            <UserMinus size={18} />
+                                            <p className="text-sm font-semibold">
+                                                Not you? <button onClick={() => handleAction(false)} className="text-main-green font-black hover:underline underline-offset-4">Sign out</button>
+                                            </p>
                                         </div>
 
-                                        <button
-                                            onClick={() => handleAction(false)}
-                                            className="text-[11px] font-black uppercase tracking-[0.15em] text-gray-400 hover:text-gray-600 px-6 py-2"
-                                        >
-                                            Edit Details Instead
-                                        </button>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <p className="text-[10px] font-black uppercase tracking-[0.1em] text-gray-400 mr-2">Need to change something?</p>
+                                            <button
+                                                onClick={() => router.push("/borrower/dashboard")}
+                                                className="group flex items-center gap-2 bg-lemon-primary/20 text-main-green font-black text-[11px] uppercase tracking-widest px-6 py-3 rounded-xl hover:bg-lemon-primary/30 transition-all border border-lemon-primary/30"
+                                            >
+                                                Proceed to Dashboard
+                                                <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </motion.div>
@@ -217,6 +233,13 @@ export const BorrowerProfileStatus: React.FC<BorrowerProfileStatusProps> = ({ bo
                     </AnimatePresence>
                 </motion.div>
             </div>
+
+            <ConfirmBankModal 
+                isOpen={showBankModal}
+                onClose={() => setShowBankModal(false)}
+                onConfirm={handleConfirmBank}
+                bankAccounts={borrower.bankAccounts || []}
+            />
         </div>
 
 

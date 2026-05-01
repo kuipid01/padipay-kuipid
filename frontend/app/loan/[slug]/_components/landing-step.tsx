@@ -1,12 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Lock, Shield, Zap } from "lucide-react";
+import { ParamValue } from "next/dist/server/request/params";
+import { useParams, useRouter } from "next/navigation";
 
 interface LandingStepProps {
     app: any; // Using any as per original code context, but ideally should be typed
     onNext: () => void;
+    slug: ParamValue
 }
 
-export function LandingStep({ app, onNext }: LandingStepProps) {
+export function LandingStep({ app, onNext, slug }: LandingStepProps) {
+    const router = useRouter();
+
     return (
         <div className="space-y-8 py-8 animate-in fade-in duration-700">
             <div className="size-20 bg-main-green rounded-[24px] flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-main-green/20">
@@ -43,7 +48,7 @@ export function LandingStep({ app, onNext }: LandingStepProps) {
                     Get Started <ArrowRight className="ml-2" />
                 </Button>
                 <Button
-                    onClick={() => globalThis.location.href = '/login'}
+                    onClick={() => router.push(`/borrower/login?redirect=/loan/${slug}`)}
                     variant="ghost"
                     className="w-full h-14 rounded-[24px] text-main-green text-base font-bold hover:bg-main-green/5"
                 >
