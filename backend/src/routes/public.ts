@@ -38,8 +38,8 @@ router.post(
       }, 201);
     } catch (error) {
       console.error("[CONTACT_ERROR]", error);
-      return c.json({ 
-        error: "Failed to send message. Please try again later." 
+      return c.json({
+        error: "Failed to send message. Please try again later."
       }, 500);
     }
   }
@@ -47,54 +47,54 @@ router.post(
 
 // Get Loan App Details (for landing pages)
 router.get("/loan-apps/:slug", async (c) => {
-    const slug = c.req.param("slug");
-    const loanApp = await db.query.loanApps.findFirst({
-        where: eq(loanApps.slug, slug),
-        with: {
-            owner: {
-                columns: {
-                    fullName: true,
-                    email: true
-                }
-            }
+  const slug = c.req.param("slug");
+  const loanApp = await db.query.loanApps.findFirst({
+    where: eq(loanApps.slug, slug),
+    with: {
+      owner: {
+        columns: {
+          fullName: true,
+          email: true
         }
-    });
-
-    if (!loanApp) {
-        return c.json({ error: "Loan app not found" }, 404);
+      }
     }
+  });
 
-    if (!loanApp.isActive) {
-        return c.json({ error: "Loan app is currently inactive" }, 400);
-    }
+  if (!loanApp) {
+    return c.json({ error: "Loan app not found" }, 404);
+  }
 
-    return c.json(loanApp);
+  if (!loanApp.isActive) {
+    return c.json({ error: "Loan app is currently inactive" }, 400);
+  }
+
+  return c.json(loanApp);
 });
 
 // Get Loan App Details by ID (Public)
 router.get("/loan-apps/id/:id", async (c) => {
-    const id = c.req.param("id");
-    const { loanAppsService } = await import("../domain/loan-apps");
-    const result = await loanAppsService.getPublicById(id);
+  const id = c.req.param("id");
+  const { loanAppsService } = await import("../domain/loan-apps");
+  const result = await loanAppsService.getPublicById(id);
 
-    if (!result.success) {
-        return c.json({ error: result.error.message }, result.error.code as any);
-    }
+  if (!result.success) {
+    return c.json({ error: result.error.message }, result.error.code as any);
+  }
 
-    return c.json(result.data);
+  return c.json(result.data);
 });
 
 // Get Application Status (Public)
 router.get("/application/status/:id", async (c) => {
-    const id = c.req.param("id");
-    const { applicationsService } = await import("../domain/applications");
-    const result = await applicationsService.getPublicStatus(id);
+  const id = c.req.param("id");
+  const { applicationsService } = await import("../domain/applications");
+  const result = await applicationsService.getPublicStatus(id);
 
-    if (!result.success) {
-        return c.json({ error: result.error.message }, result.error.code as any);
-    }
+  if (!result.success) {
+    return c.json({ error: result.error.message }, result.error.code as any);
+  }
 
-    return c.json(result.data);
+  return c.json(result.data);
 });
 
 // Submit Application
@@ -259,7 +259,7 @@ const refreshCreditScoreAndRecord = async (bvn: string, id: string) => {
 
     if (creditReport) updateData.creditReport = creditReport;
     if (creditScore) updateData.creditScore = creditScore;
-console.log(creditScore,creditReport ,"creditReport")
+    console.log(creditScore, creditReport, "creditReport")
     // 🚫 Avoid empty update
     if (Object.keys(updateData).length === 0) return;
 
@@ -278,9 +278,12 @@ console.log(creditScore,creditReport ,"creditReport")
 
 async function preventReapplicationForSameBorrower(id: string) {
   const { db, loanApplications } = await import("../db");
-  const { eq } = await import("drizzle-orm");
+  const { eq, and } = await import("drizzle-orm");
   const existingApplication = await db.query.loanApplications.findFirst({
-    where: eq(loanApplications.borrowerId, id),
+    where: and(
+      eq(loanApplications.borrowerId, id),
+      eq(loanApplications.status, "PENDING")
+    ),
   });
 
   return existingApplication;
