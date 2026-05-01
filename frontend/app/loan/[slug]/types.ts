@@ -1,5 +1,5 @@
 
-export type StepId = 'landing' | 'phone' | 'email' | 'passcode' | 'bvn' | 'bank' | 'offer' | 'kyc' | 'terms' | 'processing' | 'success' | 'credit-score';
+export type StepId = 'landing' | 'phone' | 'email' | 'passcode' | 'bvn' | 'bank' | 'offer' | 'kyc' | 'terms' | 'processing' | 'success';
 
 export interface FormData {
     phone: string;

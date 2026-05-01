@@ -1,6 +1,6 @@
 import { StepId } from "./types";
 
-export const STEP_ORDER: StepId[] = ['landing', 'phone', 'email', 'passcode', 'bvn', 'bank', 'offer', 'kyc', 'terms', 'processing', 'success', 'credit-score'];
+export const STEP_ORDER: StepId[] = ['landing', 'phone', 'email', 'passcode', 'bvn', 'bank', 'offer', 'kyc', 'terms', 'processing', 'success'];
 
 export const NIGERIAN_STATES = [
     "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",

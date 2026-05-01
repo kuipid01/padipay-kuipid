@@ -59,7 +59,6 @@ const DynamicUiForLoans = ({
         bank: !!completionStatus.bankDetailsProvided || status.bankConnected,
         offer: false,
         kyc: !!completionStatus.employmentComplete,
-        "credit-score": !!completionStatus.creditScoreRefreshed || status.creditScoreRefreshed,
         terms: false,
         processing: false,
         success: false,
@@ -71,9 +70,6 @@ const DynamicUiForLoans = ({
     const resolvedStep = useMemo(() => {
         let step = currentStep;
         console.log("STEP", step)
-        // Special Case: If we just finished BVN and we need credit score, 
-        // we want to ensure we don't skip it if it's the intended destination.
-        // However, the linear resolution below will handle it if it's not completed.
 
         const currentIndex = STEP_ORDER.indexOf(step);
         console.log("currentIndex", currentIndex)
@@ -81,7 +77,6 @@ const DynamicUiForLoans = ({
             const s = STEP_ORDER[i];
             console.log(s, "STEP  IN CONSTANTS")
             if (!stepCompletionMap[s]) {
-                setCurrentStep(s)
                 return s;
             }
         }
@@ -90,14 +85,11 @@ const DynamicUiForLoans = ({
         return currentStep === 'success' ? 'success' : 'terms';
     }, [currentStep, stepCompletionMap]);
 
-    // Sync the external currentStep if resolution moved us ahead automatically
     useEffect(() => {
         if (resolvedStep !== currentStep) {
-            // We don't call onStepChange here to avoid infinite loops if not careful,
-            // but we want the parent to know. 
-            // Actually, rendering resolvedStep is enough for the UI.
+            setCurrentStep(resolvedStep);
         }
-    }, [resolvedStep, currentStep]);
+    }, [resolvedStep, currentStep, setCurrentStep]);
 
     return <>{children(resolvedStep)}</>;
 };

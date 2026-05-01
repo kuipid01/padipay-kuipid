@@ -650,9 +650,9 @@ router.post("/account", async (c) => {
 });
 
 // Refresh Credit Data
-router.post("/refresh-credit", async (c) => {
+router.post("/refresh-score", async (c) => {
   try {
-    const { bvn, phoneNumber } = await c.req.json();
+    const { bvn, phone, email } = await c.req.json();
 
     if (!bvn) {
       return c.json({ status: "error", message: "BVN is required" }, 400);
@@ -663,15 +663,26 @@ router.post("/refresh-credit", async (c) => {
     let creditScore = null;
 
     try {
-      creditReport = await getCreditReport(bvn);
-      creditScore = await getCreditScore(bvn);
+      [creditReport, creditScore] = await Promise.all([
+        getCreditReport(bvn),
+        getCreditScore(bvn),
+      ]);
     } catch (creditError: any) {
-      console.warn("Credit refresh failed:", creditError.message);
+      console.warn("[CREDIT CHECK FAILED]", creditError.message);
+    }
+
+    if (!creditScore) {
       return c.json(
-        { status: "error", message: "Failed to fetch credit data" },
-        500,
+        {
+          status: "error",
+          message: "Couldnt Verify Credit Score please retry , or try again later",
+        },
+        400,
       );
     }
+
+    console.log("CREDIT SCORE,", creditReport);
+    console.log("CREDIT creditReport,", creditReport);
 
     const { eq, or } = await import("drizzle-orm");
     const { db, tempBorrowers, borrowers } = await import("../db");
@@ -679,8 +690,9 @@ router.post("/refresh-credit", async (c) => {
     // Update tempBorrowers
     const existingTemp = await db.query.tempBorrowers.findFirst({
       where: or(
-        phoneNumber ? eq(tempBorrowers.phoneNumber, phoneNumber) : undefined,
+        phone ? eq(tempBorrowers.phoneNumber, phone) : undefined,
         eq(tempBorrowers.bvn, bvn),
+        email ? eq(tempBorrowers.email, email) : undefined,
       ),
     });
 
@@ -698,8 +710,9 @@ router.post("/refresh-credit", async (c) => {
     // Update borrowers if exists
     const existingBorrower = await db.query.borrowers.findFirst({
       where: or(
-        phoneNumber ? eq(borrowers.phone, phoneNumber) : undefined,
+        phone ? eq(borrowers.phone, phone) : undefined,
         eq(borrowers.bvn, bvn),
+        email ? eq(borrowers.email, email) : undefined,
       ),
     });
 

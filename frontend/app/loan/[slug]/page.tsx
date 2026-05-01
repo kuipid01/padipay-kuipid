@@ -23,7 +23,6 @@ import { OfferStep } from "./_components/offer-step";
 import { KycStep } from "./_components/kyc-step";
 import { TermsStep } from "./_components/terms-step";
 import { SuccessStep } from "./_components/success-step";
-import { CreditScoreStep } from "./_components/credit-score-step";
 import DynamicUiForLoans from "./_components/dynamic-ui-for-loans";
 import { ExistingBorrowerModal } from "./_components/existing-borrower-modal";
 
@@ -262,8 +261,8 @@ function PublicLoanForm() {
       setStatus((prev) => ({ ...prev, phoneVerified: true }));
       toast.success("Phone verified!");
       if (status.bvnVerified) {
-        toast.info("We noticed you have a verified account alredy")
-        setTimeout(() => setCurrentStep("credit-score"), 500);
+        toast.info("We noticed you have a verified account already")
+        handleRefreshScore();
       } else {
         setTimeout(nextStep, 500);
       }
@@ -319,7 +318,9 @@ function PublicLoanForm() {
 
       setStatus((prev) => ({ ...prev, bvnVerified: true }));
       toast.success("Identity verified!");
-      setTimeout(nextStep, 500);
+
+      // Automatically refresh score after BVN verification
+      handleRefreshScore();
     } catch (err: any) {
       if (err.message === "BVN already used on this loan app with different identity details") {
         router.push("/borrower/login")
@@ -371,18 +372,37 @@ function PublicLoanForm() {
     }
   };
 
-  const handleRefreshScore = async () => {
-    setActionLoading(true);
-    try {
-      // Simulated API call for refreshing credit score
-      await new Promise((r) => setTimeout(r, 2000));
+  const refreshScoreMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/verify/refresh-score`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          bvn: formData.bvn,
+          phone: formData.phone,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw data;
+      return data;
+    },
+    onSuccess: () => {
       setStatus((prev) => ({ ...prev, creditScoreRefreshed: true }));
-      toast.success("Credit score updated!");
-    } catch (err: any) {
-      toast.error("Failed to refresh score");
-    } finally {
-      setActionLoading(false);
-    }
+      toast.success("Credit profile updated!");
+      // Proceed to next step automatically
+      nextStep();
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to update credit profile");
+      // Still proceed to offer, but maybe with a warning or fallback?
+      // For now, let's just proceed to next step to avoid blocking the user
+      nextStep();
+    },
+  });
+
+  const handleRefreshScore = async () => {
+    refreshScoreMutation.mutate();
   };
 
   function renderStep(step: StepId) {
@@ -397,7 +417,7 @@ function PublicLoanForm() {
             update={updateFormData}
             onSendOtp={handleSendOtp}
             onVerify={handleVerifyOtp}
-            loading={sendOtpMutation.isPending || actionLoading}
+            loading={sendOtpMutation.isPending || refreshScoreMutation.isPending || actionLoading}
             countdown={otpCountdown}
             onBack={prevStep}
           />
@@ -430,7 +450,7 @@ function PublicLoanForm() {
             formData={formData}
             update={updateFormData}
             onVerify={handleVerifyBvn}
-            loading={actionLoading}
+            loading={refreshScoreMutation.isPending || actionLoading}
             onBack={prevStep}
           />
         );
@@ -481,22 +501,6 @@ function PublicLoanForm() {
         );
       case "processing":
         return <ProcessingStep />;
-      case "credit-score":
-        return (
-          <CreditScoreStep
-            onRefresh={handleRefreshScore}
-            loading={actionLoading}
-            refreshed={status.creditScoreRefreshed}
-            onNext={() => {
-              // If we have existing applications, we might want to skip bank linking too if it's done?
-              // For now just go to offer
-              setCurrentStep("offer");
-            }}
-            onBack={() => {
-              setCurrentStep("kyc")
-            }}
-          />
-        );
       case "success":
         return <SuccessStep app={app} summary={loanSummary} />;
       default:
