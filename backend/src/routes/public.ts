@@ -214,7 +214,7 @@ router.post(
     console.log("[SUCCESS] Application created", {
       applicationId: application[0].id,
     });
-
+    postApplication(application[0].id);
     return c.json(
       {
         success: true,
@@ -287,4 +287,64 @@ async function preventReapplicationForSameBorrower(id: string) {
   });
 
   return existingApplication;
+}
+
+async function postApplication(applicationId: string) {
+  try {
+    const { db } = await import("../db");
+    const { loanApplications, lenderWallets } = await import("../db/schema");
+    const { eq } = await import("drizzle-orm");
+    const { brevo } = await import("../lib/brevo");
+
+    const app = await db.query.loanApplications.findFirst({
+      where: eq(loanApplications.id, applicationId),
+      with: {
+        loanApp: {
+          with: {
+            owner: true,
+          },
+        },
+      },
+    });
+
+    if (!app || !app.loanApp || !app.loanApp.owner) return;
+
+    const amountInNaira = parseFloat(app.amount);
+    const amountInKobo = amountInNaira * 100;
+
+    const wallet = await db.query.lenderWallets.findFirst({
+      where: eq(lenderWallets.lenderId, app.loanApp.ownerId),
+    });
+
+    const balanceInKobo = wallet?.balance || 0;
+    const lenderEmail = app.loanApp.owner.email;
+    const lenderName = app.loanApp.owner.fullName || "Lender";
+
+    if (balanceInKobo < amountInKobo) {
+      await brevo.sendEmail({
+        to: [{ email: lenderEmail, name: lenderName }],
+        subject: "Action Required: Insufficient Wallet Balance for Loan Application",
+        htmlContent: `<p>You have received a new loan application for ₦${amountInNaira.toLocaleString()}, but your wallet balance is insufficient to fund it. Please fund your wallet to proceed with this application.</p>`,
+      });
+      return;
+    }
+
+    const autoApprovalLimit = app.loanApp.autoApprovalLimit || 0;
+
+    if (autoApprovalLimit >= amountInNaira) {
+      await brevo.sendEmail({
+        to: [{ email: "kuipid01@gmail.com", name: "Admin" }],
+        subject: "Action Required: Please Disburse Auto-Approved Loan",
+        htmlContent: `<p>A loan application (${app.id}) for ₦${amountInNaira.toLocaleString()} has met the auto-approval criteria. Please review and disburse the funds.</p>`,
+      });
+    } else {
+      await brevo.sendEmail({
+        to: [{ email: lenderEmail, name: lenderName }],
+        subject: "New Loan Application Received",
+        htmlContent: `<p>You have received a new loan application for ₦${amountInNaira.toLocaleString()}. Please log in to your dashboard to review and approve it for disbursement.</p>`,
+      });
+    }
+  } catch (error) {
+    console.error("[POST_APPLICATION_ERROR]", error);
+  }
 }
