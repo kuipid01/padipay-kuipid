@@ -1,10 +1,15 @@
 import cloudinary from "./cloudinary";
 import crypto from "crypto";
+import { isTestSuite } from "../lib/suite";
+import { mockCloudinaryUpload } from "../test-suite/external-mocks";
 
 export const uploadToCloudinary = async (
   buffer: Buffer,
   folder = "hubsell_uploads"
 ): Promise<string> => {
+  if (isTestSuite()) {
+    return mockCloudinaryUpload(folder).secureUrl;
+  }
 
   return new Promise((resolve, reject) => {
 
@@ -36,6 +41,16 @@ export const uploadToCloudinary = async (
 
 
 export async function generateUploadSignature(userId: string) {
+  if (isTestSuite()) {
+    return {
+      timestamp: Math.floor(Date.now() / 1000),
+      signature: "mock-cloudinary-signature",
+      apiKey: "mock-cloudinary-api-key",
+      cloudName: "mock-suite",
+      folder: `padi-loan/borrower-documents/${userId}`,
+    };
+  }
+
   const timestamp = Math.floor(Date.now() / 1000);
 
   const params = {

@@ -1,9 +1,22 @@
 import { NextResponse } from "next/server";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+const isTestSuite = process.env.SUITE === "test";
 
 export async function GET() {
   try {
+    if (isTestSuite) {
+      return NextResponse.json({
+        status: true,
+        message: "Mock banks",
+        data: [
+          { id: 1, name: "Access Bank", code: "044", active: true, country: "Nigeria", currency: "NGN", type: "nuban" },
+          { id: 2, name: "Guaranty Trust Bank", code: "058", active: true, country: "Nigeria", currency: "NGN", type: "nuban" },
+          { id: 3, name: "Kuda Bank", code: "50211", active: true, country: "Nigeria", currency: "NGN", type: "nuban" },
+        ],
+      });
+    }
+
     if (!PAYSTACK_SECRET_KEY) {
       return NextResponse.json({ error: "Paystack key not configured" }, { status: 500 });
     }

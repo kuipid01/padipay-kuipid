@@ -6,6 +6,8 @@
     "dev": "bun run --hot src/server.ts",
     "start": "bun run src/server.ts",
     "build": "bun build src/server.ts --outdir=dist --target=bun",
+    "test": "bun test",
+    "test:suite": "SUITE=test bun test src/test-suite",
     "db:push": "drizzle-kit push",
     "db:kui": "drizzle-kit generate && drizzle-kit push",
     "db:generate": "drizzle-kit generate",

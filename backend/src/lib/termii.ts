@@ -1,3 +1,6 @@
+import { isTestSuite } from "./suite";
+import { TEST_OTP } from "../test-suite/external-mocks";
+
 /**
  * Termii API Integration
  * Used for SMS and OTP services
@@ -63,6 +66,10 @@ class TermiiService {
     }
 
     async sendSMS(options: SendSMSOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
+        if (isTestSuite()) {
+            return { success: true, messageId: `mock-sms-${Date.now()}` };
+        }
+
         try {
             const response = await fetch(`${TERMII_BASE_URL}/sms/send`, {
                 method: "POST",
@@ -92,6 +99,10 @@ class TermiiService {
     }
 
     async sendOTP(options: SendOTPOptions): Promise<{ success: boolean; pinId?: string; error?: string }> {
+        if (isTestSuite()) {
+            return { success: true, pinId: "mock-pin-id" };
+        }
+
         try {
             const response = await fetch(`${TERMII_BASE_URL}/sms/otp/send`, {
                 method: "POST",
@@ -125,6 +136,10 @@ class TermiiService {
     }
 
     async verifyOTP(options: VerifyOTPOptions): Promise<{ success: boolean; verified?: boolean; attemptsRemaining?: number; error?: string }> {
+        if (isTestSuite()) {
+            return { success: true, verified: options.pin === TEST_OTP, attemptsRemaining: 3 };
+        }
+
         try {
             const response = await fetch(`${TERMII_BASE_URL}/sms/otp/verify`, {
                 method: "POST",
@@ -155,6 +170,10 @@ class TermiiService {
     }
 
     async sendVoiceOTP(to: string, pinLength: number = 6): Promise<{ success: boolean; pinId?: string; error?: string }> {
+        if (isTestSuite()) {
+            return { success: true, pinId: "mock-voice-pin-id" };
+        }
+
         try {
             const response = await fetch(`${TERMII_BASE_URL}/sms/otp/send/voice`, {
                 method: "POST",
@@ -183,6 +202,10 @@ class TermiiService {
     }
 
     async getBalance(): Promise<{ success: boolean; balance?: number; error?: string }> {
+        if (isTestSuite()) {
+            return { success: true, balance: 100000 };
+        }
+
         try {
             const response = await fetch(`${TERMII_BASE_URL}/get-balance?api_key=${this.apiKey}`);
             const result: TermiiResponse = await response.json();
@@ -200,6 +223,10 @@ class TermiiService {
     }
 
     async sendBulkSMS(recipients: string[], message: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
+        if (isTestSuite()) {
+            return { success: true, messageId: `mock-bulk-sms-${Date.now()}` };
+        }
+
         try {
             const response = await fetch(`${TERMII_BASE_URL}/sms/send/bulk`, {
                 method: "POST",
@@ -229,6 +256,8 @@ class TermiiService {
     }
 
     generateOTP(length: number = 6, type: "NUMERIC" | "ALPHANUMERIC" = "NUMERIC"): string {
+        if (isTestSuite()) return TEST_OTP;
+
         if (type === "NUMERIC") {
             const min = Math.pow(10, length - 1);
             const max = Math.pow(10, length) - 1;

@@ -1,3 +1,6 @@
+import { isTestSuite } from "./suite";
+import { TEST_OTP } from "../test-suite/external-mocks";
+
 /**
  * Brevo (formerly Sendinblue) API Integration
  * Used for transactional emails
@@ -60,6 +63,16 @@ class BrevoService {
     }
 
     async sendEmail(options: SendEmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
+        if (isTestSuite()) {
+            console.log("[SUITE=test] Mock Brevo email", {
+                to: options.to,
+                subject: options.subject,
+                templateId: options.templateId,
+                tags: options.tags,
+            });
+            return { success: true, messageId: `mock-email-${Date.now()}` };
+        }
+
         try {
             const payload: Record<string, unknown> = {
                 sender: {
@@ -477,6 +490,8 @@ async sendVerificationEmail (email:string,name:string,token:string)  {
     }
 
     generateOTP(length: number = 6): string {
+        if (isTestSuite()) return TEST_OTP;
+
         const min = Math.pow(10, length - 1);
         const max = Math.pow(10, length) - 1;
         return Math.floor(min + Math.random() * (max - min + 1)).toString();

@@ -23,4 +23,4 @@ export { default as notificationRoutes } from "./notifications";
 export { default as uploadsRoutes } from "./upload";
 export { default as borrowerUploadsRoutes } from "./borrower-uploads";
 export { default as adminRoutes } from "./admin";
-
+export { default as testRoutes } from "./test";

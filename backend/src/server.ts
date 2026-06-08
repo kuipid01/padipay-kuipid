@@ -5,10 +5,11 @@ import "dotenv/config";
 
 
 import { errorHandler, notFoundHandler } from "./middleware";
-import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes, uploadRoutes, userRoutes, loanPreferenceRoute, repaymentPlansRoutes, applicationsRoutes, subscriptionRoutes, borrowerRoutes, lenderRoutes, internalRoutes, notificationRoutes, borrowerUploadsRoutes, adminRoutes } from "./routes";
+import { authRoutes, loanAppsRoutes, otpRoutes, dashboardRoutes, loansRoutes, paymentsRoutes, repaymentsRoutes, verifyRoutes, webhooksRoutes, settingsRoutes, newsletterRoutes, publicRoutes, uploadRoutes, userRoutes, loanPreferenceRoute, repaymentPlansRoutes, applicationsRoutes, subscriptionRoutes, borrowerRoutes, lenderRoutes, internalRoutes, notificationRoutes, borrowerUploadsRoutes, adminRoutes, testRoutes } from "./routes";
 import { startCronJobs } from "./jobs/cron";
 import "./jobs/worker"; // Initialize BullMQ Worker
 import "./jobs/applicationEventsWorker"; // Initialize Application Events Worker
+import { isTestSuite } from "./lib/suite";
 
 /**
  * PadiLoan Backend Server
@@ -104,6 +105,9 @@ app.route("/api/lender", lenderRoutes);
 app.route("/api/internal", internalRoutes);
 app.route("/api/notifications", notificationRoutes);
 app.route("/api/admin", adminRoutes);
+if (isTestSuite()) {
+  app.route("/api/test", testRoutes);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 404 Handler

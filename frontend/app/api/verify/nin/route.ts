@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { dojah } from "@/lib/dojah";
 
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+const isTestSuite = process.env.SUITE === "test";
+
 export async function POST(request: Request) {
     try {
         const { nin, phone } = await request.json();
@@ -9,8 +12,13 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Valid 11-digit NIN is required" }, { status: 400 });
         }
 
-        // Use Dojah for NIN verification
-        const result = await dojah.verifyNIN(nin);
+        const result = isTestSuite
+            ? await fetch(`${BACKEND_URL}/api/test/dojah/nin`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nin, phone }),
+            }).then((res) => res.json()).then((data) => ({ success: true, data: data.entity }))
+            : await dojah.verifyNIN(nin);
 
         if (!result.success) {
             return NextResponse.json({ 

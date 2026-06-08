@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+const isTestSuite = process.env.SUITE === "test";
 
 export async function POST(request: Request) {
   try {
@@ -13,7 +14,7 @@ export async function POST(request: Request) {
     //     }
     const body = await request.json();
 
-    const response = await fetch(`${BACKEND_URL}/api/verify/bvn`, {
+    const response = await fetch(`${BACKEND_URL}${isTestSuite ? "/api/test/dojah/bvn" : "/api/verify/bvn"}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -40,15 +41,18 @@ export async function POST(request: Request) {
       return NextResponse.json(data, { status: response?.status });
     }
 
+    const verifiedData = isTestSuite ? data.entity : data.data || data;
+
     return NextResponse.json({
       success: true,
       message: "BVN verified successfully",
       verified: true,
       data: {
-        firstName: data?.first_name,
-        lastName: data?.last_name,
-        dateOfBirth: data?.date_of_birth,
-        gender: data?.gender,
+        firstName: verifiedData?.first_name || verifiedData?.firstName,
+        lastName: verifiedData?.last_name || verifiedData?.lastName,
+        dateOfBirth: verifiedData?.date_of_birth || verifiedData?.dateOfBirth,
+        gender: verifiedData?.gender,
+        creditScore: data?.creditScore || data?.data?.creditScore,
         // Don't expose full phone in response for security
       },
     });

@@ -1,3 +1,6 @@
+import { isTestSuite } from "../lib/suite";
+import { mockPaystackCharge, mockPaystackInitialize, mockPaystackVerify, mockTransfer, mockTransferRecipient } from "../test-suite/external-mocks";
+
 /**
  * Paystack API Integration
  * Handles payment initialization and verification
@@ -92,6 +95,8 @@ export class PaystackService {
     callback_url?: string;
     metadata?: any;
   }): Promise<PaystackInitializeResponse> {
+    if (isTestSuite()) return mockPaystackInitialize(params) as PaystackInitializeResponse;
+
     const response = await fetch(`${this.baseUrl}/transaction/initialize`, {
       method: "POST",
       headers: {
@@ -119,6 +124,8 @@ export class PaystackService {
    * Verify a payment transaction
    */
   async verifyTransaction(reference: string): Promise<PaystackVerifyResponse> {
+    if (isTestSuite()) return mockPaystackVerify(reference) as PaystackVerifyResponse;
+
     const response = await fetch(
       `${this.baseUrl}/transaction/verify/${reference}`,
       {
@@ -147,6 +154,8 @@ export class PaystackService {
     reference?: string;
     metadata?: any;
   }): Promise<any> {
+    if (isTestSuite()) return mockPaystackCharge(params);
+
     const response = await fetch(`${this.baseUrl}/transaction/charge_authorization`, {
       method: "POST",
       headers: {
@@ -211,6 +220,8 @@ export class PaystackService {
       currency: string
     };
   }> {
+    if (isTestSuite()) return mockTransferRecipient(params);
+
     const response = await fetch(`${this.baseUrl}/transferrecipient`, {
       method: "POST",
       headers: {
@@ -247,6 +258,8 @@ export class PaystackService {
     reason?: string;
     currency?: string;
   }): Promise<PaystackTransferResponse> {
+    if (isTestSuite()) return mockTransfer(params) as PaystackTransferResponse;
+
     const response = await fetch(`${this.baseUrl}/transfer`, {
       method: "POST",
       headers: {
@@ -278,6 +291,8 @@ export class PaystackService {
     transfer_code: string;
     otp: string;
   }): Promise<PaystackTransferResponse> {
+    if (isTestSuite()) return mockTransfer({ amount: 0, recipient: params.transfer_code, reference: `mock_finalize_${params.transfer_code}` }) as PaystackTransferResponse;
+
     const response = await fetch(`${this.baseUrl}/transfer/finalize_transfer`, {
       method: "POST",
       headers: {
