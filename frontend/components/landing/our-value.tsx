@@ -33,7 +33,7 @@ export function OurValue() {
                         </div>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-extrabold text-main-green font-robotoSlab max-w-3xl mx-auto leading-tight">
-                        Why Choose MyCashNG?
+                        Why Choose Kuipid?
                     </h2>
                     <p className="text-muted-foreground max-w-2xl mx-auto font-medium">
                         We provide the underlying tools and security so you can focus on building relationships and growing your lending portfolio.

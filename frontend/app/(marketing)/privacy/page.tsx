@@ -16,7 +16,7 @@ export default function PrivacyPage() {
                     <section className="space-y-4">
                         <h2 className="text-2xl font-black text-main-green font-robotoSlab">1. Introduction</h2>
                         <p className="leading-relaxed">
-                            MyCashNG is committed to protecting your privacy and handling your data responsibly.
+                            Kuipid is committed to protecting your privacy and handling your data responsibly.
                         </p>
                     </section>
 
@@ -110,7 +110,7 @@ export default function PrivacyPage() {
                     <section className="space-y-4">
                         <h2 className="text-2xl font-black text-main-green font-robotoSlab">9. Children’s Privacy</h2>
                         <p className="leading-relaxed italic font-bold">
-                            MyCashNG is not intended for users under 18 years old.
+                            Kuipid is not intended for users under 18 years old.
                         </p>
                     </section>
 
@@ -123,7 +123,7 @@ export default function PrivacyPage() {
 
                     <section className="space-y-4">
                         <h2 className="text-2xl font-black text-main-green font-robotoSlab">11. Contact</h2>
-                        <p className="leading-relaxed font-bold">Email: support@MyCashNG.com</p>
+                        <p className="leading-relaxed font-bold">Email: support@Kuipid.com</p>
                     </section>
 
                     <div className="p-10 rounded-[2.5rem] bg-amber-50 border border-amber-100 space-y-6 mt-16 shadow-2xl shadow-amber-900/5">

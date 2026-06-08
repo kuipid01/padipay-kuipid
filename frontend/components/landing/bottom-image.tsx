@@ -18,14 +18,14 @@ export function BottomImage() {
                             <div className="inline-flex  items-center gap-1 md:gap-2 px-5 md:px-3 py-1.5 rounded-full bg-white/10 border border-white/10 backdrop-blur-sm">
                                 <div className="size-1.5 rounded-full bg-lemon-primary" />
                                 <span className=" text-sm md:text-lg font-bold md:font-black md:tracking-wider text-white uppercase flex items-center gap-2">
-                                    <span className="bg-white text-nowrap text-main-green px-1.5 py-0.5 rounded-sm">Padi</span>
+
                                     Smarter Loan Management
                                 </span>
                             </div>
 
 
                             <p className="text-white/90 text-lg md:text-xl font-medium ">
-                                Join thousands of users managing smarter with MyCashNG.
+                                Join thousands of users managing smarter with Kuipid.
                             </p>
                             <div className="pt-4 flex justify-center">
                                 <Button size="lg" className="h-14 px-10 text-lg font-black bg-lemon-primary text-main-green hover:bg-lemon-primary/90 rounded-2xl shadow-xl shadow-black/10 transition-transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer">

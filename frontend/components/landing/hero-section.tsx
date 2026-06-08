@@ -16,7 +16,7 @@ export function HeroSection() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <LandingBadge label="MyCashNG" text="Lending Infrastructure For Everyone" />
+                    <LandingBadge label="Kuipid" text="Lending Infrastructure For Everyone" />
                     <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl z-10 relative font-extrabold tracking-tight mb-6 text-main-green leading-[1.1]">
                         Industrial-Grade <br className="hidden md:block" /> Lending Infrastructure.
                     </h1>

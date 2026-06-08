@@ -230,7 +230,7 @@ export const BrandingSection = ({
                     <Link2 size={18} className="text-gray-400 shrink-0" />
 
                     <span className="flex-1 truncate font-mono text-sm text-gray-600">
-                      https://MyCashNG.com/apply/{loanApp.slug}
+                      https://Kuipid.com/apply/{loanApp.slug}
                     </span>
 
                     <div className="flex items-center gap-1">
@@ -238,7 +238,7 @@ export const BrandingSection = ({
                         className="group"
                         onClick={() =>
                           copyToClipboard(
-                            `https://MyCashNG.com/apply/${loanApp.slug}`,
+                            `https://Kuipid.com/apply/${loanApp.slug}`,
                           )
                         }
                         variant="ghost"
@@ -254,7 +254,7 @@ export const BrandingSection = ({
                         className="group"
                         onClick={() =>
                           navigateToUrlNewTab(
-                            `https://MyCashNG.com/apply/${loanApp.slug}`,
+                            `https://Kuipid.com/apply/${loanApp.slug}`,
                           )
                         }
                         variant="ghost"

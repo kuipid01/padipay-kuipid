@@ -5,7 +5,7 @@ import { HelpCircle, MessageCircle, Mail, Phone, ExternalLink } from "lucide-rea
 export default function BorrowerHelpPage() {
     const contacts = [
         { label: "Live Chat", value: "Start a conversation", icon: MessageCircle },
-        { label: "Email Support", value: "support@MyCashNG.com", icon: Mail },
+        { label: "Email Support", value: "support@Kuipid.com", icon: Mail },
         { label: "Call Center", value: "+234 901 234 5678", icon: Phone },
     ];
 

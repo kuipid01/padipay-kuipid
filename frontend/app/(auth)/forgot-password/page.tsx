@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -43,6 +43,44 @@ const itemVariants = {
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [resendCount, setResendCount] = useState(0);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
+  const handleResend = async () => {
+    if (countdown > 0 || isLoading) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form.getValues()),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      toast.success("Reset link resent!");
+
+      setResendCount((prev) => prev + 1);
+      setCountdown(60);
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -68,6 +106,8 @@ export default function ForgotPasswordPage() {
 
       setIsSubmitted(true);
       toast.success("Reset link sent!");
+      setResendCount(0);
+      setCountdown(30);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -109,7 +149,7 @@ export default function ForgotPasswordPage() {
 
         <div className="relative z-10">
           <div className="flex items-center justify-between border-t border-white/10 pt-8 text-[10px] text-white/50 font-semibold uppercase tracking-wider">
-            <span>© 2026 MyCashNG. All Rights Reserved.</span>
+            <span>© 2026 Kuipid. All Rights Reserved.</span>
           </div>
         </div>
       </div>
@@ -218,7 +258,7 @@ export default function ForgotPasswordPage() {
                     If an account exists for <span className="text-main-green italic">{form.getValues("email")}</span>, you'll receive a link shortly.
                   </p>
 
-                  <motion.div variants={itemVariants} className="flex flex-col gap-4">
+                  <motion.div className="flex flex-col gap-4">
                     <Button
                       asChild
                       className="w-full h-14 bg-main-green hover:bg-main-green/90 text-white rounded-2xl text-base font-black shadow-xl shadow-main-green/20 transition-all active:scale-[0.98] group"
@@ -226,9 +266,25 @@ export default function ForgotPasswordPage() {
                       <Link href="/login">Return to Login</Link>
                     </Button>
 
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={countdown > 0 || isLoading}
+                      onClick={handleResend}
+                      className="w-full h-14 rounded-2xl text-base font-black transition-all text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      ) : countdown > 0 ? (
+                        `Resend link in ${countdown}s`
+                      ) : (
+                        "Resend reset link"
+                      )}
+                    </Button>
+
                     <button
                       onClick={() => setIsSubmitted(false)}
-                      className="text-xs font-black uppercase text-gray-400 hover:text-main-green transition-colors"
+                      className="text-xs font-black uppercase text-gray-400 hover:text-main-green transition-colors mt-2"
                     >
                       Try another email
                     </button>

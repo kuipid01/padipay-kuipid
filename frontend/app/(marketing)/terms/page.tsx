@@ -16,16 +16,16 @@ export default function TermsPage() {
                     <section className="space-y-4">
                         <h2 className="text-2xl font-black text-main-green font-robotoSlab">1. Introduction</h2>
                         <p className="leading-relaxed">
-                            Welcome to MyCashNG (“Platform”, “we”, “our”, “us”), a financial infrastructure platform that enables users to create, manage, and facilitate loan agreements between individuals.
+                            Welcome to Kuipid (“Platform”, “we”, “our”, “us”), a financial infrastructure platform that enables users to create, manage, and facilitate loan agreements between individuals.
                         </p>
                         <p className="leading-relaxed">
-                            By accessing or using MyCashNG, you agree to be bound by these Terms of Service (“Terms”). If you do not agree, you must not use the Platform.
+                            By accessing or using Kuipid, you agree to be bound by these Terms of Service (“Terms”). If you do not agree, you must not use the Platform.
                         </p>
                     </section>
 
                     <section className="space-y-6">
                         <h2 className="text-2xl font-black text-main-green font-robotoSlab">2. Nature of the Service</h2>
-                        <p className="leading-relaxed font-bold text-main-green">MyCashNG provides tools that allow users to:</p>
+                        <p className="leading-relaxed font-bold text-main-green">Kuipid provides tools that allow users to:</p>
                         <ul className="list-disc pl-5 space-y-2">
                             <li>Create loan agreements</li>
                             <li>Share loan offers via links</li>
@@ -34,7 +34,7 @@ export default function TermsPage() {
                         <div className="p-6 rounded-2xl bg-red-50 border border-red-100 space-y-3">
                             <h4 className="text-red-600 font-black uppercase text-xs tracking-widest">IMPORTANT:</h4>
                             <ul className="list-disc pl-5 space-y-2 text-red-900/80 text-sm font-medium">
-                                <li>MyCashNG is not a bank, lender, or credit provider</li>
+                                <li>Kuipid is not a bank, lender, or credit provider</li>
                                 <li>We do not originate or fund loans</li>
                                 <li>We do not guarantee repayment of any loan</li>
                                 <li>All loan agreements exist strictly between users</li>
@@ -56,7 +56,7 @@ export default function TermsPage() {
 
                     <section className="space-y-4">
                         <h2 className="text-2xl font-black text-main-green font-robotoSlab">4. Eligibility</h2>
-                        <p className="leading-relaxed font-bold text-main-green italic">To use MyCashNG, you must:</p>
+                        <p className="leading-relaxed font-bold text-main-green italic">To use Kuipid, you must:</p>
                         <ul className="list-disc pl-5 space-y-2">
                             <li>Be at least 18 years old</li>
                             <li>Provide accurate and complete information</li>
@@ -99,7 +99,7 @@ export default function TermsPage() {
                         <h2 className="text-2xl font-black text-main-green font-robotoSlab">7. Wallet and Payments</h2>
                         <ul className="list-disc pl-5 space-y-2">
                             <li>Users fund wallets via our integrated payment processor (e.g. Paystack)</li>
-                            <li>MyCashNG does not store card or sensitive payment details</li>
+                            <li>Kuipid does not store card or sensitive payment details</li>
                             <li>Payment processing is subject to the terms of the payment processor</li>
                         </ul>
                         <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 space-y-3">
@@ -136,7 +136,7 @@ export default function TermsPage() {
                         <div className="p-6 rounded-2xl bg-yellow-50 border border-yellow-100 space-y-3">
                             <h4 className="text-yellow-700 font-black uppercase text-xs tracking-widest">HOWEVER:</h4>
                             <ul className="list-disc pl-5 space-y-2 text-yellow-900/80 text-sm font-medium">
-                                <li>MyCashNG does not guarantee successful recovery of funds</li>
+                                <li>Kuipid does not guarantee successful recovery of funds</li>
                                 <li>Enforcement tools do not constitute legal enforcement or debt collection services</li>
                             </ul>
                         </div>
@@ -157,7 +157,7 @@ export default function TermsPage() {
                     <section className="space-y-4">
                         <h2 className="text-2xl font-black text-main-green font-robotoSlab">11. Fees</h2>
                         <ul className="list-disc pl-5 space-y-2">
-                            <li>MyCashNG charges transaction-based fees for use of the Platform</li>
+                            <li>Kuipid charges transaction-based fees for use of the Platform</li>
                             <li>Additional fees may apply via payment processors</li>
                         </ul>
                         <p className="leading-relaxed">All applicable fees will be disclosed before transaction completion.</p>
@@ -178,7 +178,7 @@ export default function TermsPage() {
                         <h2 className="text-2xl font-black text-main-green font-robotoSlab">13. Risk Disclosure</h2>
                         <div className="p-8 rounded-[2rem] bg-orange-50 border border-orange-100 space-y-4">
                             <h4 className="text-orange-700 font-black uppercase text-xs tracking-widest">Lending carries inherent financial risk.</h4>
-                            <p className="text-orange-900/80 font-bold italic leading-relaxed">By using MyCashNG, you acknowledge that:</p>
+                            <p className="text-orange-900/80 font-bold italic leading-relaxed">By using Kuipid, you acknowledge that:</p>
                             <ul className="list-disc pl-5 space-y-2 text-orange-900/80 text-sm font-medium">
                                 <li>Borrowers may default</li>
                                 <li>You may lose funds</li>
@@ -189,7 +189,7 @@ export default function TermsPage() {
 
                     <section className="space-y-4">
                         <h2 className="text-2xl font-black text-main-green font-robotoSlab">14. Limitation of Liability</h2>
-                        <p className="leading-relaxed font-bold text-main-green italic text-sm uppercase tracking-widest">To the fullest extent permitted by law, MyCashNG shall not be liable for:</p>
+                        <p className="leading-relaxed font-bold text-main-green italic text-sm uppercase tracking-widest">To the fullest extent permitted by law, Kuipid shall not be liable for:</p>
                         <ul className="list-disc pl-5 space-y-2">
                             <li>Loan defaults or non-payment</li>
                             <li>Disputes between users</li>
@@ -202,7 +202,7 @@ export default function TermsPage() {
                         <h2 className="text-2xl font-black text-main-green font-robotoSlab">15. Dispute Resolution</h2>
                         <ul className="list-disc pl-5 space-y-2">
                             <li>Disputes between lenders and borrowers must be resolved independently</li>
-                            <li>MyCashNG may provide limited support but is not obligated to intervene</li>
+                            <li>Kuipid may provide limited support but is not obligated to intervene</li>
                         </ul>
                     </section>
 
@@ -224,7 +224,7 @@ export default function TermsPage() {
 
                     <section className="space-y-4">
                         <h2 className="text-2xl font-black text-main-green font-robotoSlab">19. Contact Information</h2>
-                        <p className="leading-relaxed">For inquiries, contact: <br /><strong>Email: support@MyCashNG.com</strong></p>
+                        <p className="leading-relaxed">For inquiries, contact: <br /><strong>Email: support@Kuipid.com</strong></p>
                     </section>
                 </div>
             </div>

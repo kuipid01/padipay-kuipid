@@ -30,7 +30,7 @@ export function FundingStatusChecker({ inline = false }: { inline?: boolean }) {
             }
 
             // Check if dismissed today
-            const lastDismissed = localStorage.getItem("MyCashNG_funding_dismissed_at");
+            const lastDismissed = localStorage.getItem("Kuipid_funding_dismissed_at");
             const today = new Date().toDateString();
 
             if (lastDismissed === today) {
@@ -50,7 +50,7 @@ export function FundingStatusChecker({ inline = false }: { inline?: boolean }) {
     const handleClose = () => {
         setIsVisible(false);
         // Persist dismissal for 24 hours
-        localStorage.setItem("MyCashNG_funding_dismissed_at", new Date().toDateString());
+        localStorage.setItem("Kuipid_funding_dismissed_at", new Date().toDateString());
     };
 
     const handleFundNow = () => {

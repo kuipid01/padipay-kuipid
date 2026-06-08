@@ -84,10 +84,10 @@ export function Faq() {
             items: [
                 {
                     q: "Can this be used for family or friend loans?",
-                    a: "Absolutely! MyCashNG is designed to provide the infrastructure for any individual or business wanting to manage structured lending, whether to family, friends, or customers."
+                    a: "Absolutely! Kuipid is designed to provide the infrastructure for any individual or business wanting to manage structured lending, whether to family, friends, or customers."
                 },
                 {
-                    q: "Who can use MyCashNG?",
+                    q: "Who can use Kuipid?",
                     a: "It works for both businesses and individuals."
                 },
                 {

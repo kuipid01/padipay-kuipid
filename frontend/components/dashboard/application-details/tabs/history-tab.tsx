@@ -25,7 +25,7 @@ export function HistoryTab({ loanHistory }: HistoryTabProps) {
                                 New Borrower
                             </h4>
                             <p className="text-gray-500 max-w-sm font-medium">
-                                This is the borrower's first application on MyCashNG.
+                                This is the borrower's first application on Kuipid.
                                 No historical data available.
                             </p>
                         </CardContent>

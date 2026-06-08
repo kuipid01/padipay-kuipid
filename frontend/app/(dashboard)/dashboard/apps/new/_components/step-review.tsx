@@ -33,7 +33,7 @@ export function StepReview({ form }: StepReviewProps) {
   const [copied, setCopied] = useState(false);
 
   const values = form.getValues();
-  const previewUrl = `MyCashNG.com/loan/${values.slug || "your-slug"}`;
+  const previewUrl = `Kuipid.com/loan/${values.slug || "your-slug"}`;
 
   const copyPreviewUrl = async () => {
     await navigator.clipboard.writeText(`https://${previewUrl}`);

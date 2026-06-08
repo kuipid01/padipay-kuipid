@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { AdminNav } from "@/components/admin/nav";
 
 export const metadata = {
-  title: "Admin — MyCashNG",
+  title: "Admin — Kuipid",
   description: "Internal-only admin dashboard",
 };
 

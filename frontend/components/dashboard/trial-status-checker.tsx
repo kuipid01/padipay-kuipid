@@ -41,7 +41,7 @@ export function TrialStatusChecker({ inline = false }: { inline?: boolean }) {
 
             // Show if it's been some time since last dismissal? 
             // For now, let's just show it.
-            const lastDismissed = localStorage.getItem("MyCashNG_trial_check_dismissed");
+            const lastDismissed = localStorage.getItem("Kuipid_trial_check_dismissed");
             const today = new Date().toDateString();
 
             if (lastDismissed !== today) {
@@ -52,7 +52,7 @@ export function TrialStatusChecker({ inline = false }: { inline?: boolean }) {
 
     const handleClose = () => {
         setIsVisible(false);
-        localStorage.setItem("MyCashNG_trial_check_dismissed", new Date().toDateString());
+        localStorage.setItem("Kuipid_trial_check_dismissed", new Date().toDateString());
     };
 
     if (!isVisible || daysLeft === null) return null;

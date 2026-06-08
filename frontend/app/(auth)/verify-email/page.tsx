@@ -91,14 +91,14 @@ function VerifyEmailContent() {
               <span className="text-lemon-primary">Identity.</span>
             </h1>
             <p className="text-white/70 text-lg leading-relaxed font-medium">
-              We're ensuring your account is secure. Once verified, you'll have full access to MyCashNG's features.
+              We're ensuring your account is secure. Once verified, you'll have full access to Kuipid's features.
             </p>
           </div>
         </div>
 
         <div className="relative z-10">
           <div className="flex items-center justify-between border-t border-white/10 pt-8 text-[10px] text-white/50 font-semibold uppercase tracking-wider">
-            <span>© 2026 MyCashNG. All Rights Reserved.</span>
+            <span>© 2026 Kuipid. All Rights Reserved.</span>
           </div>
         </div>
       </div>

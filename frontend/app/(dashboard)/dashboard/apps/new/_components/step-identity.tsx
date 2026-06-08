@@ -17,7 +17,7 @@ interface StepIdentityProps {
 export function StepIdentity({ form }: StepIdentityProps) {
   const [copied, setCopied] = useState(false);
   const watchSlug = form.watch("slug");
-  const previewUrl = `MyCashNG.com/loan/${watchSlug || "your-slug"}`;
+  const previewUrl = `Kuipid.com/loan/${watchSlug || "your-slug"}`;
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -77,7 +77,7 @@ export function StepIdentity({ form }: StepIdentityProps) {
                 <FormControl>
                   <div className="flex items-center gap-0 border-2 border-gray-100 rounded-2xl overflow-hidden focus-within:border-main-green focus-within:ring-4 focus-within:ring-main-green/5 transition-all">
                     <span className="bg-gray-50 px-5 py-4 text-sm font-semibold text-gray-400 border-r-2 border-gray-100 whitespace-nowrap h-14 flex items-center">
-                      MyCashNG.com/loan/
+                      Kuipid.com/loan/
                     </span>
                     <Input
                       {...field}

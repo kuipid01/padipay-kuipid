@@ -104,13 +104,13 @@ export default function ContactPage() {
                                     <ContactCard
                                         icon={<Mail className="text-main-green" size={20} />}
                                         title="Email us"
-                                        detail="support@MyCashNG.com"
+                                        detail="support@Kuipid.com"
                                         subDetail="Expect a response within 24 hours"
                                     />
                                     <ContactCard
                                         icon={<Phone className="text-main-green" size={20} />}
                                         title="Call us"
-                                        detail="+234 (0) 800-MyCashNG"
+                                        detail="+234 (0) 800-Kuipid"
                                         subDetail="Mon-Fri from 8am to 5pm"
                                     />
                                     <ContactCard

@@ -112,9 +112,8 @@ function RegisterForm() {
                 <div className="relative z-10">
                     <Link href="/" className="flex items-center gap-2 mb-24 group">
                         <Image src="/logo.svg" alt="Logo" width={50} height={50} className="group-hover:scale-105 transition-transform" />
-                        <span className="font-bold text-white uppercase text-3xl">My</span>
-                        <span className="font-extrabold text-lemon-primary uppercase -ml-3 text-4xl">Cash</span>
-                        <span className="font-bold text-white uppercase -ml-3 text-3xl">NG</span>
+                        <span className="font-bold text-white uppercase text-3xl">Kui</span>
+                        <span className="font-extrabold text-lemon-primary uppercase -ml-3 text-4xl">Pid</span>
                     </Link>
 
                     <div className="max-w-md">
@@ -140,7 +139,7 @@ function RegisterForm() {
                     </div>
 
                     <div className="flex items-center justify-between border-t border-white/10 pt-8 mt-4 text-[10px] text-white/50 font-semibold uppercase tracking-wider">
-                        <span>© 2026 MyCashNG. All Rights Reserved.</span>
+                        <span>© 2026 Kuipid. All Rights Reserved.</span>
                         <div className="flex gap-4">
                             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
                             <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
@@ -180,7 +179,7 @@ function RegisterForm() {
                                     <motion.div variants={itemVariants} className="mb-10 hidden lg:block text-left">
                                         <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Create your account</h2>
                                         <p className="text-gray-500 font-medium">
-                                            Start your business journey with MyCashNG.
+                                            Start your business journey with Kuipid.
                                         </p>
                                     </motion.div>
 
@@ -358,7 +357,7 @@ function RegisterForm() {
                                 </div>
 
                                 <motion.p variants={itemVariants} className="mt-8 text-center text-[10px] text-white/40 lg:text-gray-400 font-bold uppercase tracking-widest px-6">
-                                    By signing up, you agree to MyCashNG's{" "}
+                                    By signing up, you agree to Kuipid's{" "}
                                     <Link href="/terms" className="hover:text-white lg:hover:text-main-green transition-colors">Terms</Link> &{" "}
                                     <Link href="/privacy" className="hover:text-white lg:hover:text-main-green transition-colors">Privacy Policy</Link>
                                 </motion.p>

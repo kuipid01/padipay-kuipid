@@ -9,7 +9,7 @@ export function LoadingScreen() {
                     <div className="size-8 bg-main-green rounded-xl animate-pulse" />
                 </div>
             </div>
-            <p className="font-black text-main-green/40 uppercase tracking-[0.2em] text-xs">MyCashNG Secure</p>
+            <p className="font-black text-main-green/40 uppercase tracking-[0.2em] text-xs">Kuipid Secure</p>
         </div>
     );
 }

@@ -275,7 +275,7 @@ function ResetPasswordForm() {
                     Your password has been successfully reset. Redirecting you to login...
                   </p>
 
-                  <motion.div variants={itemVariants} className="flex flex-col gap-4">
+                  <motion.div className="flex flex-col gap-4">
                     <Button
                       asChild
                       className="w-full h-14 bg-main-green hover:bg-main-green/90 text-white rounded-2xl text-base font-black shadow-xl shadow-main-green/20 transition-all active:scale-[0.98] group"

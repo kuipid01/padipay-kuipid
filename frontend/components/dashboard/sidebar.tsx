@@ -132,7 +132,7 @@ function SidebarContent({
       {/* Navigation Menu */}
       <div
         className={cn(
-          "_flex-1 bg-[#FAFAFA] rounded-[32px] p-4 shadow-sm h-fit flex flex-col gap-1 overflow-y-auto scrollbar-hide transition-all duration-300",
+          "flex-1 bg-white/60 backdrop-blur-xl border border-gray-100/80 rounded-3xl p-3 shadow-sm h-fit flex flex-col gap-1.5 overflow-y-auto scrollbar-hide transition-all duration-300",
           isCollapsed && "items-center px-2",
         )}
       >
@@ -144,21 +144,20 @@ function SidebarContent({
               href={link.href}
               title={isCollapsed ? link.label : undefined}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-200 group relative",
+                "flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-200 group relative",
                 isActive
-                  ? "bg-lemon-primary text-black shadow-lg shadow-blue-500/25"
-                  : "text-gray-600 hover:text-lemon-primary hover:bg-gray-50",
+                  ? "text-black"
+                  : "text-gray-500 hover:text-black hover:bg-gray-50/50",
                 isCollapsed && "px-2 justify-center w-full",
               )}
             >
               <link.icon
-                size={20}
-                color={isActive ? "black" : "black"}
+                size={18}
                 className={cn(
-                  "transition-colors shrink-0",
+                  "transition-colors shrink-0 relative z-10",
                   isActive
                     ? "text-black"
-                    : "text-gray-600 group-hover:text-lemon-primary",
+                    : "text-gray-400 group-hover:text-black",
                 )}
               />
               {!isCollapsed && (
@@ -169,7 +168,7 @@ function SidebarContent({
               {isActive && (
                 <motion.div
                   layoutId="active-sidebar"
-                  className="absolute inset-0 bg-lemon-primary rounded-2xl z-0"
+                  className="absolute inset-0 bg-lemon-primary shadow-[0_2px_10px_rgba(189,244,157,0.4)] border border-lemon-primary/50 rounded-2xl z-0"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -185,22 +184,23 @@ function SidebarContent({
             setUpgradeModal(true);
             setIsMobileOpen(false);
           }}
-          className="relative my-3 bg-lemon-primary rounded-[32px] p-6 shadow-xl shadow-blue-500/20 overflow-hidden group cursor-pointer"
+          className="relative my-2 bg-gradient-to-br from-lemon-primary to-[#aee68a] rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-lemon-primary/20 overflow-hidden group cursor-pointer"
         >
-          <div className="absolute -right-4 -bottom-4 size-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors" />
+          <div className="absolute -right-8 -bottom-8 size-32 bg-white/20 rounded-full blur-2xl group-hover:bg-white/30 transition-all duration-500 group-hover:scale-110" />
+          <div className="absolute -left-8 -top-8 size-24 bg-main-green/5 rounded-full blur-xl" />
 
-          <div className="relative z-10 space-y-4">
-            <div className="flex gap-3">
-              <div className="size-10 rounded-xl flex items-center justify-center">
-                <Rocket size={20} className="text-black fill-white" />
+          <div className="relative z-10 space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="size-8 rounded-lg bg-white/40 flex items-center justify-center shrink-0 backdrop-blur-sm border border-white/50">
+                <Rocket size={16} className="text-main-green" />
               </div>
 
-              <p className="text-sm font-bold text-black leading-snug">
+              <p className="text-[13px] font-bold text-main-green leading-snug pt-0.5">
                 Upgrade for additional features.
               </p>
             </div>
-            <Button className="w-fit bg-main-green text-white hover:bg-main-green/90 rounded-xl font-black h-10 shadow-lg transition-transform active:scale-95">
-              Upgrade
+            <Button className="w-full bg-main-green text-white hover:bg-main-green/90 rounded-xl font-bold text-xs h-9 shadow-sm transition-transform active:scale-95 border border-transparent hover:border-white/10">
+              Upgrade Now
             </Button>
           </div>
         </div>
@@ -224,12 +224,12 @@ function SidebarContent({
 
 
       <form action={logoutUser} className={cn(
-        "mt-auto bg-[#FAFAFA] cursor-pointer rounded-[32px] p-4 shadow-sm",
-        isCollapsed && "flex justify-center",
+        "mt-auto bg-white border border-gray-100 cursor-pointer rounded-3xl p-3 shadow-sm hover:border-red-100 hover:bg-red-50/50 transition-all group",
+        isCollapsed && "flex justify-center p-3",
       )}>
-        <button className="flex gap-1 cursor-pointer items-center font-bold text-sm text-gray-700">
-          <LogOut color="red" size={isCollapsed ? 24 : 20} />
-          {!isCollapsed && "Logout"}
+        <button className="flex gap-3 cursor-pointer items-center font-semibold text-[13px] text-gray-600 group-hover:text-red-600 w-full px-2 py-1.5">
+          <LogOut className="text-gray-400 group-hover:text-red-500 transition-colors" size={18} />
+          {!isCollapsed && "Log out"}
         </button>
       </form>
 
@@ -333,7 +333,7 @@ export function DashboardHeader() {
   );
 
   return (
-    <header className="h-20 bg-white px-4 md:px-8 flex gap-4 md:gap-10 items-center justify-between sticky top-0 z-40">
+    <header className="h-[72px] bg-white/80 backdrop-blur-xl border-b border-gray-100/80 px-4 md:px-8 flex gap-4 md:gap-8 items-center justify-between sticky top-0 z-40">
       {/* Mobile Menu Button */}
       <Button
         variant="ghost"
@@ -349,12 +349,12 @@ export function DashboardHeader() {
         <div className="relative group">
           <Search
             className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-main-green transition-colors"
-            size={18}
+            size={16}
           />
           <Input
             ref={inputRef}
             placeholder="Search dashboard..."
-            className="pl-12 pr-12 h-12 bg-gray-50 border-gray-100 rounded-2xl focus-visible:ring-main-green focus-visible:bg-white transition-all font-bold placeholder:text-gray-400 placeholder:font-medium w-full"
+            className="pl-11 pr-12 h-10 bg-gray-50/80 hover:bg-gray-50 border-gray-200/60 rounded-xl focus-visible:ring-1 focus-visible:ring-lemon-primary focus-visible:border-main-green focus-visible:bg-white transition-all text-[13px] font-medium placeholder:text-gray-400 w-full shadow-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsFocused(true)}
@@ -409,38 +409,38 @@ export function DashboardHeader() {
         </AnimatePresence>
       </div>
 
-      <div className="flex items-center gap-1 md:gap-4 shrink-0">
-        <div className="flex items-center bg-white rounded-2xl p-1 shadow-sm ">
+      <div className="flex items-center gap-2 md:gap-4 shrink-0">
+        <div className="flex items-center bg-white border border-gray-100 rounded-xl p-1 shadow-sm hover:bg-gray-50 transition-colors">
           <Button
             size="icon"
             variant="ghost"
-            className="rounded-xl text-gray-400"
+            className="rounded-lg text-gray-400 hover:text-gray-600 size-9"
           >
-            <Bell size={20} />
+            <Bell size={18} />
           </Button>
         </div>
 
         {isLoading ? (
-          <div className="flex items-center gap-1 md:gap-2 bg-white rounded-2xl md:p-1 md:px-2 shadow-md p-1 min-w-[140px]">
-            <Skeleton className="size-10 md:size-12 rounded-full" />
-            <div className="md:flex flex-col hidden gap-2">
-              <Skeleton className="h-4 w-20 rounded-md" />
-              <Skeleton className="h-3 w-28 rounded-md" />
+          <div className="flex items-center gap-1 md:gap-3 bg-white border border-gray-100 rounded-2xl md:p-1.5 md:px-2 shadow-sm p-1 min-w-[140px]">
+            <Skeleton className="size-8 md:size-10 rounded-full" />
+            <div className="md:flex flex-col hidden gap-1.5">
+              <Skeleton className="h-3 w-20 rounded-md" />
+              <Skeleton className="h-2.5 w-24 rounded-md" />
             </div>
           </div>
         ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="flex items-center gap-1 md:gap-2 bg-white rounded-2xl md:p-1 md:px-2 shadow-md cursor-pointer hover:bg-gray-50 transition-colors">
-                <Avatar className="size-10 md:size-12 rounded-full border-2 border-primary/10">
+              <div className="flex items-center gap-2 md:gap-3 bg-white border border-gray-100 rounded-2xl md:py-1.5 md:pl-1.5 md:pr-4 shadow-sm cursor-pointer hover:bg-gray-50 transition-all active:scale-[0.98]">
+                <Avatar className="size-8 md:size-9 rounded-full border border-gray-200 shadow-sm">
                   <AvatarImage src={user?.avatarUrl} />
-                  <AvatarFallback className="bg-lemon-primary/10 text-main-green font-bold">
-                    {user?.fullName?.charAt(0) || <User2 className="size-5" />}
+                  <AvatarFallback className="bg-lemon-primary text-main-green font-bold text-xs">
+                    {user?.fullName?.charAt(0) || <User2 className="size-4" />}
                   </AvatarFallback>
                 </Avatar>
-                <div className="md:flex flex-col hidden gap-1 text-left">
-                  <p className="font-bold text-sm leading-none">{user?.fullName}</p>
-                  <p className="text-[11px] text-gray-400 font-medium truncate max-w-[120px]">{user?.email}</p>
+                <div className="md:flex flex-col hidden text-left">
+                  <p className="font-bold text-[13px] leading-tight text-gray-800">{user?.fullName}</p>
+                  <p className="text-[11px] text-gray-500 font-medium truncate max-w-[120px] mt-0.5">{user?.email}</p>
                 </div>
               </div>
             </DropdownMenuTrigger>

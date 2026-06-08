@@ -20,7 +20,7 @@ export function LandingFooter() {
                             <div className="size-8 bg-main-green rounded-lg flex items-center justify-center">
                                 <span className="text-lemon-primary font-black text-xl">P</span>
                             </div>
-                            <span className="text-2xl font-black text-main-green tracking-tight font-robotoSlab">MyCashNG</span>
+                            <span className="text-2xl font-black text-main-green tracking-tight font-robotoSlab">Kuipid</span>
                         </Link>
 
                         <p className="text-gray-500 text-md font-medium leading-relaxed max-w-sm">
@@ -115,14 +115,14 @@ export function LandingFooter() {
                 {/* Bottom Bar */}
                 <div className="pt-10 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
                     <p className="text-gray-400 text-sm font-bold">
-                        2026 MyCashNG. All rights reserved.
+                        2026 Kuipid. All rights reserved.
                     </p>
 
                     <div className="flex gap-4">
-                        <SocialIcon href="https://facebook.com/MyCashNG" icon={<Facebook size={18} />} />
-                        <SocialIcon href="https://instagram.com/MyCashNG" icon={<Instagram size={18} />} />
-                        <SocialIcon href="https://linkedin.com/company/mycashng" icon={<Linkedin size={18} />} />
-                        <SocialIcon href="https://youtube.com/@MyCashNG" icon={<Youtube size={18} />} />
+                        <SocialIcon href="https://facebook.com/Kuipid" icon={<Facebook size={18} />} />
+                        <SocialIcon href="https://instagram.com/Kuipid" icon={<Instagram size={18} />} />
+                        <SocialIcon href="https://linkedin.com/company/Kuipid" icon={<Linkedin size={18} />} />
+                        <SocialIcon href="https://youtube.com/@Kuipid" icon={<Youtube size={18} />} />
                     </div>
                 </div>
             </div>
