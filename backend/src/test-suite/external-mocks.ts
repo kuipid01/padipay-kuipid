@@ -96,6 +96,105 @@ export function mockCreditReport(bvn: string) {
   };
 }
 
+/** Mock YouVerify Nigerian credit report — mirrors normalised response shape. */
+export function mockYouverifyCreditReport(id: string) {
+  const cleanId = normalizeDigits(id).padEnd(11, "0").slice(0, 11);
+  const seed = Number(cleanId.slice(-3));
+  const totalAccounts = 2 + (seed % 5);
+  const openAccounts = 1 + (seed % 2);
+
+  return {
+    provider: "mock:youverify" as const,
+    status: "found",
+    idNumber: cleanId,
+    personalDetails: {
+      firstName: "Suite",
+      surname: "Test",
+      gender: seed % 2 === 0 ? "Male" : "Female",
+      birthDate: "1995-06-15",
+      nationality: "Nigeria",
+      bankVerificationNo: cleanId,
+    },
+    creditAccountSummary: {
+      totalAccounts: String(totalAccounts),
+      totalAccounts1: String(openAccounts),
+      totalaccountinGodcondition: String(totalAccounts - (seed % 5 === 0 ? 1 : 0)),
+      totalAccountarrear: seed % 5 === 0 ? "1" : "0",
+      amountarrear: "0.00",
+      totalMonthlyInstalment: `${15000 + seed * 10}.00`,
+      totalOutstandingdebt: "0.00",
+      rating: String(520 + (seed * 37) % 280),
+    },
+    creditAccountRating: {
+      noOfOtherAccountsGood: String(totalAccounts - (seed % 5 === 0 ? 1 : 0)),
+      noOfOtherAccountsBad: seed % 5 === 0 ? "1" : "0",
+    },
+    creditAgreements: [],
+    paymentHistory: [],
+    delinquency: [],
+    generatedAt: nowIso(),
+  };
+}
+
+/** Mock YouVerify BVN entity — normalised to match Dojah's entity shape. */
+export function mockYouverifyBvnEntity(bvn: string) {
+  const cleanBvn = normalizeDigits(bvn).padEnd(11, "0").slice(0, 11);
+  const last = Number(cleanBvn.slice(-1));
+  const firstName = last % 2 === 0 ? "Adewale" : "Deborah";
+  const lastName = last % 3 === 0 ? "Ogunleye" : "Okafor";
+
+  return {
+    bvn: cleanBvn,
+    first_name: firstName,
+    last_name: lastName,
+    middle_name: "Suite",
+    gender: last % 2 === 0 ? "Male" : "Female",
+    date_of_birth: "1995-06-15",
+    dob: "1995-06-15",
+    phone_number: `080${cleanBvn.slice(3, 11)}`,
+    image: `https://api.dicebear.com/7.x/thumbs/svg?seed=yv-${cleanBvn}`,
+    state_of_origin: "Lagos",
+    state_of_residence: "Lagos",
+    nin: "",
+  };
+}
+
+/** Mock YouVerify NIN entity — normalised to match Dojah's entity shape. */
+export function mockYouverifyNinEntity(nin: string) {
+  const cleanNin = normalizeDigits(nin).padEnd(11, "0").slice(0, 11);
+  const last = Number(cleanNin.slice(-1));
+
+  return {
+    nin: cleanNin,
+    first_name: last % 2 === 0 ? "Sarah" : "Emeka",
+    last_name: last % 3 === 0 ? "Doe" : "Nwosu",
+    middle_name: "Jane",
+    gender: last % 2 === 0 ? "f" : "m",
+    date_of_birth: "1988-04-04",
+    dob: "1988-04-04",
+    phone_number: `080${cleanNin.slice(3, 11)}`,
+    image: `https://api.dicebear.com/7.x/thumbs/svg?seed=yv-nin-${cleanNin}`,
+    photo: `https://api.dicebear.com/7.x/thumbs/svg?seed=yv-nin-${cleanNin}`,
+    bvn: "",
+    state_of_origin: "Edo",
+    state_of_residence: "Niger",
+  };
+}
+
+/** Mock YouVerify Phone entity — normalised to Dojah-like shape. */
+export function mockYouverifyPhoneEntity(mobile: string) {
+  const cleanMobile = normalizeDigits(mobile).padEnd(11, "0").slice(0, 11);
+
+  return {
+    phone_number: cleanMobile,
+    first_name: "Famous",
+    last_name: "Ehichioya",
+    middle_name: "Prior",
+    date_of_birth: "2000-01-01",
+    dob: "2000-01-01",
+  };
+}
+
 export function mockNuban(accountNumber: string, bankCode: string) {
   const bank = mockBanks.find((item) => item.code === bankCode) || mockBanks[0];
   const cleanAccount = normalizeDigits(accountNumber).padEnd(10, "0").slice(0, 10);

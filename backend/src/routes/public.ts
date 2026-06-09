@@ -6,7 +6,8 @@ import { and, eq, or } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import { CreateLoanApplicationSchema } from "../zod-schemas/applications";
 import { ContactFormSchema } from "../zod-schemas/contact";
-import { getCreditReport, getCreditScore } from "../utils/dojah";
+import { getCreditScore } from "../utils/dojah";
+import { getNgCreditReport } from "../utils/youverify";
 import { brevo } from "../lib/brevo";
 
 const router = new Hono();
@@ -244,8 +245,9 @@ const refreshCreditScoreAndRecord = async (bvn: string, id: string) => {
     ]);
 
   try {
+    // Credit report via YouVerify (cheaper), FICO score via Dojah
     const [reportResult, scoreResult] = await Promise.allSettled([
-      withTimeout(getCreditReport(bvn)),
+      withTimeout(getNgCreditReport(bvn)),
       withTimeout(getCreditScore(bvn)),
     ]);
 
@@ -259,7 +261,7 @@ const refreshCreditScoreAndRecord = async (bvn: string, id: string) => {
 
     if (creditReport) updateData.creditReport = creditReport;
     if (creditScore) updateData.creditScore = creditScore;
-    console.log(creditScore, creditReport, "creditReport")
+    console.log(creditScore, creditReport, "creditReport");
     // 🚫 Avoid empty update
     if (Object.keys(updateData).length === 0) return;
 

@@ -4,9 +4,9 @@ import {
   verifyBVN,
   verifyNIN,
   resolveAccount,
-  getCreditReport,
   getCreditScore,
 } from "../utils/dojah";
+import { getNgCreditReport, verifyNgBvn, verifyNgNin, verifyNgPhone } from "../utils/youverify";
 import { NewApplicationSchema } from "../zod-schemas/applications";
 import { zValidator } from "@hono/zod-validator";
 import { verifyAuthenticity } from "../utils/user-verify-via-bvn";
@@ -154,21 +154,31 @@ router.post("/bvn", async (c) => {
     //     return c.json({ status: "error", message: reason }, 400);
     // }
 
-    // 1. Verify BVN
-    const result = await verifyBVN(bvn);
+    // 1. Verify BVN (YouVerify primary — cheaper, Dojah fallback)
+    let result;
+    try {
+      result = await verifyNgBvn(bvn);
+      console.log("[BVN] YouVerify succeeded");
+    } catch (yvErr: any) {
+      console.warn("[BVN] YouVerify failed, falling back to Dojah:", yvErr.message);
+      result = await verifyBVN(bvn);
+    }
     const kycData = result.entity;
 
-    // 2. Fetch Credit Report & Score (Underneath BVN check)
+    // 2. Fetch Credit Report (YouVerify primary, Dojah fallback) & FICO Score
     let creditReport = null;
     let creditScore = null;
 
     try {
-      [creditReport, creditScore] = await Promise.all([
-        getCreditReport(bvn),
-        getCreditScore(bvn),
-      ]);
+      creditReport = await getNgCreditReport(bvn);
+    } catch (yvError: any) {
+      console.warn("[CREDIT REPORT] YouVerify failed, no fallback available:", yvError.message);
+    }
+
+    try {
+      creditScore = await getCreditScore(bvn);
     } catch (creditError: any) {
-      console.warn("[CREDIT CHECK FAILED]", creditError.message);
+      console.warn("[CREDIT SCORE] Dojah FICO failed:", creditError.message);
     }
     if (!creditScore) {
       return c.json(
@@ -535,13 +545,21 @@ router.use("*", authMiddleware);
 router.post("/nin", async (c) => {
   try {
     const { nin, phoneNumber } = await c.req.json();
-    const result = await verifyNIN(nin);
+    // Verify NIN (YouVerify primary — cheaper, Dojah fallback)
+    let result;
+    try {
+      result = await verifyNgNin(nin);
+      console.log("[NIN] YouVerify succeeded");
+    } catch (yvErr: any) {
+      console.warn("[NIN] YouVerify failed, falling back to Dojah:", yvErr.message);
+      result = await verifyNIN(nin);
+    }
+
+    const kycData = result.entity;
 
     // Save to temp_borrowers
     const { eq, or } = await import("drizzle-orm");
     const { db, tempBorrowers } = await import("../db");
-
-    const kycData = result.entity;
 
     const existing = await db.query.tempBorrowers.findFirst({
       where: or(
@@ -663,12 +681,15 @@ router.post("/refresh-score", async (c) => {
     let creditScore = null;
 
     try {
-      [creditReport, creditScore] = await Promise.all([
-        getCreditReport(bvn),
-        getCreditScore(bvn),
-      ]);
+      creditReport = await getNgCreditReport(bvn);
+    } catch (yvError: any) {
+      console.warn("[CREDIT REPORT] YouVerify failed:", yvError.message);
+    }
+
+    try {
+      creditScore = await getCreditScore(bvn);
     } catch (creditError: any) {
-      console.warn("[CREDIT CHECK FAILED]", creditError.message);
+      console.warn("[CREDIT SCORE] Dojah FICO failed:", creditError.message);
     }
 
     if (!creditScore) {
