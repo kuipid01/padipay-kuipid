@@ -115,16 +115,55 @@ export default function AdminRequestDetailsPage({ params }: { params: Promise<{ 
     const bankDetails = request.bankDetails || {};
 
     // Complex Credit Entities Extraction
-    const creditEntity = borrower.creditReport?.entity || {};
-    const reportScore = creditEntity.score || {};
+    const creditReport = borrower.creditReport || {};
+    const isYouVerify = creditReport.provider === "youverify" || creditReport.provider === "mock:youverify";
+    
+    let totalBorrowedC = 0;
+    let totalOutstandingC = 0;
+    let totalLoansC = 0;
+    let totalOverdueC = 0;
+    let loanHistoryArrays: any[] = [];
+    let creditEnquiries: any[] = [];
+
+    if (isYouVerify) {
+        const summary = creditReport.creditAccountSummary || {};
+        totalOutstandingC = Number(String(summary.totalOutstandingdebt || "0").replace(/,/g, ''));
+        totalLoansC = Number(String(summary.totalAccounts || "0").replace(/,/g, ''));
+        totalOverdueC = Number(String(summary.amountarrear || "0").replace(/,/g, ''));
+        
+        const agreements = creditReport.creditAgreements || [];
+        totalBorrowedC = agreements.reduce((acc: number, curr: any) => acc + (Number(String(curr.openingBalanceAmt || "0").replace(/,/g, '')) || 0), 0);
+
+        loanHistoryArrays = agreements.map((loan: any) => ({
+            loanProvider: loan.subscriberName,
+            type: loan.indicatorDescription || "Loan",
+            currency: loan.currency,
+            loanAmount: Number(String(loan.openingBalanceAmt || "0").replace(/,/g, '')),
+            outstandingBalance: Number(String(loan.currentBalanceAmt || "0").replace(/,/g, '')),
+            performanceStatus: loan.performanceStatus,
+            status: loan.accountStatus,
+            disbursedDate: loan.dateAccountOpened
+        }));
+        
+        creditEnquiries = (creditReport.raw?.enquiryHistoryTop || []).map((enq: any) => ({
+            loanProvider: enq.subscriberName,
+            date: enq.dateRequested,
+            reason: enq.enquiryReason
+        }));
+    } else {
+        const creditEntity = creditReport.entity || {};
+        const reportScore = creditEntity.score || {};
+
+        totalBorrowedC = (reportScore.totalBorrowed || []).reduce((acc: number, curr: any) => acc + (Number(curr.value) || 0), 0);
+        totalOutstandingC = (reportScore.totalOutstanding || []).reduce((acc: number, curr: any) => acc + (Number(curr.value) || 0), 0);
+        totalLoansC = (reportScore.totalNoOfLoans || []).reduce((acc: number, curr: any) => acc + (Number(curr.value) || 0), 0);
+        totalOverdueC = (reportScore.totalOverdue || []).reduce((acc: number, curr: any) => acc + (Number(curr.value) || 0), 0);
+
+        loanHistoryArrays = (reportScore.loanHistory || []).map((lh: any) => lh.value || []).flat();
+        creditEnquiries = (reportScore.creditEnquiries || []).map((enq: any) => enq.value || []).flat();
+    }
+
     const ficoScoreData = borrower.creditScore?.entity?.score?.ficoScore || null;
-
-    const totalBorrowedC = (reportScore.totalBorrowed || []).reduce((acc: number, curr: any) => acc + (Number(curr.value) || 0), 0);
-    const totalOutstandingC = (reportScore.totalOutstanding || []).reduce((acc: number, curr: any) => acc + (Number(curr.value) || 0), 0);
-    const totalLoansC = (reportScore.totalNoOfLoans || []).reduce((acc: number, curr: any) => acc + (Number(curr.value) || 0), 0);
-    const totalOverdueC = (reportScore.totalOverdue || []).reduce((acc: number, curr: any) => acc + (Number(curr.value) || 0), 0);
-
-    const loanHistoryArrays = (reportScore.loanHistory || []).map((lh: any) => lh.value || []).flat();
 
     return (
         <div className="p-8 space-y-8 max-w-7xl mx-auto">
@@ -410,7 +449,7 @@ export default function AdminRequestDetailsPage({ params }: { params: Promise<{ 
                                 </CardHeader>
                                 <CardContent className="p-0 max-h-[300px] overflow-y-auto">
                                     <div className="divide-y divide-gray-50">
-                                        {reportScore.creditEnquiries?.flatMap((enq: any) => enq.value || []).slice(0, 10).map((enquiry: any, i: number) => (
+                                        {creditEnquiries.slice(0, 10).map((enquiry: any, i: number) => (
                                             <div key={i} className="px-6 py-3 hover:bg-gray-50 transition-colors">
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-sm font-bold text-gray-800">{enquiry.loanProvider || enquiry.institutionType || "Unknown"}</span>
@@ -418,7 +457,8 @@ export default function AdminRequestDetailsPage({ params }: { params: Promise<{ 
                                                 </div>
                                                 <p className="text-xs text-gray-500 mt-1">{enquiry.reason || enquiry.loanType || "Credit Enquiry"}</p>
                                             </div>
-                                        )) || <div className="p-6 text-center text-sm text-gray-400">No recent enquiries</div>}
+                                        ))}
+                                        {creditEnquiries.length === 0 && <div className="p-6 text-center text-sm text-gray-400">No recent enquiries</div>}
                                     </div>
                                 </CardContent>
                             </Card>
